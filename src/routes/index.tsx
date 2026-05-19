@@ -342,17 +342,21 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 
 function Countdown({ targetIso, title, subtext, ctaText, ctaUrl }: { targetIso: string; title?: string; subtext?: string; ctaText?: string; ctaUrl?: string }) {
   const target = useMemo(() => new Date(targetIso).getTime(), [targetIso]);
-  const [now, setNow] = useState(() => Date.now());
+  const [now, setNow] = useState<number | null>(null);
   useEffect(() => {
+    setNow(Date.now());
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
-  const diff = Math.max(0, target - now);
+  const diff = now === null ? 0 : Math.max(0, target - now);
   const d = Math.floor(diff / 86400000);
   const h = Math.floor((diff % 86400000) / 3600000);
   const m = Math.floor((diff % 3600000) / 60000);
   const sec = Math.floor((diff % 60000) / 1000);
-  const cells = [["Días", d], ["Horas", h], ["Min", m], ["Seg", sec]] as const;
+  const cells: readonly (readonly [string, string])[] = now === null
+    ? [["Días", "--"], ["Horas", "--"], ["Min", "--"], ["Seg", "--"]]
+    : [["Días", String(d).padStart(2, "0")], ["Horas", String(h).padStart(2, "0")], ["Min", String(m).padStart(2, "0")], ["Seg", String(sec).padStart(2, "0")]];
+
   return (
     <section className="py-16 px-4 md:px-8">
       <div className="max-w-4xl mx-auto text-center">
@@ -361,7 +365,7 @@ function Countdown({ targetIso, title, subtext, ctaText, ctaUrl }: { targetIso: 
         <div className="grid grid-cols-4 gap-2 md:gap-4 mb-8">
           {cells.map(([label, val]) => (
             <div key={label} className="rounded-2xl border border-white/10 bg-[var(--dark-panel)] p-4 md:p-6">
-              <div className="text-display text-3xl md:text-6xl font-black text-glow-blue">{String(val).padStart(2, "0")}</div>
+              <div className="text-display text-3xl md:text-6xl font-black text-glow-blue">{val}</div>
               <div className="text-[10px] md:text-xs uppercase tracking-widest text-white/50 mt-1">{label}</div>
             </div>
           ))}
