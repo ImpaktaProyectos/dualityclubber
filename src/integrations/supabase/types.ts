@@ -609,6 +609,7 @@ export type Database = {
           background_image_url: string | null
           background_position: string | null
           background_repeat: boolean | null
+          background_scroll_mode: string
           background_secondary_color: string | null
           background_size: string | null
           background_type: string
@@ -637,6 +638,7 @@ export type Database = {
           background_image_url?: string | null
           background_position?: string | null
           background_repeat?: boolean | null
+          background_scroll_mode?: string
           background_secondary_color?: string | null
           background_size?: string | null
           background_type?: string
@@ -665,6 +667,7 @@ export type Database = {
           background_image_url?: string | null
           background_position?: string | null
           background_repeat?: boolean | null
+          background_scroll_mode?: string
           background_secondary_color?: string | null
           background_size?: string | null
           background_type?: string
