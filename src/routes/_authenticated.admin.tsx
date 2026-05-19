@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getAdminData, upsertRow, deleteRow, isCurrentUserAdmin } from "@/lib/admin.functions";
 import { toast } from "sonner";
 import { LogOut, Plus, Trash2, Save, Eye, EyeOff } from "lucide-react";
+import { MediaUpload } from "@/components/admin/MediaUpload";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [{ title: "Panel admin · DUALITY" }] }),
