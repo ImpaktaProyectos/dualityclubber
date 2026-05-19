@@ -342,12 +342,14 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 
 function Countdown({ targetIso, title, subtext, ctaText, ctaUrl }: { targetIso: string; title?: string; subtext?: string; ctaText?: string; ctaUrl?: string }) {
   const target = useMemo(() => new Date(targetIso).getTime(), [targetIso]);
-  const [now, setNow] = useState(() => Date.now());
+  const [now, setNow] = useState<number | null>(null);
   useEffect(() => {
+    setNow(Date.now());
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
-  const diff = Math.max(0, target - now);
+  const diff = now === null ? Math.max(0, target - Date.parse(targetIso) + (target - Date.parse(targetIso))) : Math.max(0, target - now);
+
   const d = Math.floor(diff / 86400000);
   const h = Math.floor((diff % 86400000) / 3600000);
   const m = Math.floor((diff % 3600000) / 60000);
