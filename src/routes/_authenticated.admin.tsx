@@ -259,6 +259,22 @@ function SettingsEditor({ data, onSaved }: { data: any; onSaved: () => void }) {
 }
 
 function FieldInput({ field, value, onChange }: { field: { key: string; label: string; type?: string; rows?: number }; value: any; onChange: (v: any) => void }) {
+  // Media upload override based on field key
+  const mediaConfig = getMediaConfig(field.key);
+  if (mediaConfig) {
+    return (
+      <div className="md:col-span-2">
+        <MediaUpload
+          label={field.label}
+          bucket={mediaConfig.bucket}
+          kind={mediaConfig.kind}
+          pathPrefix={mediaConfig.prefix}
+          value={value}
+          onChange={onChange}
+        />
+      </div>
+    );
+  }
   if (field.type === "checkbox") {
     return (
       <label className="flex items-center gap-2 text-sm">
@@ -291,6 +307,19 @@ function FieldInput({ field, value, onChange }: { field: { key: string; label: s
       />
     </div>
   );
+}
+
+function getMediaConfig(key: string): { bucket: string; kind: "image" | "video" | "pdf"; prefix: string } | null {
+  if (key === "hero_video_desktop_url") return { bucket: "hero-media", kind: "video", prefix: "video-desktop" };
+  if (key === "hero_video_mobile_url") return { bucket: "hero-media", kind: "video", prefix: "video-mobile" };
+  if (key === "hero_image_desktop_url") return { bucket: "hero-media", kind: "image", prefix: "image-desktop" };
+  if (key === "hero_image_mobile_url") return { bucket: "hero-media", kind: "image", prefix: "image-mobile" };
+  if (key === "final_cta_background_url") return { bucket: "general-assets", kind: "image", prefix: "final-cta" };
+  if (key === "footer_logo_url") return { bucket: "general-assets", kind: "image", prefix: "logo" };
+  if (key === "authorization_pdf_url") return { bucket: "authorization-pdfs", kind: "pdf", prefix: "auth" };
+  if (key === "image_url") return { bucket: "artist-images", kind: "image", prefix: "artist" };
+  if (key === "media_url" || key === "thumbnail_url") return { bucket: "gallery", kind: "image", prefix: "item" };
+  return null;
 }
 
 // ====================== Sections toggles ======================
