@@ -296,7 +296,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 }
 
 // ============== HERO ==============
-function Hero({ s }: { s: any }) {
+function Hero({ s, bg }: { s: any; bg?: any }) {
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     const fn = () => setIsMobile(window.innerWidth < 768);
@@ -309,6 +309,7 @@ function Hero({ s }: { s: any }) {
 
   return (
     <section id="top" className="relative min-h-[100svh] flex items-center overflow-hidden pt-16">
+      {bg && <SectionBackground cfg={bg} />}
       <div className="absolute inset-0">
         {video ? (
           <video
