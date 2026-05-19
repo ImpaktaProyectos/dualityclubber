@@ -147,3 +147,11 @@
     mix-blend-mode: overlay;
   }
 }
+
+@keyframes dual-grad { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+@keyframes dual-pulse { 0%,100% { transform: scale(1); opacity: .25; } 50% { transform: scale(1.15); opacity: .55; } }
+@keyframes dual-sweep { 0% { background-position: -100% 0; } 100% { background-position: 200% 0; } }
+@keyframes dual-particles { 0% { background-position: 0 0, 20px 20px; } 100% { background-position: 0 -200px, 20px -180px; } }
+@media (max-width: 768px) {
+  .motion-particles { animation-duration: 60s !important; opacity: .25 !important; }
+}

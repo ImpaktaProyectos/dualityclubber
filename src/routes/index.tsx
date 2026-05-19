@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Heart, Instagram, MapPin, Music, ShoppingBag, ChevronDown } from "lucide-react";
 import { getLandingData } from "@/lib/site.functions";
 import { useFavorites } from "@/hooks/useFavorites";
+import { SectionBackground, resolveSectionBg } from "@/components/SectionBackground";
 import heroArt from "@/assets/duality-hero.jpg";
 
 export const Route = createFileRoute("/")({
@@ -38,6 +39,10 @@ function Landing() {
     if (s.secondary_color) root.style.setProperty("--brand-red", s.secondary_color);
   }, [s]);
 
+  const atmosphere = (data as any).atmosphere ?? null;
+  const sectionBgs = (data as any).sectionBackgrounds ?? [];
+  const bg = (key: string) => resolveSectionBg(key, atmosphere, sectionBgs);
+
   const navItems = [
     { key: "tickets", label: "Entradas", href: "#entradas" },
     { key: "artists", label: "Artistas", href: "#artistas" },
@@ -50,7 +55,13 @@ function Landing() {
   const favKeyForSchedule = (it: any) => it.artist_id ?? `sched:${it.id}`;
 
   return (
-    <div className="min-h-screen text-foreground pb-24 md:pb-0">
+    <div className="relative min-h-screen text-foreground pb-24 md:pb-0">
+      {/* GLOBAL ATMOSPHERE */}
+      {atmosphere && (
+        <div className="fixed inset-0 -z-10">
+          <SectionBackground cfg={atmosphere} />
+        </div>
+      )}
       {/* HEADER */}
       <header className="fixed top-0 inset-x-0 z-50 glass border-b border-white/5">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-8 h-16">
@@ -78,12 +89,13 @@ function Landing() {
       )}
 
       {/* HERO */}
-      {isOn("hero") && <Hero s={s} />}
+      {isOn("hero") && <Hero s={s} bg={bg("hero")} />}
 
       {/* QUICK INFO */}
       {isOn("quick_info") && data.quickInfo.length > 0 && (
-        <section className="border-y border-white/5 bg-[var(--dark-panel)]/60 backdrop-blur">
-          <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 flex gap-3 md:gap-6 overflow-x-auto scrollbar-hide">
+        <section className="relative border-y border-white/5 overflow-hidden">
+          <SectionBackground cfg={bg("quick_info")} />
+          <div className="relative max-w-7xl mx-auto px-4 md:px-8 py-6 flex gap-3 md:gap-6 overflow-x-auto scrollbar-hide">
             {data.quickInfo.map((q: any) => (
               <div key={q.id} className="shrink-0 px-4 py-2 rounded-full border border-white/10 text-xs md:text-sm uppercase tracking-widest font-bold text-white/90 whitespace-nowrap">
                 {q.label}{q.value && <span className="text-white/50 normal-case font-normal ml-2">{q.value}</span>}
@@ -101,13 +113,15 @@ function Landing() {
           subtext={s.countdown_subtext}
           ctaText={s.countdown_cta_text}
           ctaUrl={s.countdown_cta_url}
+          bg={bg("countdown")}
         />
       )}
 
       {/* TICKETS */}
       {isOn("tickets") && (
-        <section id="entradas" className="py-20 md:py-28 px-4 md:px-8">
-          <div className="max-w-5xl mx-auto">
+        <section id="entradas" className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
+          <SectionBackground cfg={bg("tickets")} />
+          <div className="relative max-w-5xl mx-auto">
             <SectionLabel>Entradas</SectionLabel>
             <h2 className="text-display text-4xl md:text-6xl font-black mb-3">{s?.ticket_title}</h2>
             <p className="text-white/70 mb-8">{s?.ticket_text}</p>
@@ -143,7 +157,7 @@ function Landing() {
 
       {/* ARTISTS */}
       {isOn("artists") && data.artists.length > 0 && (
-        <ArtistsSection artists={data.artists} isFavorite={isFavorite} toggle={toggle} />
+        <ArtistsSection artists={data.artists} isFavorite={isFavorite} toggle={toggle} bg={bg("artists")} />
       )}
 
       {/* SCHEDULE */}
@@ -157,13 +171,15 @@ function Landing() {
           isFavorite={isFavorite}
           clearFavorites={clear}
           isArtistsOn={isOn("artists")}
+          bg={bg("schedule")}
         />
       )}
 
       {/* LOCATION */}
       {isOn("location") && (
-        <section id="ubicacion" className="py-20 md:py-28 px-4 md:px-8">
-          <div className="max-w-5xl mx-auto">
+        <section id="ubicacion" className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
+          <SectionBackground cfg={bg("location")} />
+          <div className="relative max-w-5xl mx-auto">
             <SectionLabel>Ubicación</SectionLabel>
             <h2 className="text-display text-4xl md:text-6xl font-black mb-6">{s?.location_name}</h2>
             <div className="flex items-center gap-2 text-white/70 mb-8">
@@ -192,8 +208,9 @@ function Landing() {
 
       {/* FAQ */}
       {isOn("faq") && data.faqs.length > 0 && (
-        <section id="faq" className="py-20 md:py-28 px-4 md:px-8">
-          <div className="max-w-3xl mx-auto">
+        <section id="faq" className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
+          <SectionBackground cfg={bg("faq")} />
+          <div className="relative max-w-3xl mx-auto">
             <SectionLabel>FAQ</SectionLabel>
             <h2 className="text-display text-4xl md:text-6xl font-black mb-10">Preguntas frecuentes</h2>
             <div className="space-y-3">
@@ -206,8 +223,13 @@ function Landing() {
       {/* FINAL CTA */}
       {isOn("final_cta") && (
         <section className="relative py-28 md:py-40 px-4 md:px-8 overflow-hidden">
-          <img src={s?.final_cta_background_url || heroArt} alt="" className="absolute inset-0 w-full h-full object-cover opacity-40" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[var(--dark-bg)]/60 via-[var(--dark-bg)]/80 to-[var(--dark-bg)]" />
+          <SectionBackground cfg={bg("final_cta")} />
+          {s?.final_cta_background_url && (
+            <>
+              <img src={s.final_cta_background_url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-40" />
+              <div className="absolute inset-0 bg-gradient-to-b from-[var(--dark-bg)]/60 via-[var(--dark-bg)]/80 to-[var(--dark-bg)]" />
+            </>
+          )}
           <div className="relative max-w-3xl mx-auto text-center">
             <h2 className="text-display text-5xl md:text-8xl font-black mb-6 text-glow-blue">
               {s?.final_cta_title}
@@ -274,7 +296,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 }
 
 // ============== HERO ==============
-function Hero({ s }: { s: any }) {
+function Hero({ s, bg }: { s: any; bg?: any }) {
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     const fn = () => setIsMobile(window.innerWidth < 768);
@@ -287,6 +309,7 @@ function Hero({ s }: { s: any }) {
 
   return (
     <section id="top" className="relative min-h-[100svh] flex items-center overflow-hidden pt-16">
+      {bg && <SectionBackground cfg={bg} />}
       <div className="absolute inset-0">
         {video ? (
           <video
@@ -357,7 +380,7 @@ function Hero({ s }: { s: any }) {
 }
 
 // ============== ARTISTS ==============
-function ArtistsSection({ artists, isFavorite, toggle }: { artists: any[]; isFavorite: (id: string) => boolean; toggle: (id: string) => void }) {
+function ArtistsSection({ artists, isFavorite, toggle, bg }: { artists: any[]; isFavorite: (id: string) => boolean; toggle: (id: string) => void; bg?: any }) {
   const stages = useMemo(() => {
     const set = new Set<string>();
     artists.forEach((a) => a.stage && set.add(a.stage));
@@ -367,8 +390,9 @@ function ArtistsSection({ artists, isFavorite, toggle }: { artists: any[]; isFav
   const filtered = stage === "all" ? artists : artists.filter((a) => a.stage === stage);
 
   return (
-    <section id="artistas" className="py-20 md:py-28 px-4 md:px-8">
-      <div className="max-w-7xl mx-auto">
+    <section id="artistas" className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
+      {bg && <SectionBackground cfg={bg} />}
+      <div className="relative max-w-7xl mx-auto">
         <SectionLabel>Line Up</SectionLabel>
         <h2 className="text-display text-4xl md:text-6xl font-black mb-3">Artistas</h2>
         <p className="text-white/70 mb-8">Marca tus artistas favoritos y crea tu planning de la noche.</p>
