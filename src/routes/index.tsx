@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Heart, Instagram, MapPin, Music, ShoppingBag, ChevronDown } from "lucide-react";
 import { getLandingData } from "@/lib/site.functions";
 import { useFavorites } from "@/hooks/useFavorites";
+import { SectionBackground, resolveSectionBg } from "@/components/SectionBackground";
 import heroArt from "@/assets/duality-hero.jpg";
 
 export const Route = createFileRoute("/")({
