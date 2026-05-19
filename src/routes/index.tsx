@@ -55,7 +55,13 @@ function Landing() {
   const favKeyForSchedule = (it: any) => it.artist_id ?? `sched:${it.id}`;
 
   return (
-    <div className="min-h-screen text-foreground pb-24 md:pb-0">
+    <div className="relative min-h-screen text-foreground pb-24 md:pb-0">
+      {/* GLOBAL ATMOSPHERE */}
+      {atmosphere && (
+        <div className="fixed inset-0 -z-10">
+          <SectionBackground cfg={atmosphere} />
+        </div>
+      )}
       {/* HEADER */}
       <header className="fixed top-0 inset-x-0 z-50 glass border-b border-white/5">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-8 h-16">
