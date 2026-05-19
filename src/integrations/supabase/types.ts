@@ -289,6 +289,81 @@ export type Database = {
           },
         ]
       }
+      section_backgrounds: {
+        Row: {
+          background_color: string | null
+          background_image_url: string | null
+          background_position: string | null
+          background_secondary_color: string | null
+          background_size: string | null
+          background_type: string | null
+          background_video_url: string | null
+          blur_amount: number | null
+          glow_intensity: string | null
+          id: string
+          image_opacity: number | null
+          motion_enabled: boolean | null
+          motion_speed: string | null
+          motion_type: string | null
+          overlay_color: string | null
+          overlay_opacity: number | null
+          readability_mode: string | null
+          section_key: string
+          texture_opacity: number | null
+          texture_type: string | null
+          updated_at: string
+          use_global_background: boolean
+        }
+        Insert: {
+          background_color?: string | null
+          background_image_url?: string | null
+          background_position?: string | null
+          background_secondary_color?: string | null
+          background_size?: string | null
+          background_type?: string | null
+          background_video_url?: string | null
+          blur_amount?: number | null
+          glow_intensity?: string | null
+          id?: string
+          image_opacity?: number | null
+          motion_enabled?: boolean | null
+          motion_speed?: string | null
+          motion_type?: string | null
+          overlay_color?: string | null
+          overlay_opacity?: number | null
+          readability_mode?: string | null
+          section_key: string
+          texture_opacity?: number | null
+          texture_type?: string | null
+          updated_at?: string
+          use_global_background?: boolean
+        }
+        Update: {
+          background_color?: string | null
+          background_image_url?: string | null
+          background_position?: string | null
+          background_secondary_color?: string | null
+          background_size?: string | null
+          background_type?: string | null
+          background_video_url?: string | null
+          blur_amount?: number | null
+          glow_intensity?: string | null
+          id?: string
+          image_opacity?: number | null
+          motion_enabled?: boolean | null
+          motion_speed?: string | null
+          motion_type?: string | null
+          overlay_color?: string | null
+          overlay_opacity?: number | null
+          readability_mode?: string | null
+          section_key?: string
+          texture_opacity?: number | null
+          texture_type?: string | null
+          updated_at?: string
+          use_global_background?: boolean
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           appearance_glow_intensity: number | null
@@ -523,6 +598,93 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      visual_settings: {
+        Row: {
+          atmosphere_preset: string | null
+          background_color: string | null
+          background_fixed: boolean | null
+          background_image_url: string | null
+          background_position: string | null
+          background_repeat: boolean | null
+          background_secondary_color: string | null
+          background_size: string | null
+          background_type: string
+          background_video_url: string | null
+          blur_amount: number | null
+          contrast: number | null
+          glow_intensity: string | null
+          id: string
+          image_opacity: number | null
+          is_singleton: boolean
+          motion_enabled: boolean | null
+          motion_speed: string | null
+          motion_type: string | null
+          overlay_color: string | null
+          overlay_opacity: number | null
+          readability_mode: string | null
+          saturation: number | null
+          texture_opacity: number | null
+          texture_type: string | null
+          updated_at: string
+        }
+        Insert: {
+          atmosphere_preset?: string | null
+          background_color?: string | null
+          background_fixed?: boolean | null
+          background_image_url?: string | null
+          background_position?: string | null
+          background_repeat?: boolean | null
+          background_secondary_color?: string | null
+          background_size?: string | null
+          background_type?: string
+          background_video_url?: string | null
+          blur_amount?: number | null
+          contrast?: number | null
+          glow_intensity?: string | null
+          id?: string
+          image_opacity?: number | null
+          is_singleton?: boolean
+          motion_enabled?: boolean | null
+          motion_speed?: string | null
+          motion_type?: string | null
+          overlay_color?: string | null
+          overlay_opacity?: number | null
+          readability_mode?: string | null
+          saturation?: number | null
+          texture_opacity?: number | null
+          texture_type?: string | null
+          updated_at?: string
+        }
+        Update: {
+          atmosphere_preset?: string | null
+          background_color?: string | null
+          background_fixed?: boolean | null
+          background_image_url?: string | null
+          background_position?: string | null
+          background_repeat?: boolean | null
+          background_secondary_color?: string | null
+          background_size?: string | null
+          background_type?: string
+          background_video_url?: string | null
+          blur_amount?: number | null
+          contrast?: number | null
+          glow_intensity?: string | null
+          id?: string
+          image_opacity?: number | null
+          is_singleton?: boolean
+          motion_enabled?: boolean | null
+          motion_speed?: string | null
+          motion_type?: string | null
+          overlay_color?: string | null
+          overlay_opacity?: number | null
+          readability_mode?: string | null
+          saturation?: number | null
+          texture_opacity?: number | null
+          texture_type?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
