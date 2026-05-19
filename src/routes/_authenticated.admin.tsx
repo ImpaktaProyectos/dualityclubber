@@ -7,6 +7,7 @@ import { getAdminData, upsertRow, deleteRow, isCurrentUserAdmin } from "@/lib/ad
 import { toast } from "sonner";
 import { LogOut, Plus, Trash2, Save, Eye, EyeOff } from "lucide-react";
 import { MediaUpload } from "@/components/admin/MediaUpload";
+import { AtmosphereEditor } from "@/components/admin/AtmosphereEditor";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [{ title: "Panel admin · DUALITY" }] }),
@@ -22,6 +23,7 @@ const TABS = [
   { key: "buses", label: "Autobuses" },
   { key: "gallery", label: "Galería" },
   { key: "faqs", label: "FAQ" },
+  { key: "atmosphere", label: "Fondos y atmósfera" },
 ] as const;
 type TabKey = (typeof TABS)[number]["key"];
 
@@ -105,6 +107,9 @@ function AdminPage() {
             {tab === "buses" && <ListEditor table="bus_routes" rows={data.buses} fields={BUS_FIELDS} onSaved={refresh} />}
             {tab === "gallery" && <ListEditor table="gallery_items" rows={data.gallery} fields={GALLERY_FIELDS} onSaved={refresh} />}
             {tab === "faqs" && <ListEditor table="faqs" rows={data.faqs} fields={FAQ_FIELDS} onSaved={refresh} />}
+            {tab === "atmosphere" && (
+              <AtmosphereEditor atmosphere={data.atmosphere} sectionBackgrounds={data.sectionBackgrounds} onSaved={refresh} />
+            )}
           </>
         )}
       </main>
