@@ -380,7 +380,7 @@ function Hero({ s, bg }: { s: any; bg?: any }) {
 }
 
 // ============== ARTISTS ==============
-function ArtistsSection({ artists, isFavorite, toggle }: { artists: any[]; isFavorite: (id: string) => boolean; toggle: (id: string) => void }) {
+function ArtistsSection({ artists, isFavorite, toggle, bg }: { artists: any[]; isFavorite: (id: string) => boolean; toggle: (id: string) => void; bg?: any }) {
   const stages = useMemo(() => {
     const set = new Set<string>();
     artists.forEach((a) => a.stage && set.add(a.stage));
@@ -390,8 +390,9 @@ function ArtistsSection({ artists, isFavorite, toggle }: { artists: any[]; isFav
   const filtered = stage === "all" ? artists : artists.filter((a) => a.stage === stage);
 
   return (
-    <section id="artistas" className="py-20 md:py-28 px-4 md:px-8">
-      <div className="max-w-7xl mx-auto">
+    <section id="artistas" className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
+      {bg && <SectionBackground cfg={bg} />}
+      <div className="relative max-w-7xl mx-auto">
         <SectionLabel>Line Up</SectionLabel>
         <h2 className="text-display text-4xl md:text-6xl font-black mb-3">Artistas</h2>
         <p className="text-white/70 mb-8">Marca tus artistas favoritos y crea tu planning de la noche.</p>
