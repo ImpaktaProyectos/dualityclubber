@@ -11,6 +11,8 @@ const ALLOWED_TABLES = [
   "bus_routes",
   "faqs",
   "quick_info_items",
+  "visual_settings",
+  "section_backgrounds",
 ] as const;
 type TableName = (typeof ALLOWED_TABLES)[number];
 
@@ -35,7 +37,7 @@ export const getAdminData = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await requireAdmin(context.userId);
-    const [settings, sections, quickInfo, artists, schedule, gallery, buses, faqs] = await Promise.all([
+    const [settings, sections, quickInfo, artists, schedule, gallery, buses, faqs, atmosphere, sectionBgs] = await Promise.all([
       supabaseAdmin.from("site_settings").select("*").limit(1).maybeSingle(),
       supabaseAdmin.from("page_sections").select("*").order("sort_order"),
       supabaseAdmin.from("quick_info_items").select("*").order("sort_order"),
@@ -44,6 +46,8 @@ export const getAdminData = createServerFn({ method: "GET" })
       supabaseAdmin.from("gallery_items").select("*").order("sort_order"),
       supabaseAdmin.from("bus_routes").select("*").order("sort_order"),
       supabaseAdmin.from("faqs").select("*").order("sort_order"),
+      supabaseAdmin.from("visual_settings").select("*").limit(1).maybeSingle(),
+      supabaseAdmin.from("section_backgrounds").select("*").order("section_key"),
     ]);
     return {
       settings: settings.data,
@@ -54,6 +58,8 @@ export const getAdminData = createServerFn({ method: "GET" })
       gallery: gallery.data ?? [],
       buses: buses.data ?? [],
       faqs: faqs.data ?? [],
+      atmosphere: atmosphere.data,
+      sectionBackgrounds: sectionBgs.data ?? [],
     };
   });
 
