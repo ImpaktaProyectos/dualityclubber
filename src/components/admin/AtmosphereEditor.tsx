@@ -234,6 +234,36 @@ function GlobalEditor({ atmosphere, onSaved }: { atmosphere: any; onSaved: () =>
         </div>
       </section>
 
+      <section className="rounded-2xl border border-white/10 bg-[var(--dark-panel)] p-5 space-y-3">
+        <h3 className="text-sm uppercase tracking-widest text-white/60">Modo de scroll del fondo</h3>
+        <p className="text-xs text-white/50">
+          <strong>Continuo</strong>: la imagen / atmósfera se mantiene fija mientras el usuario hace scroll por toda la web (efecto cinemático, favorece la lectura).{" "}
+          <strong>Por secciones</strong>: cada sección pinta su propio fondo y se desplaza con el contenido.
+        </p>
+        <div className="flex gap-2">
+          {[
+            { v: "continuous", label: "Continuo (fijo en scroll)" },
+            { v: "per-section", label: "Por secciones" },
+          ].map((opt) => {
+            const active = (values.background_scroll_mode ?? "continuous") === opt.v;
+            return (
+              <button
+                key={opt.v}
+                onClick={() => setValues({ ...values, background_scroll_mode: opt.v })}
+                className={`px-4 py-2 rounded-full text-xs uppercase tracking-widest font-bold border ${
+                  active ? "bg-[var(--brand-blue)] text-black border-transparent" : "border-white/10 text-white/70"
+                }`}
+              >
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+        <p className="text-xs text-white/40">
+          Aunque elijas modo continuo, cualquier sección puede tener su propio fondo activando un override en la pestaña “Por sección”.
+        </p>
+      </section>
+
       <AtmosphereFields values={values} setValues={setValues} mediaPrefix="global" />
 
       <div className="sticky bottom-4 flex justify-end">
