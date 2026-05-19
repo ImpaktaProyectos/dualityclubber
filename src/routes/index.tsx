@@ -89,12 +89,13 @@ function Landing() {
       )}
 
       {/* HERO */}
-      {isOn("hero") && <Hero s={s} />}
+      {isOn("hero") && <Hero s={s} bg={bg("hero")} />}
 
       {/* QUICK INFO */}
       {isOn("quick_info") && data.quickInfo.length > 0 && (
-        <section className="border-y border-white/5 bg-[var(--dark-panel)]/60 backdrop-blur">
-          <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 flex gap-3 md:gap-6 overflow-x-auto scrollbar-hide">
+        <section className="relative border-y border-white/5 overflow-hidden">
+          <SectionBackground cfg={bg("quick_info")} />
+          <div className="relative max-w-7xl mx-auto px-4 md:px-8 py-6 flex gap-3 md:gap-6 overflow-x-auto scrollbar-hide">
             {data.quickInfo.map((q: any) => (
               <div key={q.id} className="shrink-0 px-4 py-2 rounded-full border border-white/10 text-xs md:text-sm uppercase tracking-widest font-bold text-white/90 whitespace-nowrap">
                 {q.label}{q.value && <span className="text-white/50 normal-case font-normal ml-2">{q.value}</span>}
@@ -112,6 +113,7 @@ function Landing() {
           subtext={s.countdown_subtext}
           ctaText={s.countdown_cta_text}
           ctaUrl={s.countdown_cta_url}
+          bg={bg("countdown")}
         />
       )}
 
