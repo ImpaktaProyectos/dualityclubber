@@ -39,6 +39,10 @@ function Landing() {
     if (s.secondary_color) root.style.setProperty("--brand-red", s.secondary_color);
   }, [s]);
 
+  const atmosphere = (data as any).atmosphere ?? null;
+  const sectionBgs = (data as any).sectionBackgrounds ?? [];
+  const bg = (key: string) => resolveSectionBg(key, atmosphere, sectionBgs);
+
   const navItems = [
     { key: "tickets", label: "Entradas", href: "#entradas" },
     { key: "artists", label: "Artistas", href: "#artistas" },
