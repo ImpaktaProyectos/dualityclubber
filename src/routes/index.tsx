@@ -119,8 +119,9 @@ function Landing() {
 
       {/* TICKETS */}
       {isOn("tickets") && (
-        <section id="entradas" className="py-20 md:py-28 px-4 md:px-8">
-          <div className="max-w-5xl mx-auto">
+        <section id="entradas" className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
+          <SectionBackground cfg={bg("tickets")} />
+          <div className="relative max-w-5xl mx-auto">
             <SectionLabel>Entradas</SectionLabel>
             <h2 className="text-display text-4xl md:text-6xl font-black mb-3">{s?.ticket_title}</h2>
             <p className="text-white/70 mb-8">{s?.ticket_text}</p>
@@ -156,7 +157,7 @@ function Landing() {
 
       {/* ARTISTS */}
       {isOn("artists") && data.artists.length > 0 && (
-        <ArtistsSection artists={data.artists} isFavorite={isFavorite} toggle={toggle} />
+        <ArtistsSection artists={data.artists} isFavorite={isFavorite} toggle={toggle} bg={bg("artists")} />
       )}
 
       {/* SCHEDULE */}
@@ -170,13 +171,15 @@ function Landing() {
           isFavorite={isFavorite}
           clearFavorites={clear}
           isArtistsOn={isOn("artists")}
+          bg={bg("schedule")}
         />
       )}
 
       {/* LOCATION */}
       {isOn("location") && (
-        <section id="ubicacion" className="py-20 md:py-28 px-4 md:px-8">
-          <div className="max-w-5xl mx-auto">
+        <section id="ubicacion" className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
+          <SectionBackground cfg={bg("location")} />
+          <div className="relative max-w-5xl mx-auto">
             <SectionLabel>Ubicación</SectionLabel>
             <h2 className="text-display text-4xl md:text-6xl font-black mb-6">{s?.location_name}</h2>
             <div className="flex items-center gap-2 text-white/70 mb-8">
@@ -205,8 +208,9 @@ function Landing() {
 
       {/* FAQ */}
       {isOn("faq") && data.faqs.length > 0 && (
-        <section id="faq" className="py-20 md:py-28 px-4 md:px-8">
-          <div className="max-w-3xl mx-auto">
+        <section id="faq" className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
+          <SectionBackground cfg={bg("faq")} />
+          <div className="relative max-w-3xl mx-auto">
             <SectionLabel>FAQ</SectionLabel>
             <h2 className="text-display text-4xl md:text-6xl font-black mb-10">Preguntas frecuentes</h2>
             <div className="space-y-3">
@@ -219,8 +223,13 @@ function Landing() {
       {/* FINAL CTA */}
       {isOn("final_cta") && (
         <section className="relative py-28 md:py-40 px-4 md:px-8 overflow-hidden">
-          <img src={s?.final_cta_background_url || heroArt} alt="" className="absolute inset-0 w-full h-full object-cover opacity-40" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[var(--dark-bg)]/60 via-[var(--dark-bg)]/80 to-[var(--dark-bg)]" />
+          <SectionBackground cfg={bg("final_cta")} />
+          {s?.final_cta_background_url && (
+            <>
+              <img src={s.final_cta_background_url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-40" />
+              <div className="absolute inset-0 bg-gradient-to-b from-[var(--dark-bg)]/60 via-[var(--dark-bg)]/80 to-[var(--dark-bg)]" />
+            </>
+          )}
           <div className="relative max-w-3xl mx-auto text-center">
             <h2 className="text-display text-5xl md:text-8xl font-black mb-6 text-glow-blue">
               {s?.final_cta_title}
