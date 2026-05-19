@@ -23,6 +23,7 @@ const TABS = [
   { key: "buses", label: "Autobuses" },
   { key: "gallery", label: "Galería" },
   { key: "faqs", label: "FAQ" },
+  { key: "atmosphere", label: "Fondos y atmósfera" },
 ] as const;
 type TabKey = (typeof TABS)[number]["key"];
 
