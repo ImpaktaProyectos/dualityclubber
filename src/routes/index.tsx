@@ -99,12 +99,12 @@ function Landing() {
       )}
 
       {/* HERO */}
-      {isOn("hero") && <Hero s={s} bg={bg("hero")} />}
+      {isOn("hero") && <Hero s={s} bg={sectionBg("hero")} />}
 
       {/* QUICK INFO */}
       {isOn("quick_info") && data.quickInfo.length > 0 && (
         <section className="relative border-y border-white/5 overflow-hidden">
-          <SectionBackground cfg={bg("quick_info")} />
+          <SectionBackground cfg={sectionBg("quick_info")} />
           <div className="relative max-w-7xl mx-auto px-4 md:px-8 py-6 flex gap-3 md:gap-6 overflow-x-auto scrollbar-hide">
             {data.quickInfo.map((q: any) => (
               <div key={q.id} className="shrink-0 px-4 py-2 rounded-full border border-white/10 text-xs md:text-sm uppercase tracking-widest font-bold text-white/90 whitespace-nowrap">
@@ -123,14 +123,14 @@ function Landing() {
           subtext={s.countdown_subtext}
           ctaText={s.countdown_cta_text}
           ctaUrl={s.countdown_cta_url}
-          bg={bg("countdown")}
+          bg={sectionBg("countdown")}
         />
       )}
 
       {/* TICKETS */}
       {isOn("tickets") && (
         <section id="entradas" className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
-          <SectionBackground cfg={bg("tickets")} />
+          <SectionBackground cfg={sectionBg("tickets")} />
           <div className="relative max-w-5xl mx-auto">
             <SectionLabel>Entradas</SectionLabel>
             <h2 className="text-display text-4xl md:text-6xl font-black mb-3">{s?.ticket_title}</h2>
@@ -167,7 +167,7 @@ function Landing() {
 
       {/* ARTISTS */}
       {isOn("artists") && data.artists.length > 0 && (
-        <ArtistsSection artists={data.artists} isFavorite={isFavorite} toggle={toggle} bg={bg("artists")} />
+        <ArtistsSection artists={data.artists} isFavorite={isFavorite} toggle={toggle} bg={sectionBg("artists")} />
       )}
 
       {/* SCHEDULE */}
@@ -181,14 +181,14 @@ function Landing() {
           isFavorite={isFavorite}
           clearFavorites={clear}
           isArtistsOn={isOn("artists")}
-          bg={bg("schedule")}
+          bg={sectionBg("schedule")}
         />
       )}
 
       {/* LOCATION */}
       {isOn("location") && (
         <section id="ubicacion" className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
-          <SectionBackground cfg={bg("location")} />
+          <SectionBackground cfg={sectionBg("location")} />
           <div className="relative max-w-5xl mx-auto">
             <SectionLabel>Ubicación</SectionLabel>
             <h2 className="text-display text-4xl md:text-6xl font-black mb-6">{s?.location_name}</h2>
@@ -219,7 +219,7 @@ function Landing() {
       {/* FAQ */}
       {isOn("faq") && data.faqs.length > 0 && (
         <section id="faq" className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
-          <SectionBackground cfg={bg("faq")} />
+          <SectionBackground cfg={sectionBg("faq")} />
           <div className="relative max-w-3xl mx-auto">
             <SectionLabel>FAQ</SectionLabel>
             <h2 className="text-display text-4xl md:text-6xl font-black mb-10">Preguntas frecuentes</h2>
@@ -233,7 +233,7 @@ function Landing() {
       {/* FINAL CTA */}
       {isOn("final_cta") && (
         <section className="relative py-28 md:py-40 px-4 md:px-8 overflow-hidden">
-          <SectionBackground cfg={bg("final_cta")} />
+          <SectionBackground cfg={sectionBg("final_cta")} />
           {s?.final_cta_background_url && (
             <>
               <img src={s.final_cta_background_url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-40" />
