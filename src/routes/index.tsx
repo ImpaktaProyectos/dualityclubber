@@ -66,8 +66,8 @@ function Landing() {
 
   return (
     <div className="relative min-h-screen text-foreground pb-24 md:pb-0">
-      {/* GLOBAL ATMOSPHERE */}
-      {atmosphere && (
+      {/* GLOBAL ATMOSPHERE — only in continuous mode (fixed background across scroll) */}
+      {atmosphere && scrollMode === "continuous" && (
         <div className="fixed inset-0 -z-10">
           <SectionBackground cfg={atmosphere} />
         </div>
