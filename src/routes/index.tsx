@@ -348,13 +348,15 @@ function Countdown({ targetIso, title, subtext, ctaText, ctaUrl }: { targetIso: 
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
-  const diff = now === null ? Math.max(0, target - Date.parse(targetIso) + (target - Date.parse(targetIso))) : Math.max(0, target - now);
-
+  const diff = now === null ? 0 : Math.max(0, target - now);
   const d = Math.floor(diff / 86400000);
   const h = Math.floor((diff % 86400000) / 3600000);
   const m = Math.floor((diff % 3600000) / 60000);
   const sec = Math.floor((diff % 60000) / 1000);
-  const cells = [["Días", d], ["Horas", h], ["Min", m], ["Seg", sec]] as const;
+  const cells: readonly (readonly [string, string])[] = now === null
+    ? [["Días", "--"], ["Horas", "--"], ["Min", "--"], ["Seg", "--"]]
+    : [["Días", String(d).padStart(2, "0")], ["Horas", String(h).padStart(2, "0")], ["Min", String(m).padStart(2, "0")], ["Seg", String(sec).padStart(2, "0")]];
+
   return (
     <section className="py-16 px-4 md:px-8">
       <div className="max-w-4xl mx-auto text-center">
