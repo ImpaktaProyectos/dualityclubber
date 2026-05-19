@@ -87,7 +87,7 @@ function Landing() {
             <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
               <div className="text-xs uppercase tracking-[0.4em] text-[var(--brand-blue)] mb-4">{s?.event_subtitle}</div>
               <h1 className="text-display text-6xl md:text-8xl font-black leading-[0.9] mb-6">
-                {s?.hero_title?.split(" ").map((w, i) => (
+                {s?.hero_title?.split(" ").map((w: string, i: number) => (
                   <span key={i} className="block">{w}</span>
                 ))}
               </h1>
