@@ -498,25 +498,35 @@ function Schedule({
   schedule, artists, favorites, favKeyForSchedule, toggle, isFavorite, clearFavorites, isArtistsOn,
 }: any) {
   const [tab, setTab] = useState<string>("all");
-  const stages = useMemo(() => Array.from(new Set(schedule.map((x: any) => x.stage))) as string[], [schedule]);
-  const tabs = [{ key: "all", label: "Todos" }, ...stages.map((st: string) => ({ key: st, label: st }))];
-  if (isArtistsOn) tabs.push({ key: "planning", label: `Mi Planning · ${favorites.length}` });
-
+  const stages = useMemo(() => Array.from(new Set(schedule.map((x: any) => x.stage).filter(Boolean))) as string[], [schedule]);
   const artistById = useMemo(() => Object.fromEntries(artists.map((a: any) => [a.id, a])), [artists]);
+  const displayName = (it: any) => it.custom_artist_name || artistById[it.artist_id]?.name || "TBA";
+
+  // Items that belong to "Mi Planning": any schedule entry whose fav key OR linked artist id is in favorites
+  const planningItems = useMemo(
+    () => schedule.filter((it: any) => isFavorite(favKeyForSchedule(it)) || (it.artist_id && isFavorite(it.artist_id))),
+    [schedule, favorites],
+  );
+  // Favorite artists that have NO matching schedule entry
+  const favArtistsNoSchedule = useMemo(() => {
+    const scheduledArtistIds = new Set(schedule.map((it: any) => it.artist_id).filter(Boolean));
+    return artists.filter((a: any) => isFavorite(a.id) && !scheduledArtistIds.has(a.id));
+  }, [artists, schedule, favorites]);
+
+  const planningCount = planningItems.length + favArtistsNoSchedule.length;
+
+  const tabs = [{ key: "all", label: "Todos" }, ...stages.map((st: string) => ({ key: st, label: st }))];
+  if (isArtistsOn) tabs.push({ key: "planning", label: `Mi Planning · ${planningCount}` });
 
   const items = useMemo(() => {
     if (tab === "all") return schedule;
-    if (tab === "planning") {
-      return schedule.filter((it: any) => isFavorite(favKeyForSchedule(it)));
-    }
+    if (tab === "planning") return planningItems;
     return schedule.filter((s: any) => s.stage === tab);
-  }, [tab, schedule, favorites]);
-
-  const displayName = (it: any) => it.custom_artist_name || artistById[it.artist_id]?.name || "TBA";
+  }, [tab, schedule, planningItems]);
 
   return (
     <section id="horarios" className="py-20 md:py-28 px-4 md:px-8 bg-[var(--dark-panel)]/40">
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <SectionLabel>Programación</SectionLabel>
         <h2 className="text-display text-4xl md:text-6xl font-black mb-8">Horarios</h2>
         <div className="flex gap-2 overflow-x-auto scrollbar-hide mb-8 -mx-4 px-4 md:mx-0 md:px-0">
@@ -524,16 +534,62 @@ function Schedule({
             <FilterChip key={t.key} active={tab === t.key} onClick={() => setTab(t.key)}>{t.label}</FilterChip>
           ))}
         </div>
-        {tab === "planning" && favorites.length === 0 ? (
-          <div className="text-center py-16 rounded-2xl border border-dashed border-white/10">
-            <p className="text-white/60 max-w-md mx-auto mb-6">Todavía no has marcado artistas. Toca el corazón en tus artistas favoritos y crea tu planning de la noche.</p>
-            <a href="#artistas" className="inline-flex px-6 py-3 rounded-full bg-[var(--brand-blue)] text-black font-bold uppercase tracking-wider">Ver artistas</a>
-          </div>
+
+        {tab === "planning" ? (
+          planningCount === 0 ? (
+            <div className="text-center py-16 rounded-2xl border border-dashed border-white/10">
+              <p className="text-white/60 max-w-md mx-auto mb-6">
+                Todavía no has marcado artistas. Toca el corazón en tus artistas favoritos y crea tu planning de la noche.
+              </p>
+              <a href="#artistas" className="inline-flex px-6 py-3 rounded-full bg-[var(--brand-blue)] text-black font-bold uppercase tracking-wider">Ver artistas</a>
+            </div>
+          ) : (
+            <>
+              <PlanningGrid
+                items={planningItems}
+                stages={stages}
+                displayName={displayName}
+                favKeyForSchedule={favKeyForSchedule}
+                toggle={toggle}
+              />
+              {favArtistsNoSchedule.length > 0 && (
+                <div className="mt-10">
+                  <div className="text-xs uppercase tracking-[0.3em] text-[var(--brand-red)] mb-4">Favoritos sin horario confirmado</div>
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {favArtistsNoSchedule.map((a: any) => (
+                      <div key={a.id} className="flex items-center gap-3 p-4 rounded-xl border border-white/10 bg-[var(--dark-bg)]">
+                        <div className="flex-1 min-w-0">
+                          <div className="text-display font-bold truncate artist-name-hover">{a.name}</div>
+                          <div className="text-xs uppercase tracking-widest text-white/50">
+                            {a.stage || "—"} · Horario por confirmar
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => toggle(a.id)}
+                          aria-label="Quitar de Mi Planning"
+                          className="w-10 h-10 rounded-full glass flex items-center justify-center shrink-0 hover:scale-110 transition-transform"
+                        >
+                          <Heart className="w-5 h-5 fill-[var(--brand-red)] text-[var(--brand-red)]" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="mt-10 rounded-2xl border border-[var(--brand-blue)]/30 bg-[var(--dark-panel)]/60 p-6 md:p-8 text-center">
+                <p className="text-white/80 mb-5">Ya tienes tu noche preparada. Ahora asegura tu entrada.</p>
+                <div className="flex flex-wrap gap-3 justify-center items-center">
+                  <a href="#entradas" className="px-6 py-3 rounded-full bg-[var(--brand-red)] text-white font-bold uppercase tracking-wider glow-red hover:scale-105 transition-transform">Comprar entrada</a>
+                  <button onClick={clearFavorites} className="px-5 py-3 text-xs uppercase tracking-widest text-white/50 hover:text-[var(--brand-red)]">Borrar planning</button>
+                </div>
+              </div>
+            </>
+          )
         ) : (
           <div className="space-y-2">
             {items.map((it: any) => {
               const key = favKeyForSchedule(it);
-              const fav = isFavorite(key);
+              const fav = isFavorite(key) || (it.artist_id && isFavorite(it.artist_id));
               return (
                 <div key={it.id} className="flex items-center gap-3 md:gap-4 p-4 rounded-xl border border-white/10 bg-[var(--dark-bg)] hover:border-[var(--brand-blue)]/40 transition-colors">
                   <div className="text-display text-xl md:text-2xl font-black text-[var(--brand-blue)] w-20 md:w-32 shrink-0 tabular-nums">{it.start_time || "--:--"}</div>
@@ -542,7 +598,7 @@ function Schedule({
                     <div className="text-xs uppercase tracking-widest text-white/50">{it.stage}{it.end_time && ` · hasta ${it.end_time}`}</div>
                   </div>
                   <button
-                    onClick={() => toggle(key)}
+                    onClick={() => toggle(it.artist_id ?? key)}
                     aria-label={fav ? "Quitar de Mi Planning" : "Añadir a Mi Planning"}
                     className="w-10 h-10 rounded-full glass flex items-center justify-center shrink-0 hover:scale-110 transition-transform"
                   >
@@ -554,13 +610,118 @@ function Schedule({
             {items.length === 0 && <p className="text-white/40 text-center py-8">Sin actuaciones en esta selección.</p>}
           </div>
         )}
-        {tab === "planning" && favorites.length > 0 && (
-          <div className="mt-8 flex flex-wrap gap-3 justify-between items-center">
-            <button onClick={clearFavorites} className="text-xs uppercase tracking-widest text-white/40 hover:text-[var(--brand-red)]">Borrar planning</button>
-            <a href="#entradas" className="px-6 py-3 rounded-full bg-[var(--brand-red)] text-white font-bold uppercase tracking-wider glow-red">Comprar entrada</a>
-          </div>
-        )}
       </div>
     </section>
   );
+}
+
+// ============== PLANNING GRID ==============
+function PlanningGrid({
+  items, stages, displayName, favKeyForSchedule, toggle,
+}: {
+  items: any[];
+  stages: string[];
+  displayName: (it: any) => string;
+  favKeyForSchedule: (it: any) => string;
+  toggle: (id: string) => void;
+}) {
+  // Stages used: prefer the order from `stages`, but only those that have favorites
+  const usedStages = useMemo(() => {
+    const present = new Set(items.map((it) => it.stage).filter(Boolean));
+    const ordered = stages.filter((s) => present.has(s));
+    // include any stage that wasn't in the canonical list but appears in items
+    items.forEach((it) => { if (it.stage && !ordered.includes(it.stage)) ordered.push(it.stage); });
+    return ordered;
+  }, [items, stages]);
+
+  // Time slots from start_time of favorited items, sorted
+  const slots = useMemo(() => {
+    const set = new Set<string>();
+    items.forEach((it) => { if (it.start_time) set.add(it.start_time); });
+    return Array.from(set).sort((a, b) => timeOrder(a) - timeOrder(b));
+  }, [items]);
+
+  const cellMap = useMemo(() => {
+    const map: Record<string, Record<string, any[]>> = {};
+    slots.forEach((t) => { map[t] = {}; usedStages.forEach((s) => { map[t][s] = []; }); });
+    items.forEach((it) => {
+      if (!it.start_time || !it.stage) return;
+      if (!map[it.start_time]) return;
+      if (!map[it.start_time][it.stage]) map[it.start_time][it.stage] = [];
+      map[it.start_time][it.stage].push(it);
+    });
+    return map;
+  }, [items, slots, usedStages]);
+
+  if (slots.length === 0 || usedStages.length === 0) return null;
+
+  return (
+    <div className="rounded-2xl border border-white/10 bg-[var(--dark-bg)]/60 overflow-hidden">
+      <div className="overflow-x-auto">
+        <div
+          className="grid min-w-max"
+          style={{ gridTemplateColumns: `90px repeat(${usedStages.length}, minmax(180px, 1fr))` }}
+        >
+          {/* Header */}
+          <div className="sticky left-0 z-10 bg-[var(--dark-panel)] border-b border-r border-white/10 p-3 text-[10px] uppercase tracking-[0.3em] text-white/40">Hora</div>
+          {usedStages.map((st) => (
+            <div key={st} className="border-b border-white/10 p-3 text-xs uppercase tracking-[0.3em] font-bold text-[var(--brand-blue)] text-center">
+              {st}
+            </div>
+          ))}
+          {/* Rows */}
+          {slots.map((time) => (
+            <div key={time} className="contents">
+              <div className="sticky left-0 z-10 bg-[var(--dark-panel)] border-b border-r border-white/10 p-3 text-display text-lg md:text-xl font-black text-[var(--brand-blue)] tabular-nums flex items-start">
+                {time}
+              </div>
+              {usedStages.map((st) => {
+                const entries = cellMap[time]?.[st] ?? [];
+                return (
+                  <div key={st} className="border-b border-white/5 p-2 min-h-[80px]">
+                    {entries.length === 0 ? (
+                      <div className="text-white/15 text-xs text-center pt-3">—</div>
+                    ) : (
+                      <div className="space-y-2">
+                        {entries.map((it) => (
+                          <div key={it.id} className="rounded-lg border border-[var(--brand-blue)]/30 bg-[var(--dark-panel)] p-2.5 hover:border-[var(--brand-blue)] hover:glow-blue transition-all">
+                            <div className="flex items-start gap-2">
+                              <div className="flex-1 min-w-0">
+                                <div className="text-sm font-black artist-name-hover leading-tight truncate">{displayName(it)}</div>
+                                <div className="text-[10px] uppercase tracking-widest text-white/40 mt-0.5">{it.stage}</div>
+                                <div className="text-[11px] text-white/70 mt-1 tabular-nums">
+                                  {it.start_time}{it.end_time ? ` – ${it.end_time}` : ""}
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => toggle(it.artist_id ?? favKeyForSchedule(it))}
+                                aria-label="Quitar de Mi Planning"
+                                className="w-7 h-7 rounded-full glass flex items-center justify-center shrink-0 hover:scale-110 transition-transform"
+                              >
+                                <Heart className="w-3.5 h-3.5 fill-[var(--brand-red)] text-[var(--brand-red)]" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Order times so that early-morning hours (00–07) come after late-night hours (>=18)
+function timeOrder(t: string): number {
+  const [hStr, mStr] = t.split(":");
+  const h = parseInt(hStr, 10);
+  const m = parseInt(mStr ?? "0", 10);
+  if (isNaN(h)) return 0;
+  const adjusted = h < 8 ? h + 24 : h;
+  return adjusted * 60 + (isNaN(m) ? 0 : m);
 }
