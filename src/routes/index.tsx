@@ -490,7 +490,7 @@ function ArtistCard({ a, fav, onFav }: { a: any; fav: boolean; onFav: () => void
 }
 
 // ============== COUNTDOWN (premium) ==============
-function Countdown({ targetIso, title, subtext, ctaText, ctaUrl }: { targetIso: string; title?: string; subtext?: string; ctaText?: string; ctaUrl?: string }) {
+function Countdown({ targetIso, title, subtext, ctaText, ctaUrl, bg }: { targetIso: string; title?: string; subtext?: string; ctaText?: string; ctaUrl?: string; bg?: any }) {
   const target = useMemo(() => new Date(targetIso).getTime(), [targetIso]);
   const [now, setNow] = useState<number | null>(null);
   useEffect(() => {
