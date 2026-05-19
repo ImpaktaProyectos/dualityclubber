@@ -365,7 +365,7 @@ function Countdown({ targetIso, title, subtext, ctaText, ctaUrl }: { targetIso: 
         <div className="grid grid-cols-4 gap-2 md:gap-4 mb-8">
           {cells.map(([label, val]) => (
             <div key={label} className="rounded-2xl border border-white/10 bg-[var(--dark-panel)] p-4 md:p-6">
-              <div className="text-display text-3xl md:text-6xl font-black text-glow-blue">{String(val).padStart(2, "0")}</div>
+              <div className="text-display text-3xl md:text-6xl font-black text-glow-blue">{val}</div>
               <div className="text-[10px] md:text-xs uppercase tracking-widest text-white/50 mt-1">{label}</div>
             </div>
           ))}
