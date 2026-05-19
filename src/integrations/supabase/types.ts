@@ -329,6 +329,8 @@ export type Database = {
           hero_cta_primary_url: string | null
           hero_cta_secondary_text: string | null
           hero_cta_secondary_url: string | null
+          hero_flyer_enabled: boolean | null
+          hero_flyer_url: string | null
           hero_image_desktop_url: string | null
           hero_image_mobile_url: string | null
           hero_subtitle: string | null
@@ -398,6 +400,8 @@ export type Database = {
           hero_cta_primary_url?: string | null
           hero_cta_secondary_text?: string | null
           hero_cta_secondary_url?: string | null
+          hero_flyer_enabled?: boolean | null
+          hero_flyer_url?: string | null
           hero_image_desktop_url?: string | null
           hero_image_mobile_url?: string | null
           hero_subtitle?: string | null
@@ -467,6 +471,8 @@ export type Database = {
           hero_cta_primary_url?: string | null
           hero_cta_secondary_text?: string | null
           hero_cta_secondary_url?: string | null
+          hero_flyer_enabled?: boolean | null
+          hero_flyer_url?: string | null
           hero_image_desktop_url?: string | null
           hero_image_mobile_url?: string | null
           hero_subtitle?: string | null

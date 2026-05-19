@@ -305,7 +305,7 @@ function Hero({ s }: { s: any }) {
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[var(--dark-bg)]/40 to-[var(--dark-bg)]" />
         <div className="absolute inset-0 grain" />
       </div>
-      <div className="relative max-w-7xl mx-auto px-4 md:px-8 w-full grid md:grid-cols-2 gap-8 items-center">
+      <div className="relative max-w-7xl mx-auto px-4 md:px-8 w-full grid md:grid-cols-2 gap-8 md:gap-12 items-center">
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
           <div className="text-xs uppercase tracking-[0.4em] text-[var(--brand-blue)] mb-4">{s?.event_subtitle}</div>
           <h1 className="text-display text-6xl md:text-8xl font-black leading-[0.9] mb-6">
@@ -323,7 +323,33 @@ function Hero({ s }: { s: any }) {
               {s?.hero_cta_secondary_text}
             </a>
           </div>
+          {s?.hero_flyer_enabled && s?.hero_flyer_url && (
+            <div className="md:hidden mt-10 flex justify-center">
+              <img
+                src={s.hero_flyer_url}
+                alt={`Flyer ${s?.event_name ?? "DUALITY"}`}
+                className="rounded-xl border border-white/15 shadow-2xl max-w-[280px] w-full h-auto"
+              />
+            </div>
+          )}
         </motion.div>
+        {s?.hero_flyer_enabled && s?.hero_flyer_url && (
+          <motion.div
+            initial={{ opacity: 0, y: 30, rotate: -2 }}
+            animate={{ opacity: 1, y: 0, rotate: 0 }}
+            transition={{ duration: 0.9, delay: 0.2 }}
+            className="hidden md:flex justify-center"
+          >
+            <div className="relative max-w-md w-full">
+              <div className="absolute -inset-3 rounded-2xl bg-gradient-to-br from-[var(--brand-blue)]/40 via-transparent to-[var(--brand-red)]/40 blur-2xl opacity-70" />
+              <img
+                src={s.hero_flyer_url}
+                alt={`Flyer ${s?.event_name ?? "DUALITY"}`}
+                className="relative rounded-2xl border border-white/15 shadow-2xl w-full h-auto object-cover"
+              />
+            </div>
+          </motion.div>
+        )}
       </div>
       <ChevronDown className="absolute bottom-6 left-1/2 -translate-x-1/2 w-6 h-6 text-white/40 animate-bounce" />
     </section>

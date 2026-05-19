@@ -139,6 +139,8 @@ const SETTING_GROUPS: { title: string; fields: { key: string; label: string; typ
       { key: "hero_image_mobile_url", label: "Imagen móvil URL" },
       { key: "hero_video_desktop_url", label: "Vídeo desktop URL" },
       { key: "hero_video_mobile_url", label: "Vídeo móvil URL" },
+      { key: "hero_flyer_enabled", label: "Mostrar flyer sobre el hero", type: "checkbox" },
+      { key: "hero_flyer_url", label: "Flyer del evento (imagen)" },
     ],
   },
   {
@@ -314,6 +316,7 @@ function getMediaConfig(key: string): { bucket: string; kind: "image" | "video" 
   if (key === "hero_video_mobile_url") return { bucket: "hero-media", kind: "video", prefix: "video-mobile" };
   if (key === "hero_image_desktop_url") return { bucket: "hero-media", kind: "image", prefix: "image-desktop" };
   if (key === "hero_image_mobile_url") return { bucket: "hero-media", kind: "image", prefix: "image-mobile" };
+  if (key === "hero_flyer_url") return { bucket: "hero-media", kind: "image", prefix: "flyer" };
   if (key === "final_cta_background_url") return { bucket: "general-assets", kind: "image", prefix: "final-cta" };
   if (key === "footer_logo_url") return { bucket: "general-assets", kind: "image", prefix: "logo" };
   if (key === "authorization_pdf_url") return { bucket: "authorization-pdfs", kind: "pdf", prefix: "auth" };
