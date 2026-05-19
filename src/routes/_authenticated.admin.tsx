@@ -7,6 +7,7 @@ import { getAdminData, upsertRow, deleteRow, isCurrentUserAdmin } from "@/lib/ad
 import { toast } from "sonner";
 import { LogOut, Plus, Trash2, Save, Eye, EyeOff } from "lucide-react";
 import { MediaUpload } from "@/components/admin/MediaUpload";
+import { AtmosphereEditor } from "@/components/admin/AtmosphereEditor";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [{ title: "Panel admin · DUALITY" }] }),
