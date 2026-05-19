@@ -41,7 +41,17 @@ function Landing() {
 
   const atmosphere = (data as any).atmosphere ?? null;
   const sectionBgs = (data as any).sectionBackgrounds ?? [];
+  const scrollMode: "continuous" | "per-section" = atmosphere?.background_scroll_mode ?? "continuous";
+  const isOverridden = (key: string) => {
+    const sec = sectionBgs.find((b: any) => b.section_key === key);
+    return !!sec && !sec.use_global_background;
+  };
+  // In continuous mode, the global atmosphere is rendered once as a fixed layer behind the page,
+  // and individual sections only paint their own background when they explicitly override the global.
+  // In per-section mode, every section paints its own background and there is no fixed global layer.
   const bg = (key: string) => resolveSectionBg(key, atmosphere, sectionBgs);
+  const sectionBg = (key: string) =>
+    scrollMode === "continuous" && !isOverridden(key) ? null : bg(key);
 
   const navItems = [
     { key: "tickets", label: "Entradas", href: "#entradas" },
