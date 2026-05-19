@@ -107,6 +107,9 @@ function AdminPage() {
             {tab === "buses" && <ListEditor table="bus_routes" rows={data.buses} fields={BUS_FIELDS} onSaved={refresh} />}
             {tab === "gallery" && <ListEditor table="gallery_items" rows={data.gallery} fields={GALLERY_FIELDS} onSaved={refresh} />}
             {tab === "faqs" && <ListEditor table="faqs" rows={data.faqs} fields={FAQ_FIELDS} onSaved={refresh} />}
+            {tab === "atmosphere" && (
+              <AtmosphereEditor atmosphere={data.atmosphere} sectionBackgrounds={data.sectionBackgrounds} onSaved={refresh} />
+            )}
           </>
         )}
       </main>
