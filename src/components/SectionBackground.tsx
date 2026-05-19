@@ -46,7 +46,8 @@ function stripNulls<T extends Record<string, any>>(o: T): Partial<T> {
 const speedMap: Record<string, string> = { slow: "30s", medium: "18s", fast: "9s" };
 const glowAlpha: Record<string, number> = { off: 0, low: 0.15, medium: 0.35, high: 0.6 };
 
-export function SectionBackground({ cfg, className = "" }: { cfg: BgConfig; className?: string }) {
+export function SectionBackground({ cfg, className = "" }: { cfg: BgConfig | null | undefined; className?: string }) {
+  if (!cfg) return null;
   const type = cfg.background_type ?? "solid";
   const c1 = cfg.background_color || "#03060B";
   const c2 = cfg.background_secondary_color || c1;
