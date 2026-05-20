@@ -202,9 +202,19 @@ export function BulkArtistsImporter({
             className="w-full rounded-lg bg-black/40 border border-white/10 px-3 py-2.5 text-sm font-mono focus:border-[var(--brand-blue)] outline-none"
           />
 
+          <label className="flex items-center gap-2 text-xs text-white/70 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={autoCreateStages}
+              onChange={(e) => setAutoCreateStages(e.target.checked)}
+              className="h-4 w-4 accent-[var(--brand-blue)]"
+            />
+            Crear escenarios que no existan automáticamente
+          </label>
+
           <div className="flex flex-wrap gap-2">
             <button
-              onClick={() => setPreview(annotate(parseInput(text), existingArtists))}
+              onClick={() => setPreview(annotate(parseInput(text), existingArtists, stages, autoCreateStages))}
               disabled={!text.trim()}
               className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-blue)] text-black font-bold px-4 py-2 text-xs uppercase tracking-widest disabled:opacity-40"
             >
