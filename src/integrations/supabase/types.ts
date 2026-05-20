@@ -27,6 +27,7 @@ export type Database = {
           performance_time: string | null
           sort_order: number
           stage: string | null
+          stage_id: string | null
           updated_at: string
         }
         Insert: {
@@ -41,6 +42,7 @@ export type Database = {
           performance_time?: string | null
           sort_order?: number
           stage?: string | null
+          stage_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -55,9 +57,18 @@ export type Database = {
           performance_time?: string | null
           sort_order?: number
           stage?: string | null
+          stage_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "artists_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "stages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       bus_routes: {
         Row: {
@@ -179,6 +190,7 @@ export type Database = {
           display_mode: string
           id: string
           is_enabled: boolean
+          is_locked: boolean
           section_key: string
           section_name: string
           sort_order: number
@@ -189,6 +201,7 @@ export type Database = {
           display_mode?: string
           id?: string
           is_enabled?: boolean
+          is_locked?: boolean
           section_key: string
           section_name: string
           sort_order?: number
@@ -199,6 +212,7 @@ export type Database = {
           display_mode?: string
           id?: string
           is_enabled?: boolean
+          is_locked?: boolean
           section_key?: string
           section_name?: string
           sort_order?: number
@@ -250,6 +264,7 @@ export type Database = {
           is_visible: boolean
           sort_order: number
           stage: string
+          stage_id: string | null
           start_time: string | null
           updated_at: string
         }
@@ -263,6 +278,7 @@ export type Database = {
           is_visible?: boolean
           sort_order?: number
           stage: string
+          stage_id?: string | null
           start_time?: string | null
           updated_at?: string
         }
@@ -276,6 +292,7 @@ export type Database = {
           is_visible?: boolean
           sort_order?: number
           stage?: string
+          stage_id?: string | null
           start_time?: string | null
           updated_at?: string
         }
@@ -285,6 +302,13 @@ export type Database = {
             columns: ["artist_id"]
             isOneToOne: false
             referencedRelation: "artists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "schedule_items_stage_id_fkey"
+            columns: ["stage_id"]
+            isOneToOne: false
+            referencedRelation: "stages"
             referencedColumns: ["id"]
           },
         ]
@@ -381,6 +405,11 @@ export type Database = {
           authorization_pdf_url: string | null
           authorization_title: string | null
           background_color: string | null
+          brand_favicon_url: string | null
+          brand_icon_url: string | null
+          brand_logo_dark_url: string | null
+          brand_logo_light_url: string | null
+          brand_logo_main_url: string | null
           countdown_cta_text: string | null
           countdown_cta_url: string | null
           countdown_datetime: string | null
@@ -466,6 +495,11 @@ export type Database = {
           authorization_pdf_url?: string | null
           authorization_title?: string | null
           background_color?: string | null
+          brand_favicon_url?: string | null
+          brand_icon_url?: string | null
+          brand_logo_dark_url?: string | null
+          brand_logo_light_url?: string | null
+          brand_logo_main_url?: string | null
           countdown_cta_text?: string | null
           countdown_cta_url?: string | null
           countdown_datetime?: string | null
@@ -551,6 +585,11 @@ export type Database = {
           authorization_pdf_url?: string | null
           authorization_title?: string | null
           background_color?: string | null
+          brand_favicon_url?: string | null
+          brand_icon_url?: string | null
+          brand_logo_dark_url?: string | null
+          brand_logo_light_url?: string | null
+          brand_logo_main_url?: string | null
           countdown_cta_text?: string | null
           countdown_cta_url?: string | null
           countdown_datetime?: string | null
@@ -625,6 +664,39 @@ export type Database = {
           updated_at?: string
           venue_location?: string | null
           venue_name?: string | null
+        }
+        Relationships: []
+      }
+      stages: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          is_visible: boolean
+          name: string
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          is_visible?: boolean
+          name: string
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          is_visible?: boolean
+          name?: string
+          slug?: string
+          sort_order?: number
+          updated_at?: string
         }
         Relationships: []
       }

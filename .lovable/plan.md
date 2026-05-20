@@ -1,104 +1,91 @@
-# Plan de cambios prioritarios DUALITY
+# Plan de cambios admin DUALITY — Bloque 2
 
-Es un bloque grande de trabajo (9 áreas, web + admin + BD). Lo divido en fases para que puedas revisar el orden y validar antes de empezar.
+Bloque grande con 4 áreas. Lo divido en fases para revisión y aprobación.
 
 ## Fase 1 — Base de datos (1 migración)
 
-Añadir a `site_settings`:
-- `ticket_mode` text default `'iframe'` (valores: `iframe`, `external`, `both`)
-- `countdown_subtitle` text (segunda línea premium)
-- `font_button` text
-- `background_scroll_behavior` text default `'normal'` (`normal`, `fixed`, `parallax`, `reveal`, `zoom-pan`, `sticky-section`)
-- `background_scroll_intensity` int default 30
+**Nueva tabla `stages`:**
+- `id`, `name`, `slug` (unique), `color`, `sort_order`, `is_visible`, `created_at`, `updated_at`
 
-No se tocan `visual_settings` ni `artists` (ya tienen lo necesario).
+**`artists`:**
+- Añadir `stage_id uuid` (FK opcional a `stages.id`, nullable, on delete set null)
+- Mantener `stage` (texto) temporalmente para retrocompatibilidad
 
-## Fase 2 — Entradas / Fourvenues (sección + admin)
+**`schedule_items`:**
+- Añadir `stage_id uuid` (FK opcional)
 
-- Reescribir bloque Entradas en `src/routes/index.tsx`:
-  - `iframe` con `src` directo a `ticket_iframe_url`, `allow="payment *; fullscreen; clipboard-write; encrypted-media"`, `referrerPolicy`, alturas mínimas (780 desktop / 860 móvil), sin sandbox restrictivo, sin proxy interno.
-  - Detección de fallo (timeout `onLoad` + error) → muestra card fallback con botón a `ticket_fallback_url` (`target="_blank" rel="noopener noreferrer"`).
-  - Soporte de los 3 modos: `iframe`, `external`, `both`.
-- Admin: nuevo campo selector "Modo de venta" en el grupo Entradas.
+**`page_sections`:**
+- Añadir `is_locked boolean default false`
 
-## Fase 3 — Carga rápida de artistas (admin)
+**`site_settings`:** (consolido marca aquí en vez de crear `site_branding`, ya existe `header_logo_url` y `footer_logo_url`)
+- Añadir `brand_logo_main_url`, `brand_logo_light_url`, `brand_logo_dark_url`, `brand_icon_url`, `brand_favicon_url`
 
-Nuevo componente `BulkArtistsImporter.tsx` dentro del tab Artistas:
-- Textarea + instrucciones.
-- Parser que acepta:
-  - `NOMBRE | ESCENARIO`
-  - `NOMBRE - ESCENARIO`
-  - Bloques con cabecera `ESCENARIO:` seguidos de nombres
-- Tabla de previsualización (orden, artista, escenario, estado: Nuevo / Duplicado / Sin escenario).
-- Botones: Importar solo nuevos · Actualizar duplicados · Reemplazar todos · Cancelar.
-- Usa `upsertRow`/`bulkInsert` server fn existente (o nuevo `bulkUpsertArtists`).
+**Seed inicial:** insertar stages por defecto (`Open Air`, `Main Room`, `Area Club`) y migrar valores de `artists.stage` → `stage_id` cuando coincida por nombre normalizado.
 
-## Fase 4 — Artistas público (galería + filtro + favoritos)
+**Marcar `is_locked = true`** en `page_sections` para `header`, `footer`, `hero`.
 
-- Sección Artistas: siempre lista de cards. Si no hay imagen, card premium solo con nombre (gradiente brand, glow hover).
-- Filtro por escenario: chips derivados de los `stage` únicos. "Todos" por defecto. Scroll horizontal móvil. Chip activo con glow.
-- Botón corazón en cada card → `useFavorites(eventKey)` existente.
-- Hover desktop: iluminación + glow azul/rojo (paleta activa).
+## Fase 2 — Logotipo global de marca
 
-## Fase 5 — Horarios con favoritos sincronizados
+- Nuevo bloque "Marca / Logotipo global" en el tab Apariencia del admin con 5 subidas (`MediaUpload`): principal, claro, oscuro, isotipo, favicon. Vista previa + reemplazar + eliminar + restaurar.
+- Helper `resolveBrandLogo(settings, variant)` con cascada: `brand_logo_*` → `header_logo_url`/`footer_logo_url` legacy → default text.
+- Aplicar en: header, footer, CTA final, hero (si procede), admin sidebar/topbar, login. El favicon se inyecta vía `<link rel="icon">` en `__root.tsx`.
 
-- Añadir botón corazón a cada `schedule_item`. Clave de favorito = `artist_id ?? custom_artist_name`.
-- Compartir hook `useFavorites` con sección Artistas.
-- Contador global "Mi Planning" visible.
+## Fase 3 — Drag & drop de secciones
 
-## Fase 6 — Mi Planning (parrilla)
+- Instalar `@dnd-kit/core` + `@dnd-kit/sortable`.
+- Nuevo componente `SectionsReorder.tsx` en admin (tab "Secciones"):
+  - Lista ordenable por `sort_order`.
+  - Card por sección: nombre, estado (Completa/Incompleta/Oculta/Próximamente), switch visible, handle drag, botón editar, resumen.
+  - Secciones con `is_locked = true` (header/footer/hero) no se pueden arrastrar y muestran candado.
+  - Botón "Restaurar orden recomendado" (orden 1–13 del brief).
+  - Aviso si Entradas se mueve por debajo de la 6ª posición.
+- Backend: nuevo `reorderSections` server fn que recibe `[{id, sort_order}]` y hace bulk update.
+- Frontend público `index.tsx`: ya renderiza por `page_sections.sort_order`; verificar y ajustar si hace falta.
 
-Nueva sección/componente `MyPlanning.tsx`:
-- Construye grid: filas = franjas horarias (de `start_time` de los favoritos), columnas = escenarios.
-- Cada celda apila los favoritos de esa hora+escenario.
-- Bloque inferior "Favoritos sin horario confirmado".
-- Estado vacío con CTA "Ver artistas".
-- CTA final "Comprar entrada".
-- Móvil: scroll horizontal con columna de horas fija (sticky `left-0`).
+## Fase 4 — Gestión interna de Stages
 
-## Fase 7 — Fondos con comportamiento de scroll (admin + frontend)
+- Nuevo tab "Stages" en admin con CRUD básico: crear, renombrar, color, ordenar (drag), activar/desactivar, eliminar (con validación de FK).
+- Server fns: `listStages`, `upsertStage`, `deleteStage` (bloquea si hay artistas/horarios vinculados).
+- Incluir en `getAdminData` y `getLandingData`.
 
-- Admin `AtmosphereEditor`: nuevo selector "Comportamiento del fondo" con 6 modos + slider de intensidad + posición (top/center/bottom).
-- Frontend `index.tsx` / `SectionBackground`: aplicar cada modo:
-  - `fixed`: `background-attachment: fixed` desktop, fallback `position: fixed` en móvil.
-  - `parallax`: translateY ligado al scroll (rAF, desactivado en `prefers-reduced-motion`).
-  - `reveal`: sección alta + sticky inner que cambia `background-position` según progreso.
-  - `zoom-pan`: animación CSS keyframes muy lenta de scale+translate.
-  - `sticky-section`: fondo sticky por sección.
-- Respeta el `background_scroll_mode` global existente (continuous / per-section).
+## Fase 5 — Artistas con dropdown de stages
 
-## Fase 8 — Selector visual de tipografías (admin)
+- Editor de artistas: reemplazar input `stage` por `<Select>` poblado desde `stages`.
+- Guardar `stage_id` (y opcionalmente espejo en `stage` con el nombre para retrocompatibilidad del frontend público actual).
+- Actualizar filtros de la galería pública para usar `stage_id` (con fallback al texto si la migración no asignó stage).
+- `BulkArtistsImporter` existente: parsear el stage de texto → buscar `stages` por slug normalizado, crear si falta (opcional vía checkbox).
 
-- Componente `FontPicker.tsx`:
-  - Carga dinámica de Google Fonts solo para el preview activo del admin.
-  - Cards con nombre + titular "AQUA OPEN AIR" + texto pequeño en esa fuente.
-  - Tres selectores: `font_display`, `font_body`, `font_button`.
-  - Fuentes: Orbitron, Exo 2, Bebas Neue, Oswald, Montserrat, Rajdhani, Space Grotesk, Anton, Archivo Black, Inter (fallback).
-- Frontend público: solo carga las 2–3 fuentes seleccionadas.
+## Fase 6 — Carga rápida de horarios
 
-## Fase 9 — Rediseño Cuenta Atrás premium
-
-- Nuevo `Countdown` premium:
-  - Desktop: pieza horizontal única con separadores técnicos, glow azul/rojo según paleta, glassmorphism, textura noise sutil.
-  - Móvil: grid 2x2.
-  - Pulso suave en segundos (framer-motion `key` change).
-  - Línea superior técnica "T-MINUS" + título + subtítulo + CTA.
-
----
+- Nuevo componente `BulkScheduleImporter.tsx` en el tab Horarios.
+- Parser que detecta los 3 formatos del brief:
+  - `HH:MM - HH:MM | ARTISTA | STAGE`
+  - Bloques con header `STAGE:` seguidos de filas `HH:MM - HH:MM ARTISTA`
+  - `HH:MM ARTISTA STAGE` (sin fin)
+- Normalización de stages por slug (sugiere coincidencia fuzzy: `MAINROOM` → `Main Room`).
+- Tabla de previsualización con columnas: orden, inicio, fin, artista, stage, estado (Nuevo / Artista existe / Artista se creará / Stage no existe / Duplicado / Error de formato / Solapamiento).
+- Acciones: editar fila, eliminar fila, elegir stage manual, vincular artista existente.
+- Opciones globales:
+  - Checkbox "Crear artistas que no existan" (default ON)
+  - Modo: añadir / reemplazar todos / actualizar duplicados
+  - Política de stage del artista: mantener / actualizar / solo en horario (default: actualizar si vacío, avisar si conflicto)
+- Validaciones: formato de hora, hora fin > inicio, duplicados (artista+hora+stage), solapamientos dentro del mismo stage (warning, no bloquea).
+- Server fn `bulkUpsertSchedule` que crea/actualiza artistas + schedule_items en una transacción lógica.
 
 ## Notas técnicas
 
-- Stack: TanStack Start + serverFn (`upsertRow`, `bulkInsert` ya existen en `admin.functions.ts`).
-- Favoritos: `localStorage` con `useFavorites(eventKey)` — sin Supabase.
-- Cero cambios a `src/integrations/supabase/client.ts` ni `types.ts` (los regenera la migración).
-- Todos los nuevos componentes en `src/components/` y `src/components/admin/`.
-- Ningún color hardcodeado fuera de tokens existentes (`--brand-blue`, `--brand-red`, `--dark-panel`).
+- Stack: TanStack Start + `createServerFn` (extiendo `admin.functions.ts`).
+- No tocar `client.ts` ni `types.ts` (los regenera la migración).
+- Todos los componentes nuevos bajo `src/components/admin/`.
+- Reutilizar `MediaUpload`, `FontPicker`, patrones existentes.
+- Cero colores hardcodeados; usar tokens `--brand-*`.
 
 ## Orden de ejecución sugerido
 
-1. Migración (Fase 1) — requiere tu aprobación.
-2. Fases 2, 8, 9 (entradas, tipografías, countdown) — alto impacto visible rápido.
-3. Fases 3, 4, 5, 6 (artistas + planning) — bloque coherente.
-4. Fase 7 (scroll de fondo) — capa atmosférica final.
+1. **Fase 1** (migración) — requiere tu aprobación antes de seguir.
+2. **Fase 2** (logo global) — alto impacto visible inmediato.
+3. **Fase 3** (drag & drop secciones) — control de landing.
+4. **Fases 4 + 5** (stages + dropdown en artistas) — bloque coherente.
+5. **Fase 6** (carga rápida horarios) — la más grande, al final.
 
-¿Apruebas el plan tal cual, o quieres que reordene/recorte algo antes de empezar? Si quieres, puedo arrancar directamente por la **Fase 1 (migración)** + **Fase 2 (fix iframe Fourvenues)** que es lo más urgente.
+¿Apruebas el plan tal cual, o quieres reordenar/recortar algo antes de empezar? Si lo apruebas, arranco directamente por la **Fase 1 (migración)**.
