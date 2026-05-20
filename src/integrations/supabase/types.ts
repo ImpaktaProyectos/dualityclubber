@@ -390,6 +390,8 @@ export type Database = {
           final_cta_button_url: string | null
           final_cta_text: string | null
           final_cta_title: string | null
+          font_body: string | null
+          font_display: string | null
           footer_cookies_url: string | null
           footer_copyright: string | null
           footer_email: string | null
@@ -398,8 +400,17 @@ export type Database = {
           footer_legal_url: string | null
           footer_logo_url: string | null
           footer_privacy_url: string | null
+          footer_soundcloud_url: string | null
+          footer_spotify_url: string | null
+          footer_telegram_url: string | null
           footer_tiktok_url: string | null
+          footer_twitter_url: string | null
+          footer_whatsapp_url: string | null
+          footer_x_url: string | null
+          footer_youtube_url: string | null
           glow_color: string | null
+          header_logo_height: number | null
+          header_logo_url: string | null
           hero_cta_primary_text: string | null
           hero_cta_primary_url: string | null
           hero_cta_secondary_text: string | null
@@ -461,6 +472,8 @@ export type Database = {
           final_cta_button_url?: string | null
           final_cta_text?: string | null
           final_cta_title?: string | null
+          font_body?: string | null
+          font_display?: string | null
           footer_cookies_url?: string | null
           footer_copyright?: string | null
           footer_email?: string | null
@@ -469,8 +482,17 @@ export type Database = {
           footer_legal_url?: string | null
           footer_logo_url?: string | null
           footer_privacy_url?: string | null
+          footer_soundcloud_url?: string | null
+          footer_spotify_url?: string | null
+          footer_telegram_url?: string | null
           footer_tiktok_url?: string | null
+          footer_twitter_url?: string | null
+          footer_whatsapp_url?: string | null
+          footer_x_url?: string | null
+          footer_youtube_url?: string | null
           glow_color?: string | null
+          header_logo_height?: number | null
+          header_logo_url?: string | null
           hero_cta_primary_text?: string | null
           hero_cta_primary_url?: string | null
           hero_cta_secondary_text?: string | null
@@ -532,6 +554,8 @@ export type Database = {
           final_cta_button_url?: string | null
           final_cta_text?: string | null
           final_cta_title?: string | null
+          font_body?: string | null
+          font_display?: string | null
           footer_cookies_url?: string | null
           footer_copyright?: string | null
           footer_email?: string | null
@@ -540,8 +564,17 @@ export type Database = {
           footer_legal_url?: string | null
           footer_logo_url?: string | null
           footer_privacy_url?: string | null
+          footer_soundcloud_url?: string | null
+          footer_spotify_url?: string | null
+          footer_telegram_url?: string | null
           footer_tiktok_url?: string | null
+          footer_twitter_url?: string | null
+          footer_whatsapp_url?: string | null
+          footer_x_url?: string | null
+          footer_youtube_url?: string | null
           glow_color?: string | null
+          header_logo_height?: number | null
+          header_logo_url?: string | null
           hero_cta_primary_text?: string | null
           hero_cta_primary_url?: string | null
           hero_cta_secondary_text?: string | null
