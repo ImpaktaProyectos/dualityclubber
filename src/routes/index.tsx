@@ -148,6 +148,7 @@ function Landing() {
         <Countdown
           targetIso={s.countdown_datetime}
           title={s.countdown_title}
+          subtitle={s.countdown_subtitle}
           subtext={s.countdown_subtext}
           ctaText={s.countdown_cta_text}
           ctaUrl={s.countdown_cta_url}
