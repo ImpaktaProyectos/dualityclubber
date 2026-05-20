@@ -7,12 +7,16 @@ import { getAdminData, upsertRow, deleteRow, isCurrentUserAdmin } from "@/lib/ad
 import { toast } from "sonner";
 import {
   LogOut, Plus, Trash2, Save, Eye, EyeOff, Settings, Layers, Mic2, Clock, Info,
-  Bus, Image as ImageIcon, HelpCircle, Sparkles, ExternalLink,
+  Bus, Image as ImageIcon, HelpCircle, Sparkles, ExternalLink, MapPin,
 } from "lucide-react";
 import { MediaUpload } from "@/components/admin/MediaUpload";
 import { AtmosphereEditor } from "@/components/admin/AtmosphereEditor";
 import { BulkArtistsImporter } from "@/components/admin/BulkArtistsImporter";
 import { FontPicker } from "@/components/admin/FontPicker";
+import { BrandLogosEditor } from "@/components/admin/BrandLogosEditor";
+import { SectionsReorder } from "@/components/admin/SectionsReorder";
+import { StagesManager } from "@/components/admin/StagesManager";
+import { BulkScheduleImporter } from "@/components/admin/BulkScheduleImporter";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [{ title: "Panel admin · DUALITY" }] }),
