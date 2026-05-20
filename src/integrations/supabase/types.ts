@@ -294,6 +294,8 @@ export type Database = {
           background_color: string | null
           background_image_url: string | null
           background_position: string | null
+          background_scroll_behavior: string | null
+          background_scroll_intensity: number | null
           background_secondary_color: string | null
           background_size: string | null
           background_type: string | null
@@ -318,6 +320,8 @@ export type Database = {
           background_color?: string | null
           background_image_url?: string | null
           background_position?: string | null
+          background_scroll_behavior?: string | null
+          background_scroll_intensity?: number | null
           background_secondary_color?: string | null
           background_size?: string | null
           background_type?: string | null
@@ -342,6 +346,8 @@ export type Database = {
           background_color?: string | null
           background_image_url?: string | null
           background_position?: string | null
+          background_scroll_behavior?: string | null
+          background_scroll_intensity?: number | null
           background_secondary_color?: string | null
           background_size?: string | null
           background_type?: string | null
@@ -380,6 +386,7 @@ export type Database = {
           countdown_datetime: string | null
           countdown_enabled: boolean | null
           countdown_subtext: string | null
+          countdown_subtitle: string | null
           countdown_title: string | null
           current_event_key: string
           event_date: string | null
@@ -391,6 +398,7 @@ export type Database = {
           final_cta_text: string | null
           final_cta_title: string | null
           font_body: string | null
+          font_button: string | null
           font_display: string | null
           footer_cookies_url: string | null
           footer_copyright: string | null
@@ -438,6 +446,7 @@ export type Database = {
           secondary_color: string | null
           ticket_fallback_url: string | null
           ticket_iframe_url: string | null
+          ticket_mode: string
           ticket_show_fallback: boolean | null
           ticket_status: string | null
           ticket_text: string | null
@@ -462,6 +471,7 @@ export type Database = {
           countdown_datetime?: string | null
           countdown_enabled?: boolean | null
           countdown_subtext?: string | null
+          countdown_subtitle?: string | null
           countdown_title?: string | null
           current_event_key?: string
           event_date?: string | null
@@ -473,6 +483,7 @@ export type Database = {
           final_cta_text?: string | null
           final_cta_title?: string | null
           font_body?: string | null
+          font_button?: string | null
           font_display?: string | null
           footer_cookies_url?: string | null
           footer_copyright?: string | null
@@ -520,6 +531,7 @@ export type Database = {
           secondary_color?: string | null
           ticket_fallback_url?: string | null
           ticket_iframe_url?: string | null
+          ticket_mode?: string
           ticket_show_fallback?: boolean | null
           ticket_status?: string | null
           ticket_text?: string | null
@@ -544,6 +556,7 @@ export type Database = {
           countdown_datetime?: string | null
           countdown_enabled?: boolean | null
           countdown_subtext?: string | null
+          countdown_subtitle?: string | null
           countdown_title?: string | null
           current_event_key?: string
           event_date?: string | null
@@ -555,6 +568,7 @@ export type Database = {
           final_cta_text?: string | null
           final_cta_title?: string | null
           font_body?: string | null
+          font_button?: string | null
           font_display?: string | null
           footer_cookies_url?: string | null
           footer_copyright?: string | null
@@ -602,6 +616,7 @@ export type Database = {
           secondary_color?: string | null
           ticket_fallback_url?: string | null
           ticket_iframe_url?: string | null
+          ticket_mode?: string
           ticket_show_fallback?: boolean | null
           ticket_status?: string | null
           ticket_text?: string | null
@@ -642,6 +657,8 @@ export type Database = {
           background_image_url: string | null
           background_position: string | null
           background_repeat: boolean | null
+          background_scroll_behavior: string
+          background_scroll_intensity: number
           background_scroll_mode: string
           background_secondary_color: string | null
           background_size: string | null
@@ -671,6 +688,8 @@ export type Database = {
           background_image_url?: string | null
           background_position?: string | null
           background_repeat?: boolean | null
+          background_scroll_behavior?: string
+          background_scroll_intensity?: number
           background_scroll_mode?: string
           background_secondary_color?: string | null
           background_size?: string | null
@@ -700,6 +719,8 @@ export type Database = {
           background_image_url?: string | null
           background_position?: string | null
           background_repeat?: boolean | null
+          background_scroll_behavior?: string
+          background_scroll_intensity?: number
           background_scroll_mode?: string
           background_secondary_color?: string | null
           background_size?: string | null
