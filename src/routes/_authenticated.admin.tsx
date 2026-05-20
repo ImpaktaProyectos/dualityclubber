@@ -138,15 +138,31 @@ function AdminPage() {
           <p className="text-white/60">Cargando datos…</p>
         ) : (
           <>
-            {tab === "settings" && <SettingsEditor data={data.settings} onSaved={refresh} />}
-            {tab === "sections" && <SectionsEditor rows={data.sections} onSaved={refresh} />}
+            {tab === "settings" && (
+              <div className="space-y-6">
+                <BrandLogosEditor data={data.settings} onSaved={refresh} />
+                <SettingsEditor data={data.settings} onSaved={refresh} />
+              </div>
+            )}
+            {tab === "sections" && <SectionsReorder rows={data.sections as any} onSaved={refresh} />}
+            {tab === "stages" && <StagesManager rows={(data as any).stages ?? []} onSaved={refresh} />}
             {tab === "artists" && (
               <div className="space-y-6">
                 <BulkArtistsImporter existingArtists={data.artists} onSaved={refresh} />
                 <ListEditor table="artists" rows={data.artists} fields={ARTIST_FIELDS} onSaved={refresh} />
               </div>
             )}
-            {tab === "schedule" && <ListEditor table="schedule_items" rows={data.schedule} fields={SCHEDULE_FIELDS} onSaved={refresh} />}
+            {tab === "schedule" && (
+              <div className="space-y-6">
+                <BulkScheduleImporter
+                  stages={(data as any).stages ?? []}
+                  artists={data.artists as any}
+                  existingSchedule={data.schedule as any}
+                  onSaved={refresh}
+                />
+                <ListEditor table="schedule_items" rows={data.schedule} fields={SCHEDULE_FIELDS} onSaved={refresh} />
+              </div>
+            )}
             {tab === "quickInfo" && <ListEditor table="quick_info_items" rows={data.quickInfo} fields={QUICK_INFO_FIELDS} onSaved={refresh} />}
             {tab === "buses" && <ListEditor table="bus_routes" rows={data.buses} fields={BUS_FIELDS} onSaved={refresh} />}
             {tab === "gallery" && <ListEditor table="gallery_items" rows={data.gallery} fields={GALLERY_FIELDS} onSaved={refresh} />}
