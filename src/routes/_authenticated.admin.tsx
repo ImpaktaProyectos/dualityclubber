@@ -150,118 +150,170 @@ function AdminPage() {
 }
 
 // ====================== Settings ======================
-const SETTING_GROUPS: { title: string; fields: { key: string; label: string; type?: string; rows?: number }[] }[] = [
+type SettingField = {
+  key: string;
+  label: string;
+  type?: "text" | "textarea" | "checkbox" | "number" | "select";
+  rows?: number;
+  hint?: string;
+  options?: { value: string; label: string }[];
+  min?: number;
+  max?: number;
+  placeholder?: string;
+};
+
+const FONT_OPTIONS = [
+  "Space Grotesk", "Inter", "Bebas Neue", "Anton", "Oswald", "Montserrat", "Poppins",
+  "Raleway", "Archivo Black", "Barlow Condensed", "DM Sans", "Manrope", "Sora",
+  "Outfit", "Urbanist", "Syne", "Space Mono", "JetBrains Mono", "Playfair Display",
+  "Cormorant Garamond", "Bodoni Moda", "Lora", "Abril Fatface", "Bebas Kai",
+].map((f) => ({ value: f, label: f }));
+
+const SETTING_GROUPS: { title: string; description?: string; fields: SettingField[] }[] = [
   {
-    title: "Evento",
+    title: "🎉 Datos del evento",
+    description: "Información básica que aparece en toda la web.",
     fields: [
-      { key: "current_event_key", label: "Clave del evento (slug)" },
+      { key: "current_event_key", label: "Clave del evento (slug)", hint: "Identificador interno · ej: aqua-2025" },
       { key: "event_name", label: "Nombre del evento" },
       { key: "event_subtitle", label: "Subtítulo" },
-      { key: "event_date", label: "Fecha (texto)" },
-      { key: "opening_time", label: "Apertura puertas" },
-      { key: "venue_name", label: "Recinto" },
+      { key: "event_date", label: "Fecha (texto visible)", hint: "Ej: Sábado 12 julio · 22:00" },
+      { key: "opening_time", label: "Apertura de puertas" },
+      { key: "venue_name", label: "Nombre del recinto" },
       { key: "venue_location", label: "Localidad" },
     ],
   },
   {
-    title: "Hero",
+    title: "🏷️ Marca · Logotipo en la cabecera",
+    description: "Sube tu logo. Si lo dejas vacío, se mostrará el texto “DUALITY”.",
+    fields: [
+      { key: "header_logo_url", label: "Logotipo (imagen PNG/SVG con fondo transparente)" },
+      { key: "header_logo_height", label: "Altura del logo (px)", type: "number", min: 20, max: 80, hint: "Recomendado: 36 px" },
+    ],
+  },
+  {
+    title: "🔤 Tipografía",
+    description: "Cambia las fuentes de toda la web. Los cambios se ven al guardar y refrescar.",
+    fields: [
+      { key: "font_display", label: "Fuente para títulos", type: "select", options: FONT_OPTIONS, hint: "Carácter, impacto, identidad." },
+      { key: "font_body", label: "Fuente para textos", type: "select", options: FONT_OPTIONS, hint: "Legibilidad, neutralidad." },
+    ],
+  },
+  {
+    title: "🎬 Hero (cabecera grande)",
+    description: "La primera pantalla del usuario. Imagen, vídeo o flyer.",
     fields: [
       { key: "hero_title", label: "Título" },
       { key: "hero_subtitle", label: "Subtítulo" },
-      { key: "hero_cta_primary_text", label: "CTA primario · texto" },
-      { key: "hero_cta_primary_url", label: "CTA primario · URL" },
-      { key: "hero_cta_secondary_text", label: "CTA secundario · texto" },
-      { key: "hero_cta_secondary_url", label: "CTA secundario · URL" },
-      { key: "hero_image_desktop_url", label: "Imagen desktop URL" },
-      { key: "hero_image_mobile_url", label: "Imagen móvil URL" },
-      { key: "hero_video_desktop_url", label: "Vídeo desktop URL" },
-      { key: "hero_video_mobile_url", label: "Vídeo móvil URL" },
-      { key: "hero_flyer_enabled", label: "Mostrar flyer sobre el hero", type: "checkbox" },
-      { key: "hero_flyer_url", label: "Flyer del evento (imagen)" },
+      { key: "hero_cta_primary_text", label: "Botón principal · texto" },
+      { key: "hero_cta_primary_url", label: "Botón principal · enlace" },
+      { key: "hero_cta_secondary_text", label: "Botón secundario · texto" },
+      { key: "hero_cta_secondary_url", label: "Botón secundario · enlace" },
+      { key: "hero_image_desktop_url", label: "Imagen para ordenador" },
+      { key: "hero_image_mobile_url", label: "Imagen para móvil" },
+      { key: "hero_video_desktop_url", label: "Vídeo para ordenador" },
+      { key: "hero_video_mobile_url", label: "Vídeo para móvil" },
+      { key: "hero_flyer_enabled", label: "Mostrar flyer sobre el banner", type: "checkbox" },
+      { key: "hero_flyer_url", label: "Flyer del evento" },
     ],
   },
   {
-    title: "Cuenta atrás",
+    title: "⏱️ Cuenta atrás",
     fields: [
       { key: "countdown_enabled", label: "Activada", type: "checkbox" },
-      { key: "countdown_datetime", label: "Fecha/hora (ISO)" },
+      { key: "countdown_datetime", label: "Fecha y hora (formato ISO)", hint: "Ej: 2025-07-12T22:00:00+02:00" },
       { key: "countdown_title", label: "Título" },
       { key: "countdown_subtext", label: "Subtexto" },
-      { key: "countdown_cta_text", label: "CTA texto" },
-      { key: "countdown_cta_url", label: "CTA URL" },
+      { key: "countdown_cta_text", label: "Botón · texto" },
+      { key: "countdown_cta_url", label: "Botón · enlace" },
     ],
   },
   {
-    title: "Entradas",
+    title: "🎫 Entradas",
     fields: [
-      { key: "ticket_status", label: "Estado (available/coming_soon/sold_out)" },
+      { key: "ticket_status", label: "Estado", type: "select", options: [
+        { value: "available", label: "Disponibles" },
+        { value: "coming_soon", label: "Próximamente" },
+        { value: "sold_out", label: "Agotadas" },
+      ]},
       { key: "ticket_title", label: "Título" },
       { key: "ticket_text", label: "Descripción", rows: 2 },
-      { key: "ticket_iframe_url", label: "Fourvenues iframe URL" },
-      { key: "ticket_fallback_url", label: "URL fallback" },
-      { key: "ticket_show_fallback", label: "Mostrar fallback", type: "checkbox" },
-      { key: "ticket_trust_text", label: "Texto de confianza" },
+      { key: "ticket_iframe_url", label: "URL del iframe (Fourvenues u otro)" },
+      { key: "ticket_fallback_url", label: "URL alternativa (si falla el iframe)" },
+      { key: "ticket_show_fallback", label: "Mostrar enlace alternativo", type: "checkbox" },
+      { key: "ticket_trust_text", label: "Mensaje de confianza" },
     ],
   },
   {
-    title: "Ubicación",
+    title: "📍 Ubicación",
     fields: [
-      { key: "location_name", label: "Nombre" },
+      { key: "location_name", label: "Nombre del lugar" },
       { key: "location_address", label: "Dirección" },
       { key: "location_city", label: "Ciudad" },
-      { key: "location_maps_url", label: "Google Maps URL" },
-      { key: "location_embed_url", label: "Embed iframe URL" },
-      { key: "location_button_text", label: "Texto botón" },
+      { key: "location_maps_url", label: "Enlace a Google Maps" },
+      { key: "location_embed_url", label: "Iframe del mapa" },
+      { key: "location_button_text", label: "Texto del botón" },
       { key: "location_parking_text", label: "Parking" },
       { key: "location_access_text", label: "Acceso" },
     ],
   },
   {
-    title: "Autorización menores",
+    title: "📝 Autorización de menores",
     fields: [
       { key: "authorization_title", label: "Título" },
       { key: "authorization_description", label: "Descripción", rows: 2 },
-      { key: "authorization_pdf_url", label: "PDF URL" },
-      { key: "authorization_button_text", label: "Texto botón" },
+      { key: "authorization_pdf_url", label: "PDF descargable" },
+      { key: "authorization_button_text", label: "Texto del botón" },
     ],
   },
   {
-    title: "CTA final",
+    title: "🚀 Llamada a la acción final",
     fields: [
       { key: "final_cta_title", label: "Título" },
       { key: "final_cta_text", label: "Texto" },
-      { key: "final_cta_button_text", label: "Botón texto" },
-      { key: "final_cta_button_url", label: "Botón URL" },
-      { key: "final_cta_background_url", label: "Fondo URL" },
+      { key: "final_cta_button_text", label: "Botón · texto" },
+      { key: "final_cta_button_url", label: "Botón · enlace" },
+      { key: "final_cta_background_url", label: "Imagen de fondo" },
     ],
   },
   {
-    title: "Footer",
+    title: "📱 Redes sociales",
+    description: "Aparecen como iconos en el footer. Deja en blanco las que no uses.",
     fields: [
-      { key: "footer_copyright", label: "Copyright" },
-      { key: "footer_email", label: "Email" },
-      { key: "footer_instagram_url", label: "Instagram" },
-      { key: "footer_tiktok_url", label: "TikTok" },
-      { key: "footer_facebook_url", label: "Facebook" },
-      { key: "footer_legal_url", label: "Aviso legal URL" },
-      { key: "footer_privacy_url", label: "Privacidad URL" },
-      { key: "footer_cookies_url", label: "Cookies URL" },
-      { key: "footer_logo_url", label: "Logo URL" },
+      { key: "footer_instagram_url", label: "Instagram", placeholder: "https://instagram.com/..." },
+      { key: "footer_tiktok_url", label: "TikTok", placeholder: "https://tiktok.com/@..." },
+      { key: "footer_facebook_url", label: "Facebook", placeholder: "https://facebook.com/..." },
+      { key: "footer_youtube_url", label: "YouTube", placeholder: "https://youtube.com/@..." },
+      { key: "footer_twitter_url", label: "Twitter / X", placeholder: "https://twitter.com/..." },
+      { key: "footer_spotify_url", label: "Spotify", placeholder: "https://open.spotify.com/..." },
+      { key: "footer_soundcloud_url", label: "SoundCloud", placeholder: "https://soundcloud.com/..." },
+      { key: "footer_whatsapp_url", label: "WhatsApp", placeholder: "https://wa.me/..." },
+      { key: "footer_telegram_url", label: "Telegram", placeholder: "https://t.me/..." },
     ],
   },
   {
-    title: "Apariencia",
+    title: "🦶 Footer · textos y enlaces legales",
+    fields: [
+      { key: "footer_copyright", label: "Aviso de copyright" },
+      { key: "footer_email", label: "Email de contacto" },
+      { key: "footer_legal_url", label: "Aviso legal · URL" },
+      { key: "footer_privacy_url", label: "Política de privacidad · URL" },
+      { key: "footer_cookies_url", label: "Política de cookies · URL" },
+      { key: "footer_logo_url", label: "Logo grande del footer (opcional)" },
+    ],
+  },
+  {
+    title: "🎨 Apariencia (colores rápidos)",
+    description: "Para cambios profundos usa la pestaña “Atmósfera”.",
     fields: [
       { key: "primary_color", label: "Color primario (hex)" },
       { key: "secondary_color", label: "Color secundario (hex)" },
-      { key: "background_color", label: "Color fondo (hex)" },
-      { key: "glow_color", label: "Glow color (rgba)" },
-      { key: "appearance_preset", label: "Preset" },
-      { key: "appearance_particles", label: "Partículas", type: "checkbox" },
-      { key: "appearance_texture", label: "Textura", type: "checkbox" },
+      { key: "background_color", label: "Color de fondo (hex)" },
+      { key: "glow_color", label: "Color del glow (rgba)" },
     ],
   },
 ];
+
 
 function SettingsEditor({ data, onSaved }: { data: any; onSaved: () => void }) {
   const [values, setValues] = useState<Record<string, any>>(data ?? {});
