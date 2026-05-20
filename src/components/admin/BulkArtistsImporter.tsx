@@ -93,6 +93,7 @@ export function BulkArtistsImporter({
   const [text, setText] = useState("");
   const [preview, setPreview] = useState<ParsedRow[] | null>(null);
   const [open, setOpen] = useState(false);
+  const [autoCreateStages, setAutoCreateStages] = useState(true);
   const save = useServerFn(upsertRow);
   const del = useServerFn(deleteRow);
 
@@ -103,6 +104,7 @@ export function BulkArtistsImporter({
       news: preview.filter((p) => p.status === "new").length,
       dups: preview.filter((p) => p.status === "duplicate").length,
       noStage: preview.filter((p) => p.status === "no-stage").length,
+      missing: preview.filter((p) => p.status === "stage-missing").length,
     };
   }, [preview]);
 
