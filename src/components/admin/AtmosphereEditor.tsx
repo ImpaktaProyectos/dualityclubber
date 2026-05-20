@@ -374,6 +374,8 @@ function AtmosphereFields({
 
   return (
     <div className="space-y-5">
+      <ScrollBehaviorSection values={values} set={set} />
+
       <section className="rounded-2xl border border-white/10 bg-[var(--dark-panel)] p-5 space-y-4">
         <h3 className="text-sm uppercase tracking-widest text-white/60">Capa base</h3>
         <div className="grid md:grid-cols-2 gap-4">
@@ -453,7 +455,72 @@ function AtmosphereFields({
   );
 }
 
+// ============== Scroll behavior ==============
+const SCROLL_BEHAVIORS: { v: string; label: string; hint: string }[] = [
+  { v: "normal",         label: "Normal",                 hint: "El fondo se desplaza junto al contenido." },
+  { v: "fixed",          label: "Fijo (estático)",        hint: "La imagen queda anclada mientras haces scroll. Muy cinemático." },
+  { v: "parallax",       label: "Parallax",               hint: "El fondo se mueve más lento que el contenido. Da sensación de profundidad." },
+  { v: "reveal",         label: "Reveal (aparece)",       hint: "El fondo aparece con un fundido suave cuando entras en la sección." },
+  { v: "zoom-pan",       label: "Zoom + Pan",             hint: "Movimiento lento estilo Ken Burns. Ideal para fotos hero." },
+  { v: "sticky-section", label: "Sticky por sección",     hint: "El fondo se queda fijo mientras dura la sección y cambia al pasar a la siguiente." },
+];
+
+function ScrollBehaviorSection({
+  values,
+  set,
+}: {
+  values: Record<string, any>;
+  set: (k: string, v: any) => void;
+}) {
+  const current = values.background_scroll_behavior ?? "normal";
+  const intensity = values.background_scroll_intensity ?? 30;
+  return (
+    <section className="rounded-2xl border border-white/10 bg-[var(--dark-panel)] p-5 space-y-4">
+      <div>
+        <h3 className="text-sm uppercase tracking-widest text-white/60">Comportamiento al hacer scroll</h3>
+        <p className="text-xs text-white/50 mt-1">
+          Cómo se comporta el fondo cuando el usuario baja por la página. Funciona mejor con imágenes o vídeos de fondo.
+        </p>
+      </div>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+        {SCROLL_BEHAVIORS.map((b) => {
+          const active = current === b.v;
+          return (
+            <button
+              key={b.v}
+              type="button"
+              onClick={() => set("background_scroll_behavior", b.v)}
+              className={`text-left rounded-xl border p-3 transition-colors ${
+                active ? "border-[var(--brand-blue)] bg-[var(--brand-blue)]/10" : "border-white/10 hover:border-white/30"
+              }`}
+            >
+              <div className="font-bold text-sm">{b.label}</div>
+              <div className="text-[11px] text-white/50 mt-1 leading-snug">{b.hint}</div>
+            </button>
+          );
+        })}
+      </div>
+      {(current === "parallax" || current === "zoom-pan") && (
+        <div>
+          <label className="text-xs uppercase tracking-widest text-white/50">
+            Intensidad del efecto ({intensity}%)
+          </label>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            value={intensity}
+            onChange={(e) => set("background_scroll_intensity", Number(e.target.value))}
+            className="mt-2 w-full"
+          />
+        </div>
+      )}
+    </section>
+  );
+}
+
 // ============== Inputs ==============
+
 function Color({ label, value, onChange }: { label: string; value: any; onChange: (v: string) => void }) {
   return (
     <div>
