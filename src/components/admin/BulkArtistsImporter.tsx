@@ -8,9 +8,14 @@ import { Upload, AlertTriangle, CheckCircle2, Eye, X } from "lucide-react";
 type ParsedRow = {
   name: string;
   stage: string | null;
-  status: "new" | "duplicate" | "no-stage";
+  stage_id: string | null;
+  status: "new" | "duplicate" | "no-stage" | "stage-missing";
   existingId?: string;
 };
+
+function slugify(s: string) {
+  return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
 
 const EXAMPLE = `MAIN ROOM:
 XAVI METRALLA
