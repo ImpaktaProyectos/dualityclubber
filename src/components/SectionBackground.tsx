@@ -1,4 +1,12 @@
-import { ReactNode, useMemo } from "react";
+import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
+
+export type ScrollBehavior =
+  | "normal"
+  | "fixed"
+  | "parallax"
+  | "reveal"
+  | "zoom-pan"
+  | "sticky-section";
 
 export type BgConfig = {
   background_type?: string | null;
@@ -23,6 +31,9 @@ export type BgConfig = {
   motion_enabled?: boolean | null;
   motion_speed?: string | null;
   readability_mode?: string | null;
+  // Scroll behavior (Fase 7)
+  background_scroll_behavior?: string | null;
+  background_scroll_intensity?: number | null;
 };
 
 /** Merge per-section config with global config. Section overrides only when use_global_background=false */
@@ -33,7 +44,6 @@ export function resolveSectionBg(
 ): BgConfig {
   const sec = sectionBgs?.find((s) => s.section_key === sectionKey);
   if (!sec || sec.use_global_background) return global ?? {};
-  // Fill missing fields from global so editor can override partially
   return { ...(global ?? {}), ...stripNulls(sec) };
 }
 
@@ -46,7 +56,16 @@ function stripNulls<T extends Record<string, any>>(o: T): Partial<T> {
 const speedMap: Record<string, string> = { slow: "30s", medium: "18s", fast: "9s" };
 const glowAlpha: Record<string, number> = { off: 0, low: 0.15, medium: 0.35, high: 0.6 };
 
-export function SectionBackground({ cfg, className = "" }: { cfg: BgConfig | null | undefined; className?: string }) {
+export function SectionBackground({
+  cfg,
+  className = "",
+  /** When true, behaviors like "fixed"/"parallax"/"reveal"/"zoom-pan" are ignored. Useful when caller already wraps in a fixed layer (continuous mode). */
+  disableScrollBehavior = false,
+}: {
+  cfg: BgConfig | null | undefined;
+  className?: string;
+  disableScrollBehavior?: boolean;
+}) {
   if (!cfg) return null;
   const type = cfg.background_type ?? "solid";
   const c1 = cfg.background_color || "#03060B";
@@ -64,36 +83,121 @@ export function SectionBackground({ cfg, className = "" }: { cfg: BgConfig | nul
   const glow = glowAlpha[cfg.glow_intensity ?? "medium"] ?? 0.35;
   const readability = cfg.readability_mode ?? "medium";
 
-  // Auto readability boost if there's a heavy media background
+  const behavior: ScrollBehavior = disableScrollBehavior
+    ? "normal"
+    : ((cfg.background_scroll_behavior as ScrollBehavior) ?? "normal");
+  const intensity = Math.max(0, Math.min(100, cfg.background_scroll_intensity ?? 30));
+
   const hasMedia = (type === "image" && cfg.background_image_url) || (type === "video" && cfg.background_video_url);
   const autoOverlay = hasMedia ? Math.max(overlayOp, readability === "high" ? 0.7 : readability === "medium" ? 0.55 : 0.35) : overlayOp;
 
   const baseStyle = useMemo(() => {
-    if (type === "gradient") {
-      return { background: `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)` };
-    }
+    if (type === "gradient") return { background: `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)` };
     return { background: c1 };
   }, [type, c1, c2]);
 
-  return (
-    <div className={`pointer-events-none absolute inset-0 overflow-hidden ${className}`} aria-hidden>
-      {/* Base layer */}
+  // Parallax (translateY on media layer based on container offset)
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const mediaRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (behavior !== "parallax" || !hasMedia) return;
+    if (typeof window === "undefined") return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const factor = intensity / 100; // 0..1
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        const el = wrapperRef.current;
+        const m = mediaRef.current;
+        if (!el || !m) return;
+        const rect = el.getBoundingClientRect();
+        const vh = window.innerHeight;
+        // progress: -1 (below) .. 1 (above)
+        const center = rect.top + rect.height / 2 - vh / 2;
+        const offset = Math.max(-300, Math.min(300, center * 0.25 * factor * -1));
+        m.style.transform = `translate3d(0, ${offset}px, 0) scale(1.1)`;
+      });
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [behavior, hasMedia, intensity]);
+
+  // Reveal (IntersectionObserver)
+  const [revealed, setRevealed] = useState(false);
+  useEffect(() => {
+    if (behavior !== "reveal" || !hasMedia) return;
+    const el = wrapperRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setRevealed(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((e) => e.isIntersecting && setRevealed(true)),
+      { threshold: 0.15 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [behavior, hasMedia]);
+
+  // Wrapper positioning depends on behavior
+  // - sticky-section: render media inside a sticky h-screen child so it stays as the section scrolls
+  // - everything else: classic absolute fill
+  const wrapperClass =
+    behavior === "sticky-section"
+      ? `pointer-events-none absolute inset-0 ${className}`
+      : `pointer-events-none absolute inset-0 overflow-hidden ${className}`;
+
+  // Media layer classes/styles depending on behavior
+  const mediaExtraClass =
+    behavior === "zoom-pan" ? "bg-zoompan" :
+    behavior === "parallax" ? "bg-parallax-layer" :
+    behavior === "reveal" ? `bg-reveal ${revealed ? "is-visible" : ""}` :
+    "";
+  const useFixedAttachment = behavior === "fixed" && type === "image" && !!cfg.background_image_url;
+
+  const mediaFilter = `blur(${blur}px) saturate(${sat}%) contrast(${con}%)`;
+
+  // Inner content that holds media + textures + motion + glow + overlay
+  const inner = (
+    <>
+      {/* Base */}
       <div className="absolute inset-0" style={baseStyle} />
 
       {/* Media layer */}
       {type === "image" && cfg.background_image_url && (
-        <img
-          src={cfg.background_image_url}
-          alt=""
-          loading="lazy"
-          className="absolute inset-0 w-full h-full"
-          style={{
-            objectFit: (cfg.background_size as any) || "cover",
-            objectPosition: cfg.background_position || "center",
-            opacity: imgOp,
-            filter: `blur(${blur}px) saturate(${sat}%) contrast(${con}%)`,
-          }}
-        />
+        useFixedAttachment ? (
+          <div
+            className={`absolute inset-0 bg-fixed-attachment ${mediaExtraClass}`}
+            style={{
+              backgroundImage: `url("${cfg.background_image_url}")`,
+              opacity: imgOp,
+              filter: mediaFilter,
+              ["--reveal-target-opacity" as any]: imgOp,
+            }}
+          />
+        ) : (
+          <div
+            ref={mediaRef}
+            className={`absolute inset-0 ${mediaExtraClass}`}
+            style={{
+              backgroundImage: `url("${cfg.background_image_url}")`,
+              backgroundSize: (cfg.background_size as any) || "cover",
+              backgroundPosition: cfg.background_position || "center",
+              backgroundRepeat: cfg.background_repeat ? "repeat" : "no-repeat",
+              opacity: imgOp,
+              filter: mediaFilter,
+              ["--reveal-target-opacity" as any]: imgOp,
+            }}
+          />
+        )
       )}
       {type === "video" && cfg.background_video_url && (
         <video
@@ -103,18 +207,18 @@ export function SectionBackground({ cfg, className = "" }: { cfg: BgConfig | nul
           muted
           loop
           playsInline
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ opacity: imgOp, filter: `blur(${blur}px) saturate(${sat}%) contrast(${con}%)` }}
+          className={`absolute inset-0 w-full h-full object-cover ${mediaExtraClass}`}
+          style={{
+            opacity: imgOp,
+            filter: mediaFilter,
+            ["--reveal-target-opacity" as any]: imgOp,
+          }}
         />
       )}
 
-      {/* Texture layer */}
       {tex !== "none" && <TextureLayer kind={tex} opacity={texOp} c1={c1} c2={c2} />}
-
-      {/* Motion layer */}
       {motion !== "none" && <MotionLayer kind={motion} speed={speed} c1={c1} c2={c2} />}
 
-      {/* Glow tint */}
       {glow > 0 && (
         <div
           className="absolute inset-0"
@@ -126,10 +230,23 @@ export function SectionBackground({ cfg, className = "" }: { cfg: BgConfig | nul
         />
       )}
 
-      {/* Overlay (legibilidad) */}
       {autoOverlay > 0 && (
         <div className="absolute inset-0" style={{ background: overlayColor, opacity: autoOverlay }} />
       )}
+    </>
+  );
+
+  if (behavior === "sticky-section") {
+    return (
+      <div ref={wrapperRef} className={wrapperClass} aria-hidden>
+        <div className="sticky top-0 h-screen w-full overflow-hidden">{inner}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div ref={wrapperRef} className={wrapperClass} aria-hidden>
+      {inner}
     </div>
   );
 }
@@ -253,7 +370,6 @@ function MotionLayer({ kind, speed, c1, c2 }: { kind: string; speed: string; c1:
     );
   }
   if (kind === "particles") {
-    // Lightweight CSS particles via radial dots
     return (
       <div
         className="absolute inset-0 motion-particles"
