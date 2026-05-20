@@ -469,6 +469,7 @@ function getMediaConfig(key: string): { bucket: string; kind: "image" | "video" 
   if (key === "hero_flyer_url") return { bucket: "hero-media", kind: "image", prefix: "flyer" };
   if (key === "final_cta_background_url") return { bucket: "general-assets", kind: "image", prefix: "final-cta" };
   if (key === "footer_logo_url") return { bucket: "general-assets", kind: "image", prefix: "logo" };
+  if (key === "header_logo_url") return { bucket: "general-assets", kind: "image", prefix: "header-logo" };
   if (key === "authorization_pdf_url") return { bucket: "authorization-pdfs", kind: "pdf", prefix: "auth" };
   if (key === "image_url") return { bucket: "artist-images", kind: "image", prefix: "artist" };
   if (key === "media_url" || key === "thumbnail_url") return { bucket: "gallery", kind: "image", prefix: "item" };
