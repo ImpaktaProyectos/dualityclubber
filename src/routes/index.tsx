@@ -86,7 +86,7 @@ function Landing() {
       {/* GLOBAL ATMOSPHERE — only in continuous mode (fixed background across scroll) */}
       {atmosphere && scrollMode === "continuous" && (
         <div className="fixed inset-0 -z-10">
-          <SectionBackground cfg={atmosphere} />
+          <SectionBackground cfg={atmosphere} disableScrollBehavior />
         </div>
       )}
       {/* HEADER */}
