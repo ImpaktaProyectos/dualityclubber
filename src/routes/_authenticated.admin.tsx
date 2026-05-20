@@ -710,7 +710,14 @@ function ListEditor({ table, rows, fields, onSaved }: { table: string; rows: any
               {fields.map((f) => (
                 <FieldInput
                   key={f.key}
-                  field={{ key: f.key, label: f.label, type: f.type === "checkbox" ? "checkbox" : undefined, rows: f.type === "textarea" ? 3 : undefined }}
+                  field={{
+                    key: f.key,
+                    label: f.label,
+                    type: f.type === "checkbox" ? "checkbox" : f.type === "select" ? "select" : undefined,
+                    options: f.options,
+                    rows: f.type === "textarea" ? 3 : undefined,
+                    hint: f.hint,
+                  }}
                   value={editing[f.key]}
                   onChange={(v) => setEditing({ ...editing, [f.key]: f.type === "number" ? Number(v) : v })}
                 />
