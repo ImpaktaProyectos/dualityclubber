@@ -62,15 +62,34 @@ function parseInput(text: string): { name: string; stage: string | null }[] {
   return out;
 }
 
-function annotate(rows: { name: string; stage: string | null }[], existing: any[]): ParsedRow[] {
+function annotate(rows: { name: string; stage: string | null }[], existing: any[], stages: any[], autoCreate: boolean): ParsedRow[] {
   const byName = new Map(existing.map((a) => [a.name.toLowerCase().trim(), a]));
+  const stageBySlug = new Map(stages.map((s) => [slugify(s.name), s]));
   return rows.map((r) => {
     const dup = byName.get(r.name.toLowerCase().trim());
-    if (dup) return { ...r, status: "duplicate", existingId: dup.id };
-    if (!r.stage) return { ...r, status: "no-stage" };
-    return { ...r, status: "new" };
+    let stage_id: string | null = null;
+    let status: ParsedRow["status"] = "new";
+    if (r.stage) {
+      const found = stageBySlug.get(slugify(r.stage));
+      if (found) stage_id = found.id;
+      else if (!autoCreate) status = "stage-missing";
+    } else {
+      status = "no-stage";
+    }
+    if (dup) return { name: r.name, stage: r.stage, stage_id, status: "duplicate", existingId: dup.id };
+    return { name: r.name, stage: r.stage, stage_id, status };
   });
 }
+
+export function BulkArtistsImporter({
+  existingArtists,
+  stages,
+  onSaved,
+}: {
+  existingArtists: any[];
+  stages: any[];
+  onSaved: () => void;
+}) {
 
 export function BulkArtistsImporter({
   existingArtists,
