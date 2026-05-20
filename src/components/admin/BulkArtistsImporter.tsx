@@ -113,6 +113,25 @@ export function BulkArtistsImporter({
   const runImport = useMutation({
     mutationFn: async (mode: "new" | "update" | "replace") => {
       if (!preview) return;
+      // Pre-create missing stages if requested
+      const stageBySlug = new Map(stages.map((s: any) => [slugify(s.name), s]));
+      if (autoCreateStages) {
+        const missingNames = Array.from(
+          new Set(
+            preview
+              .filter((r) => r.stage && !stageBySlug.has(slugify(r.stage!)))
+              .map((r) => r.stage!),
+          ),
+        );
+        let order = stages.length;
+        for (const name of missingNames) {
+          const slug = slugify(name);
+          const created: any = await save({
+            data: { table: "stages", values: { name, slug, sort_order: order++, is_visible: true } },
+          });
+          if (created?.id) stageBySlug.set(slug, created);
+        }
+      }
       if (mode === "replace") {
         for (const a of existingArtists) {
           await del({ data: { table: "artists", id: a.id } });
@@ -122,10 +141,13 @@ export function BulkArtistsImporter({
       for (const row of preview) {
         if (mode === "new" && row.status !== "new") continue;
         if (mode === "update" && row.status !== "new" && row.status !== "duplicate") continue;
+        if (row.status === "stage-missing" && !autoCreateStages) continue;
 
+        const stage_id = row.stage ? stageBySlug.get(slugify(row.stage))?.id ?? null : null;
         const values: any = {
           name: row.name,
           stage: row.stage,
+          stage_id,
           is_visible: true,
           is_featured: false,
           sort_order: baseSort + i,
