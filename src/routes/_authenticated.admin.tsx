@@ -148,8 +148,8 @@ function AdminPage() {
             {tab === "stages" && <StagesManager rows={(data as any).stages ?? []} onSaved={refresh} />}
             {tab === "artists" && (
               <div className="space-y-6">
-                <BulkArtistsImporter existingArtists={data.artists} onSaved={refresh} />
-                <ListEditor table="artists" rows={data.artists} fields={ARTIST_FIELDS} onSaved={refresh} />
+                <BulkArtistsImporter existingArtists={data.artists} stages={(data as any).stages ?? []} onSaved={refresh} />
+                <ListEditor table="artists" rows={data.artists} fields={buildArtistFields((data as any).stages ?? [])} onSaved={refresh} />
               </div>
             )}
             {tab === "schedule" && (
@@ -160,7 +160,7 @@ function AdminPage() {
                   existingSchedule={data.schedule as any}
                   onSaved={refresh}
                 />
-                <ListEditor table="schedule_items" rows={data.schedule} fields={SCHEDULE_FIELDS} onSaved={refresh} />
+                <ListEditor table="schedule_items" rows={data.schedule} fields={buildScheduleFields((data as any).stages ?? [])} onSaved={refresh} />
               </div>
             )}
             {tab === "quickInfo" && <ListEditor table="quick_info_items" rows={data.quickInfo} fields={QUICK_INFO_FIELDS} onSaved={refresh} />}
@@ -568,28 +568,43 @@ function SectionsEditor({ rows, onSaved }: { rows: any[]; onSaved: () => void })
 }
 
 // ====================== Generic List Editor ======================
-type ListField = { key: string; label: string; type?: "text" | "textarea" | "checkbox" | "number" };
+type ListField = {
+  key: string;
+  label: string;
+  type?: "text" | "textarea" | "checkbox" | "number" | "select";
+  options?: { value: string; label: string }[];
+  hint?: string;
+};
 
-const ARTIST_FIELDS: ListField[] = [
-  { key: "name", label: "Nombre" },
-  { key: "stage", label: "Stage" },
-  { key: "performance_time", label: "Horario" },
-  { key: "image_url", label: "Imagen URL" },
-  { key: "instagram_url", label: "Instagram URL" },
-  { key: "music_url", label: "Música URL" },
-  { key: "is_featured", label: "Destacado", type: "checkbox" },
-  { key: "is_visible", label: "Visible", type: "checkbox" },
-  { key: "sort_order", label: "Orden", type: "number" },
-];
-const SCHEDULE_FIELDS: ListField[] = [
-  { key: "stage", label: "Stage" },
-  { key: "custom_artist_name", label: "Artista (nombre)" },
-  { key: "start_time", label: "Inicio" },
-  { key: "end_time", label: "Fin" },
-  { key: "description", label: "Descripción", type: "textarea" },
-  { key: "is_visible", label: "Visible", type: "checkbox" },
-  { key: "sort_order", label: "Orden", type: "number" },
-];
+function buildArtistFields(stages: any[]): ListField[] {
+  const stageOpts = (stages ?? []).map((s: any) => ({ value: s.id, label: s.name }));
+  return [
+    { key: "name", label: "Nombre" },
+    { key: "stage_id", label: "Escenario", type: "select", options: stageOpts, hint: "Selecciona el escenario desde el desplegable." },
+    { key: "stage", label: "Stage (texto legacy, opcional)" },
+    { key: "performance_time", label: "Horario" },
+    { key: "image_url", label: "Imagen URL" },
+    { key: "instagram_url", label: "Instagram URL" },
+    { key: "music_url", label: "Música URL" },
+    { key: "is_featured", label: "Destacado", type: "checkbox" },
+    { key: "is_visible", label: "Visible", type: "checkbox" },
+    { key: "sort_order", label: "Orden", type: "number" },
+  ];
+}
+
+function buildScheduleFields(stages: any[]): ListField[] {
+  const stageOpts = (stages ?? []).map((s: any) => ({ value: s.id, label: s.name }));
+  return [
+    { key: "stage_id", label: "Escenario", type: "select", options: stageOpts },
+    { key: "stage", label: "Stage (texto legacy)" },
+    { key: "custom_artist_name", label: "Artista (nombre)" },
+    { key: "start_time", label: "Inicio" },
+    { key: "end_time", label: "Fin" },
+    { key: "description", label: "Descripción", type: "textarea" },
+    { key: "is_visible", label: "Visible", type: "checkbox" },
+    { key: "sort_order", label: "Orden", type: "number" },
+  ];
+}
 const QUICK_INFO_FIELDS: ListField[] = [
   { key: "label", label: "Etiqueta" },
   { key: "value", label: "Valor" },
@@ -695,7 +710,14 @@ function ListEditor({ table, rows, fields, onSaved }: { table: string; rows: any
               {fields.map((f) => (
                 <FieldInput
                   key={f.key}
-                  field={{ key: f.key, label: f.label, type: f.type === "checkbox" ? "checkbox" : undefined, rows: f.type === "textarea" ? 3 : undefined }}
+                  field={{
+                    key: f.key,
+                    label: f.label,
+                    type: f.type === "checkbox" ? "checkbox" : f.type === "select" ? "select" : undefined,
+                    options: f.options,
+                    rows: f.type === "textarea" ? 3 : undefined,
+                    hint: f.hint,
+                  }}
                   value={editing[f.key]}
                   onChange={(v) => setEditing({ ...editing, [f.key]: f.type === "number" ? Number(v) : v })}
                 />

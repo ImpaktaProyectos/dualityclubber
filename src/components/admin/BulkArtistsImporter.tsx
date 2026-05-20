@@ -8,9 +8,14 @@ import { Upload, AlertTriangle, CheckCircle2, Eye, X } from "lucide-react";
 type ParsedRow = {
   name: string;
   stage: string | null;
-  status: "new" | "duplicate" | "no-stage";
+  stage_id: string | null;
+  status: "new" | "duplicate" | "no-stage" | "stage-missing";
   existingId?: string;
 };
+
+function slugify(s: string) {
+  return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
 
 const EXAMPLE = `MAIN ROOM:
 XAVI METRALLA
@@ -57,26 +62,38 @@ function parseInput(text: string): { name: string; stage: string | null }[] {
   return out;
 }
 
-function annotate(rows: { name: string; stage: string | null }[], existing: any[]): ParsedRow[] {
+function annotate(rows: { name: string; stage: string | null }[], existing: any[], stages: any[], autoCreate: boolean): ParsedRow[] {
   const byName = new Map(existing.map((a) => [a.name.toLowerCase().trim(), a]));
+  const stageBySlug = new Map(stages.map((s) => [slugify(s.name), s]));
   return rows.map((r) => {
     const dup = byName.get(r.name.toLowerCase().trim());
-    if (dup) return { ...r, status: "duplicate", existingId: dup.id };
-    if (!r.stage) return { ...r, status: "no-stage" };
-    return { ...r, status: "new" };
+    let stage_id: string | null = null;
+    let status: ParsedRow["status"] = "new";
+    if (r.stage) {
+      const found = stageBySlug.get(slugify(r.stage));
+      if (found) stage_id = found.id;
+      else if (!autoCreate) status = "stage-missing";
+    } else {
+      status = "no-stage";
+    }
+    if (dup) return { name: r.name, stage: r.stage, stage_id, status: "duplicate", existingId: dup.id };
+    return { name: r.name, stage: r.stage, stage_id, status };
   });
 }
 
 export function BulkArtistsImporter({
   existingArtists,
+  stages,
   onSaved,
 }: {
   existingArtists: any[];
+  stages: any[];
   onSaved: () => void;
 }) {
   const [text, setText] = useState("");
   const [preview, setPreview] = useState<ParsedRow[] | null>(null);
   const [open, setOpen] = useState(false);
+  const [autoCreateStages, setAutoCreateStages] = useState(true);
   const save = useServerFn(upsertRow);
   const del = useServerFn(deleteRow);
 
@@ -87,6 +104,7 @@ export function BulkArtistsImporter({
       news: preview.filter((p) => p.status === "new").length,
       dups: preview.filter((p) => p.status === "duplicate").length,
       noStage: preview.filter((p) => p.status === "no-stage").length,
+      missing: preview.filter((p) => p.status === "stage-missing").length,
     };
   }, [preview]);
 
@@ -95,6 +113,25 @@ export function BulkArtistsImporter({
   const runImport = useMutation({
     mutationFn: async (mode: "new" | "update" | "replace") => {
       if (!preview) return;
+      // Pre-create missing stages if requested
+      const stageBySlug = new Map(stages.map((s: any) => [slugify(s.name), s]));
+      if (autoCreateStages) {
+        const missingNames = Array.from(
+          new Set(
+            preview
+              .filter((r) => r.stage && !stageBySlug.has(slugify(r.stage!)))
+              .map((r) => r.stage!),
+          ),
+        );
+        let order = stages.length;
+        for (const name of missingNames) {
+          const slug = slugify(name);
+          const created: any = await save({
+            data: { table: "stages", values: { name, slug, sort_order: order++, is_visible: true } },
+          });
+          if (created?.id) stageBySlug.set(slug, created);
+        }
+      }
       if (mode === "replace") {
         for (const a of existingArtists) {
           await del({ data: { table: "artists", id: a.id } });
@@ -104,10 +141,13 @@ export function BulkArtistsImporter({
       for (const row of preview) {
         if (mode === "new" && row.status !== "new") continue;
         if (mode === "update" && row.status !== "new" && row.status !== "duplicate") continue;
+        if (row.status === "stage-missing" && !autoCreateStages) continue;
 
+        const stage_id = row.stage ? stageBySlug.get(slugify(row.stage))?.id ?? null : null;
         const values: any = {
           name: row.name,
           stage: row.stage,
+          stage_id,
           is_visible: true,
           is_featured: false,
           sort_order: baseSort + i,
@@ -162,9 +202,19 @@ export function BulkArtistsImporter({
             className="w-full rounded-lg bg-black/40 border border-white/10 px-3 py-2.5 text-sm font-mono focus:border-[var(--brand-blue)] outline-none"
           />
 
+          <label className="flex items-center gap-2 text-xs text-white/70 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={autoCreateStages}
+              onChange={(e) => setAutoCreateStages(e.target.checked)}
+              className="h-4 w-4 accent-[var(--brand-blue)]"
+            />
+            Crear escenarios que no existan automáticamente
+          </label>
+
           <div className="flex flex-wrap gap-2">
             <button
-              onClick={() => setPreview(annotate(parseInput(text), existingArtists))}
+              onClick={() => setPreview(annotate(parseInput(text), existingArtists, stages, autoCreateStages))}
               disabled={!text.trim()}
               className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-blue)] text-black font-bold px-4 py-2 text-xs uppercase tracking-widest disabled:opacity-40"
             >
@@ -187,6 +237,7 @@ export function BulkArtistsImporter({
                 <Pill tone="ok">Nuevos: {stats.news}</Pill>
                 <Pill tone="warn">Duplicados: {stats.dups}</Pill>
                 <Pill tone="err">Sin escenario: {stats.noStage}</Pill>
+                {stats.missing > 0 && <Pill tone="warn">Escenario inexistente: {stats.missing}</Pill>}
               </div>
 
               <div className="rounded-xl border border-white/10 overflow-hidden">
@@ -226,6 +277,7 @@ export function BulkArtistsImporter({
                             {r.status === "new" && <Tag tone="ok"><CheckCircle2 className="h-3 w-3" />Nuevo</Tag>}
                             {r.status === "duplicate" && <Tag tone="warn"><AlertTriangle className="h-3 w-3" />Duplicado</Tag>}
                             {r.status === "no-stage" && <Tag tone="err"><AlertTriangle className="h-3 w-3" />Sin escenario</Tag>}
+                            {r.status === "stage-missing" && <Tag tone="warn"><AlertTriangle className="h-3 w-3" />Escenario nuevo</Tag>}
                           </td>
                         </tr>
                       ))}
