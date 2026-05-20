@@ -90,14 +90,6 @@ export function BulkArtistsImporter({
   stages: any[];
   onSaved: () => void;
 }) {
-
-export function BulkArtistsImporter({
-  existingArtists,
-  onSaved,
-}: {
-  existingArtists: any[];
-  onSaved: () => void;
-}) {
   const [text, setText] = useState("");
   const [preview, setPreview] = useState<ParsedRow[] | null>(null);
   const [open, setOpen] = useState(false);
