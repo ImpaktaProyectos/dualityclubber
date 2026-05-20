@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { MediaUpload } from "@/components/admin/MediaUpload";
 import { AtmosphereEditor } from "@/components/admin/AtmosphereEditor";
+import { BulkArtistsImporter } from "@/components/admin/BulkArtistsImporter";
+import { FontPicker } from "@/components/admin/FontPicker";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [{ title: "Panel admin · DUALITY" }] }),
@@ -133,7 +135,12 @@ function AdminPage() {
           <>
             {tab === "settings" && <SettingsEditor data={data.settings} onSaved={refresh} />}
             {tab === "sections" && <SectionsEditor rows={data.sections} onSaved={refresh} />}
-            {tab === "artists" && <ListEditor table="artists" rows={data.artists} fields={ARTIST_FIELDS} onSaved={refresh} />}
+            {tab === "artists" && (
+              <div className="space-y-6">
+                <BulkArtistsImporter existingArtists={data.artists} onSaved={refresh} />
+                <ListEditor table="artists" rows={data.artists} fields={ARTIST_FIELDS} onSaved={refresh} />
+              </div>
+            )}
             {tab === "schedule" && <ListEditor table="schedule_items" rows={data.schedule} fields={SCHEDULE_FIELDS} onSaved={refresh} />}
             {tab === "quickInfo" && <ListEditor table="quick_info_items" rows={data.quickInfo} fields={QUICK_INFO_FIELDS} onSaved={refresh} />}
             {tab === "buses" && <ListEditor table="bus_routes" rows={data.buses} fields={BUS_FIELDS} onSaved={refresh} />}
@@ -153,13 +160,14 @@ function AdminPage() {
 type SettingField = {
   key: string;
   label: string;
-  type?: "text" | "textarea" | "checkbox" | "number" | "select";
+  type?: "text" | "textarea" | "checkbox" | "number" | "select" | "font";
   rows?: number;
   hint?: string;
   options?: { value: string; label: string }[];
   min?: number;
   max?: number;
   placeholder?: string;
+  role?: "display" | "body" | "both";
 };
 
 const FONT_OPTIONS = [
@@ -193,10 +201,11 @@ const SETTING_GROUPS: { title: string; description?: string; fields: SettingFiel
   },
   {
     title: "🔤 Tipografía",
-    description: "Cambia las fuentes de toda la web. Los cambios se ven al guardar y refrescar.",
+    description: "Mira cómo se ve cada fuente y elige la que mejor pegue con tu marca. Los cambios se aplican al guardar.",
     fields: [
-      { key: "font_display", label: "Fuente para títulos", type: "select", options: FONT_OPTIONS, hint: "Carácter, impacto, identidad." },
-      { key: "font_body", label: "Fuente para textos", type: "select", options: FONT_OPTIONS, hint: "Legibilidad, neutralidad." },
+      { key: "font_display", label: "Fuente para títulos", type: "font", role: "display", hint: "Carácter, impacto, identidad." },
+      { key: "font_body", label: "Fuente para textos", type: "font", role: "body", hint: "Legibilidad, neutralidad." },
+      { key: "font_button", label: "Fuente para botones (opcional)", type: "font", role: "both", hint: "Si la dejas vacía se usa la de títulos." },
     ],
   },
   {
@@ -223,6 +232,7 @@ const SETTING_GROUPS: { title: string; description?: string; fields: SettingFiel
       { key: "countdown_enabled", label: "Activada", type: "checkbox" },
       { key: "countdown_datetime", label: "Fecha y hora (formato ISO)", hint: "Ej: 2025-07-12T22:00:00+02:00" },
       { key: "countdown_title", label: "Título" },
+      { key: "countdown_subtitle", label: "Subtítulo premium (línea técnica)", hint: "Ej: Cada segundo te acerca a la noche." },
       { key: "countdown_subtext", label: "Subtexto" },
       { key: "countdown_cta_text", label: "Botón · texto" },
       { key: "countdown_cta_url", label: "Botón · enlace" },
@@ -230,7 +240,13 @@ const SETTING_GROUPS: { title: string; description?: string; fields: SettingFiel
   },
   {
     title: "🎫 Entradas",
+    description: "Si Fourvenues bloquea el iframe, cambia a “Botón externo” y los compradores irán a la página oficial sin perder ninguna venta.",
     fields: [
+      { key: "ticket_mode", label: "Modo de venta", type: "select", hint: "Cómo verá el usuario el módulo de venta.", options: [
+        { value: "iframe", label: "Iframe integrado (en la propia web)" },
+        { value: "external", label: "Botón externo (abre Fourvenues en nueva pestaña)" },
+        { value: "both", label: "Iframe + botón externo (lo más seguro)" },
+      ]},
       { key: "ticket_status", label: "Estado", type: "select", options: [
         { value: "available", label: "Disponibles" },
         { value: "coming_soon", label: "Próximamente" },
@@ -240,7 +256,7 @@ const SETTING_GROUPS: { title: string; description?: string; fields: SettingFiel
       { key: "ticket_text", label: "Descripción", rows: 2 },
       { key: "ticket_iframe_url", label: "URL del iframe (Fourvenues u otro)" },
       { key: "ticket_fallback_url", label: "URL alternativa (si falla el iframe)" },
-      { key: "ticket_show_fallback", label: "Mostrar enlace alternativo", type: "checkbox" },
+      { key: "ticket_show_fallback", label: "Mostrar siempre enlace alternativo", type: "checkbox" },
       { key: "ticket_trust_text", label: "Mensaje de confianza" },
     ],
   },
@@ -366,6 +382,14 @@ function FieldInput({ field, value, onChange }: { field: SettingField; value: an
           value={value}
           onChange={onChange}
         />
+        {field.hint && <p className="text-xs text-white/40 mt-1">{field.hint}</p>}
+      </div>
+    );
+  }
+  if (field.type === "font") {
+    return (
+      <div className="md:col-span-2">
+        <FontPicker label={field.label} value={value} onChange={onChange} role={field.role ?? "both"} />
         {field.hint && <p className="text-xs text-white/40 mt-1">{field.hint}</p>}
       </div>
     );

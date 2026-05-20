@@ -1,97 +1,104 @@
-# Plan: DUALITY — Landing + Panel Admin
+# Plan de cambios prioritarios DUALITY
 
-## Visión general
+Es un bloque grande de trabajo (9 áreas, web + admin + BD). Lo divido en fases para que puedas revisar el orden y validar antes de empezar.
 
-Una sola landing pública (`/`) que muestra siempre el evento activo, y un panel privado (`/admin`) protegido por login para editar todo el contenido sin tocar código. Diseño cerrado, contenido editable. Estética premium oscura, electrónica, con identidad de doble dualidad (dos chicas con cuernos) y paleta rojo/blanco/azul sobre fondo oscuro.
+## Fase 1 — Base de datos (1 migración)
 
-## Stack
+Añadir a `site_settings`:
+- `ticket_mode` text default `'iframe'` (valores: `iframe`, `external`, `both`)
+- `countdown_subtitle` text (segunda línea premium)
+- `font_button` text
+- `background_scroll_behavior` text default `'normal'` (`normal`, `fixed`, `parallax`, `reveal`, `zoom-pan`, `sticky-section`)
+- `background_scroll_intensity` int default 30
 
-- TanStack Start (React 19) + Tailwind v4 + Framer Motion + Swiper + tokens en `src/styles.css`.
-- **Lovable Cloud** para auth admin, base de datos (PostgreSQL) y storage (imágenes, vídeos, PDFs).
-- Favoritos del usuario en `localStorage` (sin login público), namespaced por `current_event_key`.
+No se tocan `visual_settings` ni `artists` (ya tienen lo necesario).
 
-## Fase 1 — Identidad visual y sistema de diseño
+## Fase 2 — Entradas / Fourvenues (sección + admin)
 
-- Definir tokens en `src/styles.css`: `--brand-blue #00AEEF`, `--brand-red #FF1E2D`, `--brand-white`, `--dark-bg #03060B`, `--dark-panel #07111C`, glows azul/rojo.
-- Tipografía display impactante (display sans condensada para titulares tipo rave) + body legible.
-- Variables de tema dinámicas (`--color-primary`, `--color-secondary`, `--color-glow`) controladas por el módulo Apariencia del admin → aplicadas en `<html>` al cargar `site_settings`.
-- Componente recurrente "DualityArtwork" reutilizable (silueta dos chicas con cuernos enfrentadas) usado en hero y CTA final.
+- Reescribir bloque Entradas en `src/routes/index.tsx`:
+  - `iframe` con `src` directo a `ticket_iframe_url`, `allow="payment *; fullscreen; clipboard-write; encrypted-media"`, `referrerPolicy`, alturas mínimas (780 desktop / 860 móvil), sin sandbox restrictivo, sin proxy interno.
+  - Detección de fallo (timeout `onLoad` + error) → muestra card fallback con botón a `ticket_fallback_url` (`target="_blank" rel="noopener noreferrer"`).
+  - Soporte de los 3 modos: `iframe`, `external`, `both`.
+- Admin: nuevo campo selector "Modo de venta" en el grupo Entradas.
 
-## Fase 2 — Backend (Lovable Cloud)
+## Fase 3 — Carga rápida de artistas (admin)
 
-Tablas: `site_settings`, `page_sections`, `quick_info_items`, `artists`, `schedule_items`, `gallery_items`, `bus_routes`, `authorization`, `faqs`, `final_cta`, `footer_settings` (según spec sección 37).
+Nuevo componente `BulkArtistsImporter.tsx` dentro del tab Artistas:
+- Textarea + instrucciones.
+- Parser que acepta:
+  - `NOMBRE | ESCENARIO`
+  - `NOMBRE - ESCENARIO`
+  - Bloques con cabecera `ESCENARIO:` seguidos de nombres
+- Tabla de previsualización (orden, artista, escenario, estado: Nuevo / Duplicado / Sin escenario).
+- Botones: Importar solo nuevos · Actualizar duplicados · Reemplazar todos · Cancelar.
+- Usa `upsertRow`/`bulkInsert` server fn existente (o nuevo `bulkUpsertArtists`).
 
-Buckets storage: `hero-media`, `artist-images`, `gallery`, `authorization-pdfs`, `general-assets`.
+## Fase 4 — Artistas público (galería + filtro + favoritos)
 
-RLS:
-- Lectura pública (anon) en todas las tablas de contenido publicado.
-- Escritura solo a usuarios con rol `admin` (tabla separada `user_roles` + función `has_role` SECURITY DEFINER, nunca rol en `profiles`).
-- Service role solo en server functions admin.
+- Sección Artistas: siempre lista de cards. Si no hay imagen, card premium solo con nombre (gradiente brand, glow hover).
+- Filtro por escenario: chips derivados de los `stage` únicos. "Todos" por defecto. Scroll horizontal móvil. Chip activo con glow.
+- Botón corazón en cada card → `useFavorites(eventKey)` existente.
+- Hover desktop: iluminación + glow azul/rojo (paleta activa).
 
-Auth: email/password (creas el primer admin manualmente vía Cloud → Users, luego le asignamos rol `admin`).
+## Fase 5 — Horarios con favoritos sincronizados
 
-Sistema borrador/publicado: cada tabla relevante guarda un flag o duplica registros `draft`/`published`. Simplificación inicial: campo `is_published` + tabla espejo opcional. Empezar con "Guardar cambios" directo y añadir borrador en iteración posterior si hace falta.
+- Añadir botón corazón a cada `schedule_item`. Clave de favorito = `artist_id ?? custom_artist_name`.
+- Compartir hook `useFavorites` con sección Artistas.
+- Contador global "Mi Planning" visible.
 
-## Fase 3 — Landing pública (`/`)
+## Fase 6 — Mi Planning (parrilla)
 
-Estructura fija con render condicional desde `page_sections`:
+Nueva sección/componente `MyPlanning.tsx`:
+- Construye grid: filas = franjas horarias (de `start_time` de los favoritos), columnas = escenarios.
+- Cada celda apila los favoritos de esa hora+escenario.
+- Bloque inferior "Favoritos sin horario confirmado".
+- Estado vacío con CTA "Ver artistas".
+- CTA final "Comprar entrada".
+- Móvil: scroll horizontal con columna de horas fija (sticky `left-0`).
 
-1. `StickyHeader` (glassmorphism, nav generada solo con secciones activas) + `MobileBuyBar` fijo abajo.
-2. `HeroSection` — vídeo/imagen fallback desktop+mobile, título, subtítulo, fecha, lugar, CTA1 "Comprar entradas" → `#entradas`, CTA2 "Ver artistas" → `#artistas`. Artwork de dualidad superpuesto.
-3. `QuickInfoBar` — badges horizontales (scroll horizontal en móvil) con info esencial (fecha, hora, lugar, áreas, piscina, foodtruck).
-4. `CountdownSection` — días/horas/min/seg + mini CTA.
-5. `TicketsIframeSection` — iframe Fourvenues responsive (min-height 780/860px), `allow="payment *; fullscreen; clipboard-write; encrypted-media"`, fallback "Abrir venta oficial", badges de confianza.
-6. `ArtistsSection` — marquee de nombres + filtros por área + grid de `ArtistCard` con corazón favorito (localStorage).
-7. `ScheduleSection` — tabs (Todos / Open Air / Main Room / Area Club / **Mi Planning** con contador). Timeline vertical en móvil.
-8. `GallerySection` — Swiper compacto (5-8 items) + lightbox.
-9. `LocationSection` — embed mapa + botón "Cómo llegar" + parking/acceso.
-10. `BusRoutesAccordion` — acordeones por localidad con estado y botón reservar.
-11. `AuthorizationSection` — descarga PDF + CTA secundario.
-12. `FAQAccordion` — 5-6 preguntas.
-13. `FinalCTASection` — fondo dramático con artwork dualidad + "Vive tu dualidad".
-14. `Footer`.
+## Fase 7 — Fondos con comportamiento de scroll (admin + frontend)
 
-Modos por sección: **visible / hidden / coming_soon**. Si `hidden` → no renderiza, no aparece en menú, no aparece en accesos rápidos. Si `coming_soon` → card compacta con mensaje.
+- Admin `AtmosphereEditor`: nuevo selector "Comportamiento del fondo" con 6 modos + slider de intensidad + posición (top/center/bottom).
+- Frontend `index.tsx` / `SectionBackground`: aplicar cada modo:
+  - `fixed`: `background-attachment: fixed` desktop, fallback `position: fixed` en móvil.
+  - `parallax`: translateY ligado al scroll (rAF, desactivado en `prefers-reduced-motion`).
+  - `reveal`: sección alta + sticky inner que cambia `background-position` según progreso.
+  - `zoom-pan`: animación CSS keyframes muy lenta de scale+translate.
+  - `sticky-section`: fondo sticky por sección.
+- Respeta el `background_scroll_mode` global existente (continuous / per-section).
 
-**Mi Planning**: hook `useFavorites(currentEventKey)` con clave `duality:favorites:{current_event_key}`. Tab dentro de Horarios ordena favoritos por hora, separa "sin horario confirmado", estado vacío con CTA "Ver artistas", botón "Borrar planning", CTA final "Comprar entrada", botón opcional "Compartir mi planning" (Web Share API + fallback portapapeles). Feedback toast al añadir/quitar.
+## Fase 8 — Selector visual de tipografías (admin)
 
-Datos cargados vía `createServerFn` + TanStack Query (admin client en server, RLS-safe lectura pública). Loader del root carga `site_settings` + `page_sections` para SSR del shell.
+- Componente `FontPicker.tsx`:
+  - Carga dinámica de Google Fonts solo para el preview activo del admin.
+  - Cards con nombre + titular "AQUA OPEN AIR" + texto pequeño en esa fuente.
+  - Tres selectores: `font_display`, `font_body`, `font_button`.
+  - Fuentes: Orbitron, Exo 2, Bebas Neue, Oswald, Montserrat, Rajdhani, Space Grotesk, Anton, Archivo Black, Inter (fallback).
+- Frontend público: solo carga las 2–3 fuentes seleccionadas.
 
-## Fase 4 — Panel Admin (`/admin`)
+## Fase 9 — Rediseño Cuenta Atrás premium
 
-- Ruta `_authenticated` con `beforeLoad` que redirige a `/admin/login` si no hay sesión + chequeo de rol `admin` vía server fn.
-- Dashboard con grid de `SectionCard`: nombre, estado (Completa/Incompleta/Oculta/Próximamente), switch "Visible en landing", resumen, botón Editar, alerta si activa pero incompleta.
-- Top bar: Vista previa · Guardar cambios (borrador/publicar en v2).
-- Editores por módulo (todos los campos listados en spec secciones 21-33):
-  - `AppearanceEditor` (presets Aqua/Red/Blue/Purple/Custom, intensidad glow, partículas, textura).
-  - `HeroEditor`, `QuickInfoEditor` (CRUD badges), `CountdownEditor`, `TicketsEditor` (con validación URL iframe + warning desactivar), `ArtistsManager` (CRUD + drag&drop orden + upload foto), `ScheduleManager` (CRUD + áreas editables), `GalleryManager` (upload múltiple + drag&drop), `LocationEditor`, `BusRoutesManager`, `AuthorizationEditor` (upload PDF), `FAQManager`, `FinalCTAEditor`, `FooterEditor`.
-- Drag & drop con `@dnd-kit/sortable`.
-- Validaciones: si Tickets ON sin iframe URL → incompleta + alerta. Si se intenta desactivar Tickets → confirm modal.
+- Nuevo `Countdown` premium:
+  - Desktop: pieza horizontal única con separadores técnicos, glow azul/rojo según paleta, glassmorphism, textura noise sutil.
+  - Móvil: grid 2x2.
+  - Pulso suave en segundos (framer-motion `key` change).
+  - Línea superior técnica "T-MINUS" + título + subtítulo + CTA.
 
-## Fase 5 — Vista previa, performance, accesibilidad
+---
 
-- Modo preview: query param `?preview=1` que renderiza la landing con datos draft + barra superior "Vista previa · Volver al admin · Publicar".
-- Performance: lazy load imágenes/vídeos, poster en hero, reservar altura iframe (evita CLS), Swiper lazy, no autoplay pesado en móvil, formatos webm/mp4 + AVIF/WebP.
-- Accesibilidad: alt text obligatorio en uploads, contraste AA, focus visible, labels en formularios, navegación teclado.
+## Notas técnicas
 
-## Detalles técnicos clave
+- Stack: TanStack Start + serverFn (`upsertRow`, `bulkInsert` ya existen en `admin.functions.ts`).
+- Favoritos: `localStorage` con `useFavorites(eventKey)` — sin Supabase.
+- Cero cambios a `src/integrations/supabase/client.ts` ni `types.ts` (los regenera la migración).
+- Todos los nuevos componentes en `src/components/` y `src/components/admin/`.
+- Ningún color hardcodeado fuera de tokens existentes (`--brand-blue`, `--brand-red`, `--dark-panel`).
 
-- Tokens dinámicos: en root layout, inyectar `<style>` con CSS vars desde `site_settings` para que Apariencia tenga efecto inmediato en SSR.
-- `current_event_key` vive en `site_settings`. Al cambiarlo, los favoritos del navegador del usuario quedan ligados a la fiesta anterior y no contaminan la nueva.
-- Toda nav (header desktop, hamburguesa móvil, accesos rápidos) se genera con `page_sections.filter(s => s.is_enabled && s.display_mode === 'visible')` → cero enlaces rotos.
-- Iframe Fourvenues: contenedor con `aspect-ratio` reservado + skeleton mientras carga.
-- Uploads: server functions con `supabaseAdmin` validan mime/tamaño antes de subir al bucket.
+## Orden de ejecución sugerido
 
-## Cosas que pediré confirmar antes de empezar (en build mode)
+1. Migración (Fase 1) — requiere tu aprobación.
+2. Fases 2, 8, 9 (entradas, tipografías, countdown) — alto impacto visible rápido.
+3. Fases 3, 4, 5, 6 (artistas + planning) — bloque coherente.
+4. Fase 7 (scroll de fondo) — capa atmosférica final.
 
-1. ¿El primer admin lo creas tú vía Cloud → Users, o quieres que añada un script seed para tu email?
-2. ¿Empiezo con "Guardar cambios" directo (sin borrador) y añadimos publish/draft después, o lo quieres desde el día uno?
-3. ¿Tienes ya assets reales (vídeo hero, fotos artistas, artwork dualidad) o genero placeholders premium con IA para el primer pase?
-
-## Orden de entrega sugerido
-
-1. Tokens + identidad visual + componente DualityArtwork.
-2. Lovable Cloud: schema + RLS + roles + buckets.
-3. Landing pública con datos seed.
-4. Auth admin + dashboard + módulos editores (en 2-3 iteraciones por bloques de secciones).
-5. Vista previa + pulido + QA responsive.
+¿Apruebas el plan tal cual, o quieres que reordene/recorte algo antes de empezar? Si quieres, puedo arrancar directamente por la **Fase 1 (migración)** + **Fase 2 (fix iframe Fourvenues)** que es lo más urgente.

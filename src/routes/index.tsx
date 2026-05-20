@@ -39,8 +39,9 @@ function Landing() {
     if (s.secondary_color) root.style.setProperty("--brand-red", s.secondary_color);
     if (s.font_display) root.style.setProperty("--font-display", `"${s.font_display}", system-ui, sans-serif`);
     if (s.font_body) root.style.setProperty("--font-sans", `"${s.font_body}", system-ui, sans-serif`);
+    if (s.font_button) root.style.setProperty("--font-button", `"${s.font_button}", system-ui, sans-serif`);
     // load google fonts dynamically
-    const families = [s.font_display, s.font_body].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i);
+    const families = [s.font_display, s.font_body, s.font_button].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i);
     if (families.length) {
       const href = `https://fonts.googleapis.com/css2?${families.map((f: string) => `family=${encodeURIComponent(f)}:wght@300;400;500;600;700;800;900`).join("&")}&display=swap`;
       const id = "duality-dynamic-fonts";
@@ -147,6 +148,7 @@ function Landing() {
         <Countdown
           targetIso={s.countdown_datetime}
           title={s.countdown_title}
+          subtitle={s.countdown_subtitle}
           subtext={s.countdown_subtext}
           ctaText={s.countdown_cta_text}
           ctaUrl={s.countdown_cta_url}
@@ -155,42 +157,7 @@ function Landing() {
       )}
 
       {/* TICKETS */}
-      {isOn("tickets") && (
-        <section id="entradas" className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
-          <SectionBackground cfg={sectionBg("tickets")} />
-          <div className="relative max-w-5xl mx-auto">
-            <SectionLabel>Entradas</SectionLabel>
-            <h2 className="text-display text-4xl md:text-6xl font-black mb-3">{s?.ticket_title}</h2>
-            <p className="text-white/70 mb-8">{s?.ticket_text}</p>
-            <div className="rounded-2xl overflow-hidden border border-[var(--brand-blue)]/30 bg-[var(--dark-panel)] glow-blue">
-              {s?.ticket_iframe_url ? (
-                <iframe
-                  src={s.ticket_iframe_url}
-                  title="Compra de entradas DUALITY"
-                  allow="payment *; fullscreen; clipboard-write; encrypted-media"
-                  loading="lazy"
-                  referrerPolicy="strict-origin-when-cross-origin"
-                  className="w-full block"
-                  style={{ minHeight: 780, border: 0 }}
-                />
-              ) : (
-                <div className="flex flex-col items-center justify-center text-center p-10 min-h-[780px] gap-4">
-                  <div className="text-sm uppercase tracking-widest text-[var(--brand-blue)]">Próximamente</div>
-                  <p className="text-white/70 max-w-md">El módulo oficial de venta se publicará pronto.</p>
-                </div>
-              )}
-            </div>
-            {s?.ticket_show_fallback && s?.ticket_fallback_url && (
-              <div className="mt-6 text-center">
-                <a href={s.ticket_fallback_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 hover:border-[var(--brand-blue)] font-bold uppercase tracking-wider">
-                  Abrir venta oficial
-                </a>
-              </div>
-            )}
-            <p className="text-center mt-6 text-xs uppercase tracking-widest text-white/50">{s?.ticket_trust_text}</p>
-          </div>
-        </section>
-      )}
+      {isOn("tickets") && <TicketsSection s={s} bg={sectionBg("tickets")} />}
 
       {/* ARTISTS */}
       {isOn("artists") && data.artists.length > 0 && (
@@ -553,7 +520,12 @@ function ArtistCard({ a, fav, onFav }: { a: any; fav: boolean; onFav: () => void
 }
 
 // ============== COUNTDOWN (premium) ==============
-function Countdown({ targetIso, title, subtext, ctaText, ctaUrl, bg }: { targetIso: string; title?: string; subtext?: string; ctaText?: string; ctaUrl?: string; bg?: any }) {
+function Countdown({
+  targetIso, title, subtitle, subtext, ctaText, ctaUrl, bg,
+}: {
+  targetIso: string; title?: string; subtitle?: string; subtext?: string;
+  ctaText?: string; ctaUrl?: string; bg?: any;
+}) {
   const target = useMemo(() => new Date(targetIso).getTime(), [targetIso]);
   const [now, setNow] = useState<number | null>(null);
   useEffect(() => {
@@ -566,29 +538,56 @@ function Countdown({ targetIso, title, subtext, ctaText, ctaUrl, bg }: { targetI
   const h = Math.floor((diff % 86400000) / 3600000);
   const m = Math.floor((diff % 3600000) / 60000);
   const sec = Math.floor((diff % 60000) / 1000);
-  const cells: readonly { label: string; val: string }[] = now === null
+  const cells: readonly { label: string; val: string; pulse?: boolean }[] = now === null
     ? [{label:"Días",val:"--"},{label:"Horas",val:"--"},{label:"Min",val:"--"},{label:"Seg",val:"--"}]
-    : [{label:"Días",val:String(d).padStart(2,"0")},{label:"Horas",val:String(h).padStart(2,"0")},{label:"Min",val:String(m).padStart(2,"0")},{label:"Seg",val:String(sec).padStart(2,"0")}];
+    : [
+      {label:"Días",val:String(d).padStart(2,"0")},
+      {label:"Horas",val:String(h).padStart(2,"0")},
+      {label:"Min",val:String(m).padStart(2,"0")},
+      {label:"Seg",val:String(sec).padStart(2,"0"), pulse: true},
+    ];
 
   return (
     <section className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
+      {bg && <SectionBackground cfg={bg} />}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[color-mix(in_oklab,var(--brand-blue)_8%,transparent)] to-transparent" />
-        <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-[var(--brand-blue)]/50 to-transparent" />
+        <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-[var(--brand-blue)]/60 to-transparent" />
+        <div className="absolute inset-x-0 top-[calc(50%+2px)] h-px bg-gradient-to-r from-transparent via-[var(--brand-red)]/30 to-transparent" />
       </div>
       <div className="relative max-w-5xl mx-auto text-center">
-        <SectionLabel>Cuenta atrás</SectionLabel>
-        <h3 className="text-display text-3xl md:text-5xl font-black mb-3">{title}</h3>
-        {subtext && <p className="text-white/60 text-sm md:text-base mb-10">{subtext}</p>}
+        <div className="inline-flex items-center gap-3 mb-4 text-[10px] uppercase tracking-[0.45em] text-[var(--brand-blue)]">
+          <span className="h-px w-8 bg-[var(--brand-blue)]/60" />
+          T · MINUS
+          <span className="h-px w-8 bg-[var(--brand-blue)]/60" />
+        </div>
+        <h3 className="text-display text-3xl md:text-5xl font-black mb-2 text-glow-blue">{title}</h3>
+        {subtitle && (
+          <p className="text-white/70 text-xs md:text-sm uppercase tracking-[0.3em] mb-2">{subtitle}</p>
+        )}
+        {subtext && <p className="text-white/55 text-sm md:text-base mb-10">{subtext}</p>}
 
-        <div className="grid grid-cols-4 gap-2 md:gap-5 mb-10">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5 mb-10">
           {cells.map((c) => (
-            <div key={c.label} className="countdown-card rounded-2xl p-3 md:p-8">
-              <div className="relative z-10">
-                <div className="text-display text-4xl md:text-7xl lg:text-8xl font-black text-glow-blue tabular-nums leading-none">
+            <div
+              key={c.label}
+              className="relative rounded-2xl p-4 md:p-8 border border-white/10 bg-[var(--dark-panel)]/70 backdrop-blur-sm overflow-hidden"
+            >
+              <div className="absolute inset-x-3 top-3 flex items-center justify-between text-[8px] uppercase tracking-[0.4em] text-white/30">
+                <span>◆</span><span>{c.label.slice(0, 1)}</span>
+              </div>
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--brand-blue)]/60 to-transparent" />
+              <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[var(--brand-red)]/40 to-transparent" />
+              <div className="relative z-10 pt-3">
+                <div
+                  key={c.pulse ? c.val : undefined}
+                  className={`text-display text-5xl md:text-7xl lg:text-8xl font-black text-glow-blue tabular-nums leading-none ${
+                    c.pulse ? "animate-[countdown-pulse_1s_ease-out]" : ""
+                  }`}
+                >
                   {c.val}
                 </div>
-                <div className="text-[9px] md:text-xs uppercase tracking-[0.3em] text-white/60 mt-2 md:mt-4">
+                <div className="text-[10px] md:text-xs uppercase tracking-[0.4em] text-white/60 mt-3 md:mt-5">
                   {c.label}
                 </div>
               </div>
@@ -602,9 +601,123 @@ function Countdown({ targetIso, title, subtext, ctaText, ctaUrl, bg }: { targetI
           </a>
         )}
       </div>
+      <style>{`
+        @keyframes countdown-pulse {
+          0% { transform: scale(1); text-shadow: 0 0 0 transparent; }
+          30% { transform: scale(1.06); text-shadow: 0 0 24px var(--blue-glow, rgba(0,174,239,.7)); }
+          100% { transform: scale(1); text-shadow: 0 0 0 transparent; }
+        }
+      `}</style>
     </section>
   );
 }
+
+// ============== TICKETS ==============
+function TicketsSection({ s, bg }: { s: any; bg?: any }) {
+  const mode: "iframe" | "external" | "both" = s?.ticket_mode ?? "iframe";
+  const url = s?.ticket_iframe_url as string | undefined;
+  const fallback = s?.ticket_fallback_url as string | undefined;
+  const [iframeFailed, setIframeFailed] = useState(false);
+  const [iframeLoaded, setIframeLoaded] = useState(false);
+
+  // Iframe timeout watchdog — if Fourvenues blocks embedding (X-Frame-Options / CSP),
+  // onLoad never fires properly. After 8s without load, show the fallback.
+  useEffect(() => {
+    if (mode === "external" || !url) return;
+    if (iframeLoaded) return;
+    const t = setTimeout(() => { if (!iframeLoaded) setIframeFailed(true); }, 8000);
+    return () => clearTimeout(t);
+  }, [mode, url, iframeLoaded]);
+
+  const showIframe = (mode === "iframe" || mode === "both") && url && !iframeFailed;
+  const showButton = mode === "external" || mode === "both" || iframeFailed || s?.ticket_show_fallback;
+
+  return (
+    <section id="entradas" className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
+      <SectionBackground cfg={bg} />
+      <div className="relative max-w-5xl mx-auto">
+        <SectionLabel>Entradas</SectionLabel>
+        <h2 className="text-display text-4xl md:text-6xl font-black mb-3">{s?.ticket_title}</h2>
+        <p className="text-white/70 mb-8">{s?.ticket_text}</p>
+
+        {showIframe && (
+          <div className="rounded-2xl overflow-hidden border border-[var(--brand-blue)]/30 bg-[var(--dark-panel)] glow-blue">
+            <iframe
+              src={url}
+              title="Compra de entradas DUALITY"
+              allow="payment *; fullscreen; clipboard-write; encrypted-media"
+              loading="lazy"
+              referrerPolicy="strict-origin-when-cross-origin"
+              onLoad={() => setIframeLoaded(true)}
+              onError={() => setIframeFailed(true)}
+              className="w-full block border-0 min-h-[860px] md:min-h-[780px]"
+              style={{ border: 0 }}
+            />
+          </div>
+        )}
+
+        {iframeFailed && fallback && (
+          <div className="rounded-2xl border border-[var(--brand-red)]/40 bg-[var(--dark-panel)] p-8 md:p-10 text-center space-y-4">
+            <div className="text-xs uppercase tracking-[0.3em] text-[var(--brand-red)]">Venta externa</div>
+            <p className="text-white/80 max-w-md mx-auto">
+              No hemos podido cargar la venta integrada. Puedes abrir la venta oficial en una nueva pestaña.
+            </p>
+            <a
+              href={fallback}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-[var(--brand-red)] text-white font-black uppercase tracking-widest glow-red hover:scale-105 transition-transform"
+            >
+              Abrir venta oficial
+            </a>
+          </div>
+        )}
+
+        {mode === "external" && fallback && !iframeFailed && (
+          <div className="rounded-2xl border border-[var(--brand-blue)]/30 bg-[var(--dark-panel)] p-8 md:p-12 text-center space-y-5 glow-blue">
+            <div className="text-xs uppercase tracking-[0.3em] text-[var(--brand-blue)]">Venta oficial</div>
+            <p className="text-white/80 max-w-md mx-auto">
+              La venta se realiza en la plataforma oficial. Pulsa el botón para abrirla en una nueva pestaña.
+            </p>
+            <a
+              href={fallback}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-[var(--brand-blue)] text-black font-black uppercase tracking-widest glow-blue hover:scale-105 transition-transform"
+            >
+              Comprar entradas
+            </a>
+          </div>
+        )}
+
+        {!url && mode !== "external" && (
+          <div className="rounded-2xl border border-white/10 bg-[var(--dark-panel)] flex flex-col items-center justify-center text-center p-10 min-h-[420px] gap-4">
+            <div className="text-sm uppercase tracking-widest text-[var(--brand-blue)]">Próximamente</div>
+            <p className="text-white/70 max-w-md">El módulo oficial de venta se publicará pronto.</p>
+          </div>
+        )}
+
+        {showButton && mode === "both" && fallback && !iframeFailed && (
+          <div className="mt-6 text-center">
+            <a
+              href={fallback}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 hover:border-[var(--brand-blue)] font-bold uppercase tracking-wider"
+            >
+              Abrir venta oficial en nueva pestaña
+            </a>
+          </div>
+        )}
+
+        {s?.ticket_trust_text && (
+          <p className="text-center mt-6 text-xs uppercase tracking-widest text-white/50">{s.ticket_trust_text}</p>
+        )}
+      </div>
+    </section>
+  );
+}
+
 
 // ============== SCHEDULE ==============
 function Schedule({
