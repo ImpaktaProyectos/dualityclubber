@@ -386,6 +386,14 @@ function FieldInput({ field, value, onChange }: { field: SettingField; value: an
       </div>
     );
   }
+  if (field.type === "font") {
+    return (
+      <div className="md:col-span-2">
+        <FontPicker label={field.label} value={value} onChange={onChange} role={field.role ?? "both"} />
+        {field.hint && <p className="text-xs text-white/40 mt-1">{field.hint}</p>}
+      </div>
+    );
+  }
   if (field.type === "checkbox") {
     return (
       <label className="flex items-center gap-3 text-sm cursor-pointer rounded-lg border border-white/10 bg-black/30 px-3 py-2.5 hover:border-white/20">
