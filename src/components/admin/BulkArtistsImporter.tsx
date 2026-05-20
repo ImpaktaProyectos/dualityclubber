@@ -237,6 +237,7 @@ export function BulkArtistsImporter({
                 <Pill tone="ok">Nuevos: {stats.news}</Pill>
                 <Pill tone="warn">Duplicados: {stats.dups}</Pill>
                 <Pill tone="err">Sin escenario: {stats.noStage}</Pill>
+                {stats.missing > 0 && <Pill tone="warn">Escenario inexistente: {stats.missing}</Pill>}
               </div>
 
               <div className="rounded-xl border border-white/10 overflow-hidden">
