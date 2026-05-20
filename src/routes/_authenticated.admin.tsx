@@ -148,8 +148,8 @@ function AdminPage() {
             {tab === "stages" && <StagesManager rows={(data as any).stages ?? []} onSaved={refresh} />}
             {tab === "artists" && (
               <div className="space-y-6">
-                <BulkArtistsImporter existingArtists={data.artists} onSaved={refresh} />
-                <ListEditor table="artists" rows={data.artists} fields={ARTIST_FIELDS} onSaved={refresh} />
+                <BulkArtistsImporter existingArtists={data.artists} stages={(data as any).stages ?? []} onSaved={refresh} />
+                <ListEditor table="artists" rows={data.artists} fields={buildArtistFields((data as any).stages ?? [])} onSaved={refresh} />
               </div>
             )}
             {tab === "schedule" && (
@@ -160,7 +160,7 @@ function AdminPage() {
                   existingSchedule={data.schedule as any}
                   onSaved={refresh}
                 />
-                <ListEditor table="schedule_items" rows={data.schedule} fields={SCHEDULE_FIELDS} onSaved={refresh} />
+                <ListEditor table="schedule_items" rows={data.schedule} fields={buildScheduleFields((data as any).stages ?? [])} onSaved={refresh} />
               </div>
             )}
             {tab === "quickInfo" && <ListEditor table="quick_info_items" rows={data.quickInfo} fields={QUICK_INFO_FIELDS} onSaved={refresh} />}
