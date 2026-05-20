@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Heart, Instagram, MapPin, Music, ShoppingBag, ChevronDown } from "lucide-react";
+import { Heart, Instagram, MapPin, Music, ShoppingBag, ChevronDown, Youtube, Facebook, Twitter, MessageCircle, Send, Headphones } from "lucide-react";
 import { getLandingData } from "@/lib/site.functions";
 import { useFavorites } from "@/hooks/useFavorites";
 import { SectionBackground, resolveSectionBg } from "@/components/SectionBackground";
@@ -37,6 +37,22 @@ function Landing() {
     const root = document.documentElement;
     if (s.primary_color) root.style.setProperty("--brand-blue", s.primary_color);
     if (s.secondary_color) root.style.setProperty("--brand-red", s.secondary_color);
+    if (s.font_display) root.style.setProperty("--font-display", `"${s.font_display}", system-ui, sans-serif`);
+    if (s.font_body) root.style.setProperty("--font-sans", `"${s.font_body}", system-ui, sans-serif`);
+    // load google fonts dynamically
+    const families = [s.font_display, s.font_body].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i);
+    if (families.length) {
+      const href = `https://fonts.googleapis.com/css2?${families.map((f: string) => `family=${encodeURIComponent(f)}:wght@300;400;500;600;700;800;900`).join("&")}&display=swap`;
+      const id = "duality-dynamic-fonts";
+      let link = document.getElementById(id) as HTMLLinkElement | null;
+      if (!link) {
+        link = document.createElement("link");
+        link.id = id;
+        link.rel = "stylesheet";
+        document.head.appendChild(link);
+      }
+      if (link.href !== href) link.href = href;
+    }
   }, [s]);
 
   const atmosphere = (data as any).atmosphere ?? null;
@@ -75,8 +91,19 @@ function Landing() {
       {/* HEADER */}
       <header className="fixed top-0 inset-x-0 z-50 glass border-b border-white/5">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-8 h-16">
-          <a href="#top" className="text-display text-2xl font-black tracking-widest">
-            DUA<span style={{ color: "var(--brand-red)" }}>L</span><span style={{ color: "var(--brand-blue)" }}>I</span>TY
+          <a href="#top" className="flex items-center gap-2">
+            {s?.header_logo_url ? (
+              <img
+                src={s.header_logo_url}
+                alt={s?.event_name ?? "DUALITY"}
+                style={{ height: `${s?.header_logo_height ?? 36}px` }}
+                className="w-auto object-contain"
+              />
+            ) : (
+              <span className="text-display text-2xl font-black tracking-widest">
+                DUA<span style={{ color: "var(--brand-red)" }}>L</span><span style={{ color: "var(--brand-blue)" }}>I</span>TY
+              </span>
+            )}
           </a>
           <nav className="hidden md:flex gap-7 text-sm uppercase tracking-widest">
             {navItems.map((n) => (
@@ -259,9 +286,35 @@ function Landing() {
             <div className="text-display text-3xl font-black tracking-widest">
               DUA<span style={{ color: "var(--brand-red)" }}>L</span><span style={{ color: "var(--brand-blue)" }}>I</span>TY
             </div>
-            <div className="flex gap-4 md:justify-center">
-              {s?.footer_instagram_url && <a href={s.footer_instagram_url} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center hover:border-[var(--brand-blue)] hover:text-[var(--brand-blue)]"><Instagram className="w-5 h-5" /></a>}
-              {s?.footer_tiktok_url && <a href={s.footer_tiktok_url} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center hover:border-[var(--brand-red)] hover:text-[var(--brand-red)]"><Music className="w-5 h-5" /></a>}
+            <div className="flex flex-wrap gap-3 md:justify-center">
+              {[
+                { url: s?.footer_instagram_url, Icon: Instagram, label: "Instagram", color: "var(--brand-blue)" },
+                { url: s?.footer_tiktok_url, Icon: Music, label: "TikTok", color: "var(--brand-red)" },
+                { url: s?.footer_facebook_url, Icon: Facebook, label: "Facebook", color: "var(--brand-blue)" },
+                { url: s?.footer_youtube_url, Icon: Youtube, label: "YouTube", color: "var(--brand-red)" },
+                { url: s?.footer_twitter_url ?? s?.footer_x_url, Icon: Twitter, label: "Twitter / X", color: "var(--brand-blue)" },
+                { url: s?.footer_spotify_url, Icon: Music, label: "Spotify", color: "var(--brand-blue)" },
+                { url: s?.footer_soundcloud_url, Icon: Headphones, label: "SoundCloud", color: "var(--brand-red)" },
+                { url: s?.footer_whatsapp_url, Icon: MessageCircle, label: "WhatsApp", color: "var(--brand-blue)" },
+                { url: s?.footer_telegram_url, Icon: Send, label: "Telegram", color: "var(--brand-blue)" },
+              ]
+                .filter((x) => x.url)
+                .map(({ url, Icon, label, color }) => (
+                  <a
+                    key={label}
+                    href={url!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={label}
+                    title={label}
+                    className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center transition-colors hover:scale-110"
+                    style={{ ["--hover" as any]: color }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = color; e.currentTarget.style.color = color; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = ""; e.currentTarget.style.color = ""; }}
+                  >
+                    <Icon className="w-5 h-5" />
+                  </a>
+                ))}
             </div>
             <div className="text-xs text-white/40 md:text-right space-y-1">
               <div>{s?.footer_copyright}</div>
