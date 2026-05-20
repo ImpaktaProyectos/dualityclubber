@@ -156,42 +156,7 @@ function Landing() {
       )}
 
       {/* TICKETS */}
-      {isOn("tickets") && (
-        <section id="entradas" className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
-          <SectionBackground cfg={sectionBg("tickets")} />
-          <div className="relative max-w-5xl mx-auto">
-            <SectionLabel>Entradas</SectionLabel>
-            <h2 className="text-display text-4xl md:text-6xl font-black mb-3">{s?.ticket_title}</h2>
-            <p className="text-white/70 mb-8">{s?.ticket_text}</p>
-            <div className="rounded-2xl overflow-hidden border border-[var(--brand-blue)]/30 bg-[var(--dark-panel)] glow-blue">
-              {s?.ticket_iframe_url ? (
-                <iframe
-                  src={s.ticket_iframe_url}
-                  title="Compra de entradas DUALITY"
-                  allow="payment *; fullscreen; clipboard-write; encrypted-media"
-                  loading="lazy"
-                  referrerPolicy="strict-origin-when-cross-origin"
-                  className="w-full block"
-                  style={{ minHeight: 780, border: 0 }}
-                />
-              ) : (
-                <div className="flex flex-col items-center justify-center text-center p-10 min-h-[780px] gap-4">
-                  <div className="text-sm uppercase tracking-widest text-[var(--brand-blue)]">Próximamente</div>
-                  <p className="text-white/70 max-w-md">El módulo oficial de venta se publicará pronto.</p>
-                </div>
-              )}
-            </div>
-            {s?.ticket_show_fallback && s?.ticket_fallback_url && (
-              <div className="mt-6 text-center">
-                <a href={s.ticket_fallback_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 hover:border-[var(--brand-blue)] font-bold uppercase tracking-wider">
-                  Abrir venta oficial
-                </a>
-              </div>
-            )}
-            <p className="text-center mt-6 text-xs uppercase tracking-widest text-white/50">{s?.ticket_trust_text}</p>
-          </div>
-        </section>
-      )}
+      {isOn("tickets") && <TicketsSection s={s} bg={sectionBg("tickets")} />}
 
       {/* ARTISTS */}
       {isOn("artists") && data.artists.length > 0 && (
