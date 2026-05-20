@@ -277,6 +277,7 @@ export function BulkArtistsImporter({
                             {r.status === "new" && <Tag tone="ok"><CheckCircle2 className="h-3 w-3" />Nuevo</Tag>}
                             {r.status === "duplicate" && <Tag tone="warn"><AlertTriangle className="h-3 w-3" />Duplicado</Tag>}
                             {r.status === "no-stage" && <Tag tone="err"><AlertTriangle className="h-3 w-3" />Sin escenario</Tag>}
+                            {r.status === "stage-missing" && <Tag tone="warn"><AlertTriangle className="h-3 w-3" />Escenario nuevo</Tag>}
                           </td>
                         </tr>
                       ))}
