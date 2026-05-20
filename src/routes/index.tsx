@@ -23,7 +23,17 @@ export const Route = createFileRoute("/")({
 type Section = { section_key: string; is_enabled: boolean; display_mode: string };
 
 function Landing() {
-  const data = Route.useLoaderData();
+  const rawData = Route.useLoaderData();
+  const stageNameById = useMemo(() => {
+    const m: Record<string, string> = {};
+    ((rawData as any).stages ?? []).forEach((st: any) => { m[st.id] = st.name; });
+    return m;
+  }, [rawData]);
+  const data = useMemo(() => ({
+    ...rawData,
+    artists: (rawData.artists ?? []).map((a: any) => ({ ...a, stage: a.stage || (a.stage_id ? stageNameById[a.stage_id] : null) })),
+    schedule: (rawData.schedule ?? []).map((it: any) => ({ ...it, stage: it.stage || (it.stage_id ? stageNameById[it.stage_id] : null) })),
+  }), [rawData, stageNameById]);
   const s = data.settings;
   const isOn = (key: string) => {
     const sec = (data.sections as Section[]).find((x) => x.section_key === key);
