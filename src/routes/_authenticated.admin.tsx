@@ -25,7 +25,8 @@ export const Route = createFileRoute("/_authenticated/admin")({
 
 const TABS = [
   { key: "settings",   label: "Evento",         icon: Settings,    hint: "Datos básicos, hero, entradas, marca, tipografía y redes sociales." },
-  { key: "sections",   label: "Secciones",      icon: Layers,      hint: "Activa o oculta secciones enteras de la web." },
+  { key: "sections",   label: "Secciones",      icon: Layers,      hint: "Arrastra las secciones para reordenar la landing." },
+  { key: "stages",     label: "Escenarios",     icon: MapPin,      hint: "Gestiona los escenarios internos (Open Air, Main Room…)." },
   { key: "artists",    label: "Artistas",       icon: Mic2,        hint: "Añade DJs y artistas con foto, hora y redes." },
   { key: "schedule",   label: "Horarios",       icon: Clock,       hint: "Define el line-up por hora y escenario." },
   { key: "quickInfo",  label: "Info rápida",    icon: Info,        hint: "Tarjetas con fecha, edad mínima, ubicación, etc." },
