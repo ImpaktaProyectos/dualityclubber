@@ -68,36 +68,65 @@ function AdminPage() {
     );
   }
 
+  const activeTab = TABS.find((t) => t.key === tab)!;
+
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 glass border-b border-white/10">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-8 h-16">
           <div className="text-display text-xl font-black tracking-widest">
-            DUA<span style={{ color: "var(--brand-red)" }}>L</span><span style={{ color: "var(--brand-blue)" }}>I</span>TY <span className="text-white/40 text-xs ml-2">ADMIN</span>
+            DUA<span style={{ color: "var(--brand-red)" }}>L</span><span style={{ color: "var(--brand-blue)" }}>I</span>TY
+            <span className="text-white/40 text-xs ml-2 font-normal tracking-normal">Panel del organizador</span>
           </div>
-          <div className="flex items-center gap-2">
-            <a href="/" target="_blank" className="text-xs uppercase tracking-widest text-white/60 hover:text-white">Ver web</a>
+          <div className="flex items-center gap-3">
+            <a
+              href="/"
+              target="_blank"
+              className="hidden sm:inline-flex items-center gap-1 text-xs uppercase tracking-widest text-white/70 hover:text-white border border-white/10 rounded-full px-3 py-1.5"
+            >
+              <ExternalLink className="h-3.5 w-3.5" /> Ver la web
+            </a>
             <button onClick={logout} className="inline-flex items-center gap-1 text-xs uppercase tracking-widest text-white/60 hover:text-white">
               <LogOut className="h-4 w-4" /> Salir
             </button>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto px-4 md:px-8 flex gap-1 overflow-x-auto scrollbar-hide pb-2">
-          {TABS.map((t) => (
-            <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              className={`shrink-0 px-3 py-1.5 rounded-full text-xs uppercase tracking-widest font-bold border transition-colors ${
-                tab === t.key ? "bg-[var(--brand-blue)] text-black border-transparent" : "border-white/10 text-white/70 hover:border-white/30"
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
+        <div className="max-w-7xl mx-auto px-4 md:px-8 pb-3">
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+            {TABS.map((t) => {
+              const Icon = t.icon;
+              const active = tab === t.key;
+              return (
+                <button
+                  key={t.key}
+                  onClick={() => setTab(t.key)}
+                  className={`shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs uppercase tracking-widest font-bold border transition-colors ${
+                    active
+                      ? "bg-[var(--brand-blue)] text-black border-transparent shadow-[0_0_24px_var(--blue-glow)]"
+                      : "border-white/10 text-white/70 hover:border-white/40 hover:text-white"
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto p-4 md:p-8">
+      <main className="max-w-7xl mx-auto p-4 md:p-8 space-y-6">
+        {/* Intro card per tab — non-technical guidance */}
+        <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-[var(--brand-blue)]/10 via-transparent to-[var(--brand-red)]/10 p-5">
+          <div className="flex items-start gap-3">
+            <activeTab.icon className="h-6 w-6 text-[var(--brand-blue)] shrink-0 mt-0.5" />
+            <div>
+              <h1 className="text-lg font-bold">{activeTab.label}</h1>
+              <p className="text-sm text-white/60 mt-1">{activeTab.hint}</p>
+            </div>
+          </div>
+        </div>
+
         {isLoading || !data ? (
           <p className="text-white/60">Cargando datos…</p>
         ) : (
