@@ -160,13 +160,14 @@ function AdminPage() {
 type SettingField = {
   key: string;
   label: string;
-  type?: "text" | "textarea" | "checkbox" | "number" | "select";
+  type?: "text" | "textarea" | "checkbox" | "number" | "select" | "font";
   rows?: number;
   hint?: string;
   options?: { value: string; label: string }[];
   min?: number;
   max?: number;
   placeholder?: string;
+  role?: "display" | "body" | "both";
 };
 
 const FONT_OPTIONS = [
