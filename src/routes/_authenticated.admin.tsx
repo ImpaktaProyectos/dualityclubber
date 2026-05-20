@@ -320,15 +320,18 @@ function SettingsEditor({ data, onSaved }: { data: any; onSaved: () => void }) {
   const save = useServerFn(upsertRow);
   const mut = useMutation({
     mutationFn: () => save({ data: { table: "site_settings", values } }),
-    onSuccess: () => { toast.success("Guardado"); onSaved(); },
+    onSuccess: () => { toast.success("✓ Cambios guardados"); onSaved(); },
     onError: (e: any) => toast.error(e.message),
   });
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {SETTING_GROUPS.map((g) => (
-        <section key={g.title} className="rounded-2xl border border-white/10 bg-[var(--dark-panel)] p-5">
-          <h2 className="text-sm uppercase tracking-widest text-white/60 mb-4">{g.title}</h2>
+        <section key={g.title} className="rounded-2xl border border-white/10 bg-[var(--dark-panel)] p-5 md:p-6">
+          <header className="mb-4">
+            <h2 className="text-base font-bold">{g.title}</h2>
+            {g.description && <p className="text-xs text-white/50 mt-1">{g.description}</p>}
+          </header>
           <div className="grid md:grid-cols-2 gap-4">
             {g.fields.map((f) => (
               <FieldInput key={f.key} field={f} value={values[f.key]} onChange={(v) => setValues({ ...values, [f.key]: v })} />
@@ -340,16 +343,16 @@ function SettingsEditor({ data, onSaved }: { data: any; onSaved: () => void }) {
         <button
           onClick={() => mut.mutate()}
           disabled={mut.isPending}
-          className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-blue)] text-black font-bold px-6 py-3 text-sm uppercase tracking-widest shadow-lg"
+          className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-blue)] text-black font-bold px-6 py-3 text-sm uppercase tracking-widest shadow-[0_0_32px_var(--blue-glow)] hover:scale-105 transition-transform"
         >
-          <Save className="h-4 w-4" /> {mut.isPending ? "Guardando…" : "Guardar"}
+          <Save className="h-4 w-4" /> {mut.isPending ? "Guardando…" : "Guardar todos los cambios"}
         </button>
       </div>
     </div>
   );
 }
 
-function FieldInput({ field, value, onChange }: { field: { key: string; label: string; type?: string; rows?: number }; value: any; onChange: (v: any) => void }) {
+function FieldInput({ field, value, onChange }: { field: SettingField; value: any; onChange: (v: any) => void }) {
   // Media upload override based on field key
   const mediaConfig = getMediaConfig(field.key);
   if (mediaConfig) {
@@ -363,20 +366,75 @@ function FieldInput({ field, value, onChange }: { field: { key: string; label: s
           value={value}
           onChange={onChange}
         />
+        {field.hint && <p className="text-xs text-white/40 mt-1">{field.hint}</p>}
       </div>
     );
   }
   if (field.type === "checkbox") {
     return (
-      <label className="flex items-center gap-2 text-sm">
-        <input type="checkbox" checked={!!value} onChange={(e) => onChange(e.target.checked)} />
-        <span>{field.label}</span>
+      <label className="flex items-center gap-3 text-sm cursor-pointer rounded-lg border border-white/10 bg-black/30 px-3 py-2.5 hover:border-white/20">
+        <input
+          type="checkbox"
+          checked={!!value}
+          onChange={(e) => onChange(e.target.checked)}
+          className="h-4 w-4 accent-[var(--brand-blue)]"
+        />
+        <span className="flex-1">{field.label}</span>
       </label>
+    );
+  }
+  if (field.type === "select") {
+    return (
+      <div>
+        <label className="text-xs uppercase tracking-widest text-white/50">{field.label}</label>
+        <select
+          value={value ?? ""}
+          onChange={(e) => onChange(e.target.value)}
+          className="mt-1 w-full rounded-lg bg-black/40 border border-white/10 px-3 py-2 text-sm focus:border-[var(--brand-blue)] outline-none"
+          style={field.key.startsWith("font_") ? { fontFamily: `"${value}", system-ui, sans-serif` } : undefined}
+        >
+          <option value="">— elegir —</option>
+          {field.options?.map((o) => (
+            <option
+              key={o.value}
+              value={o.value}
+              style={field.key.startsWith("font_") ? { fontFamily: `"${o.value}", system-ui, sans-serif` } : undefined}
+            >
+              {o.label}
+            </option>
+          ))}
+        </select>
+        {field.key.startsWith("font_") && value && (
+          <div
+            className="mt-2 rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-base"
+            style={{ fontFamily: `"${value}", system-ui, sans-serif` }}
+          >
+            DUALITY · Aa Bb 123 — vista previa
+          </div>
+        )}
+        {field.hint && <p className="text-xs text-white/40 mt-1">{field.hint}</p>}
+      </div>
+    );
+  }
+  if (field.type === "number") {
+    return (
+      <div>
+        <label className="text-xs uppercase tracking-widest text-white/50">{field.label}</label>
+        <input
+          type="number"
+          min={field.min}
+          max={field.max}
+          value={value ?? ""}
+          onChange={(e) => onChange(e.target.value === "" ? null : Number(e.target.value))}
+          className="mt-1 w-full rounded-lg bg-black/40 border border-white/10 px-3 py-2 text-sm focus:border-[var(--brand-blue)] outline-none"
+        />
+        {field.hint && <p className="text-xs text-white/40 mt-1">{field.hint}</p>}
+      </div>
     );
   }
   if (field.rows && field.rows > 1) {
     return (
-      <div>
+      <div className="md:col-span-2">
         <label className="text-xs uppercase tracking-widest text-white/50">{field.label}</label>
         <textarea
           rows={field.rows}
@@ -384,6 +442,7 @@ function FieldInput({ field, value, onChange }: { field: { key: string; label: s
           onChange={(e) => onChange(e.target.value)}
           className="mt-1 w-full rounded-lg bg-black/40 border border-white/10 px-3 py-2 text-sm focus:border-[var(--brand-blue)] outline-none"
         />
+        {field.hint && <p className="text-xs text-white/40 mt-1">{field.hint}</p>}
       </div>
     );
   }
@@ -393,9 +452,11 @@ function FieldInput({ field, value, onChange }: { field: { key: string; label: s
       <input
         type="text"
         value={value ?? ""}
+        placeholder={field.placeholder}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-1 w-full rounded-lg bg-black/40 border border-white/10 px-3 py-2 text-sm focus:border-[var(--brand-blue)] outline-none"
+        className="mt-1 w-full rounded-lg bg-black/40 border border-white/10 px-3 py-2 text-sm focus:border-[var(--brand-blue)] outline-none placeholder:text-white/20"
       />
+      {field.hint && <p className="text-xs text-white/40 mt-1">{field.hint}</p>}
     </div>
   );
 }
