@@ -5,7 +5,10 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { getAdminData, upsertRow, deleteRow, isCurrentUserAdmin } from "@/lib/admin.functions";
 import { toast } from "sonner";
-import { LogOut, Plus, Trash2, Save, Eye, EyeOff } from "lucide-react";
+import {
+  LogOut, Plus, Trash2, Save, Eye, EyeOff, Settings, Layers, Mic2, Clock, Info,
+  Bus, Image as ImageIcon, HelpCircle, Sparkles, ExternalLink,
+} from "lucide-react";
 import { MediaUpload } from "@/components/admin/MediaUpload";
 import { AtmosphereEditor } from "@/components/admin/AtmosphereEditor";
 
@@ -15,15 +18,15 @@ export const Route = createFileRoute("/_authenticated/admin")({
 });
 
 const TABS = [
-  { key: "settings", label: "Evento & Settings" },
-  { key: "sections", label: "Secciones" },
-  { key: "artists", label: "Artistas" },
-  { key: "schedule", label: "Horarios" },
-  { key: "quickInfo", label: "Info rápida" },
-  { key: "buses", label: "Autobuses" },
-  { key: "gallery", label: "Galería" },
-  { key: "faqs", label: "FAQ" },
-  { key: "atmosphere", label: "Fondos y atmósfera" },
+  { key: "settings",   label: "Evento",         icon: Settings,    hint: "Datos básicos, hero, entradas, marca, tipografía y redes sociales." },
+  { key: "sections",   label: "Secciones",      icon: Layers,      hint: "Activa o oculta secciones enteras de la web." },
+  { key: "artists",    label: "Artistas",       icon: Mic2,        hint: "Añade DJs y artistas con foto, hora y redes." },
+  { key: "schedule",   label: "Horarios",       icon: Clock,       hint: "Define el line-up por hora y escenario." },
+  { key: "quickInfo",  label: "Info rápida",    icon: Info,        hint: "Tarjetas con fecha, edad mínima, ubicación, etc." },
+  { key: "buses",      label: "Autobuses",      icon: Bus,         hint: "Rutas de bus, horarios y precios." },
+  { key: "gallery",    label: "Galería",        icon: ImageIcon,   hint: "Fotos y vídeos de ediciones anteriores." },
+  { key: "faqs",       label: "FAQ",            icon: HelpCircle,  hint: "Preguntas frecuentes para tus asistentes." },
+  { key: "atmosphere", label: "Atmósfera",      icon: Sparkles,    hint: "Fondos, colores y texturas de la web." },
 ] as const;
 type TabKey = (typeof TABS)[number]["key"];
 
@@ -65,36 +68,65 @@ function AdminPage() {
     );
   }
 
+  const activeTab = TABS.find((t) => t.key === tab)!;
+
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 glass border-b border-white/10">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-8 h-16">
           <div className="text-display text-xl font-black tracking-widest">
-            DUA<span style={{ color: "var(--brand-red)" }}>L</span><span style={{ color: "var(--brand-blue)" }}>I</span>TY <span className="text-white/40 text-xs ml-2">ADMIN</span>
+            DUA<span style={{ color: "var(--brand-red)" }}>L</span><span style={{ color: "var(--brand-blue)" }}>I</span>TY
+            <span className="text-white/40 text-xs ml-2 font-normal tracking-normal">Panel del organizador</span>
           </div>
-          <div className="flex items-center gap-2">
-            <a href="/" target="_blank" className="text-xs uppercase tracking-widest text-white/60 hover:text-white">Ver web</a>
+          <div className="flex items-center gap-3">
+            <a
+              href="/"
+              target="_blank"
+              className="hidden sm:inline-flex items-center gap-1 text-xs uppercase tracking-widest text-white/70 hover:text-white border border-white/10 rounded-full px-3 py-1.5"
+            >
+              <ExternalLink className="h-3.5 w-3.5" /> Ver la web
+            </a>
             <button onClick={logout} className="inline-flex items-center gap-1 text-xs uppercase tracking-widest text-white/60 hover:text-white">
               <LogOut className="h-4 w-4" /> Salir
             </button>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto px-4 md:px-8 flex gap-1 overflow-x-auto scrollbar-hide pb-2">
-          {TABS.map((t) => (
-            <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              className={`shrink-0 px-3 py-1.5 rounded-full text-xs uppercase tracking-widest font-bold border transition-colors ${
-                tab === t.key ? "bg-[var(--brand-blue)] text-black border-transparent" : "border-white/10 text-white/70 hover:border-white/30"
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
+        <div className="max-w-7xl mx-auto px-4 md:px-8 pb-3">
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+            {TABS.map((t) => {
+              const Icon = t.icon;
+              const active = tab === t.key;
+              return (
+                <button
+                  key={t.key}
+                  onClick={() => setTab(t.key)}
+                  className={`shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs uppercase tracking-widest font-bold border transition-colors ${
+                    active
+                      ? "bg-[var(--brand-blue)] text-black border-transparent shadow-[0_0_24px_var(--blue-glow)]"
+                      : "border-white/10 text-white/70 hover:border-white/40 hover:text-white"
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto p-4 md:p-8">
+      <main className="max-w-7xl mx-auto p-4 md:p-8 space-y-6">
+        {/* Intro card per tab — non-technical guidance */}
+        <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-[var(--brand-blue)]/10 via-transparent to-[var(--brand-red)]/10 p-5">
+          <div className="flex items-start gap-3">
+            <activeTab.icon className="h-6 w-6 text-[var(--brand-blue)] shrink-0 mt-0.5" />
+            <div>
+              <h1 className="text-lg font-bold">{activeTab.label}</h1>
+              <p className="text-sm text-white/60 mt-1">{activeTab.hint}</p>
+            </div>
+          </div>
+        </div>
+
         {isLoading || !data ? (
           <p className="text-white/60">Cargando datos…</p>
         ) : (
@@ -118,133 +150,188 @@ function AdminPage() {
 }
 
 // ====================== Settings ======================
-const SETTING_GROUPS: { title: string; fields: { key: string; label: string; type?: string; rows?: number }[] }[] = [
+type SettingField = {
+  key: string;
+  label: string;
+  type?: "text" | "textarea" | "checkbox" | "number" | "select";
+  rows?: number;
+  hint?: string;
+  options?: { value: string; label: string }[];
+  min?: number;
+  max?: number;
+  placeholder?: string;
+};
+
+const FONT_OPTIONS = [
+  "Space Grotesk", "Inter", "Bebas Neue", "Anton", "Oswald", "Montserrat", "Poppins",
+  "Raleway", "Archivo Black", "Barlow Condensed", "DM Sans", "Manrope", "Sora",
+  "Outfit", "Urbanist", "Syne", "Space Mono", "JetBrains Mono", "Playfair Display",
+  "Cormorant Garamond", "Bodoni Moda", "Lora", "Abril Fatface", "Bebas Kai",
+].map((f) => ({ value: f, label: f }));
+
+const SETTING_GROUPS: { title: string; description?: string; fields: SettingField[] }[] = [
   {
-    title: "Evento",
+    title: "🎉 Datos del evento",
+    description: "Información básica que aparece en toda la web.",
     fields: [
-      { key: "current_event_key", label: "Clave del evento (slug)" },
+      { key: "current_event_key", label: "Clave del evento (slug)", hint: "Identificador interno · ej: aqua-2025" },
       { key: "event_name", label: "Nombre del evento" },
       { key: "event_subtitle", label: "Subtítulo" },
-      { key: "event_date", label: "Fecha (texto)" },
-      { key: "opening_time", label: "Apertura puertas" },
-      { key: "venue_name", label: "Recinto" },
+      { key: "event_date", label: "Fecha (texto visible)", hint: "Ej: Sábado 12 julio · 22:00" },
+      { key: "opening_time", label: "Apertura de puertas" },
+      { key: "venue_name", label: "Nombre del recinto" },
       { key: "venue_location", label: "Localidad" },
     ],
   },
   {
-    title: "Hero",
+    title: "🏷️ Marca · Logotipo en la cabecera",
+    description: "Sube tu logo. Si lo dejas vacío, se mostrará el texto “DUALITY”.",
+    fields: [
+      { key: "header_logo_url", label: "Logotipo (imagen PNG/SVG con fondo transparente)" },
+      { key: "header_logo_height", label: "Altura del logo (px)", type: "number", min: 20, max: 80, hint: "Recomendado: 36 px" },
+    ],
+  },
+  {
+    title: "🔤 Tipografía",
+    description: "Cambia las fuentes de toda la web. Los cambios se ven al guardar y refrescar.",
+    fields: [
+      { key: "font_display", label: "Fuente para títulos", type: "select", options: FONT_OPTIONS, hint: "Carácter, impacto, identidad." },
+      { key: "font_body", label: "Fuente para textos", type: "select", options: FONT_OPTIONS, hint: "Legibilidad, neutralidad." },
+    ],
+  },
+  {
+    title: "🎬 Hero (cabecera grande)",
+    description: "La primera pantalla del usuario. Imagen, vídeo o flyer.",
     fields: [
       { key: "hero_title", label: "Título" },
       { key: "hero_subtitle", label: "Subtítulo" },
-      { key: "hero_cta_primary_text", label: "CTA primario · texto" },
-      { key: "hero_cta_primary_url", label: "CTA primario · URL" },
-      { key: "hero_cta_secondary_text", label: "CTA secundario · texto" },
-      { key: "hero_cta_secondary_url", label: "CTA secundario · URL" },
-      { key: "hero_image_desktop_url", label: "Imagen desktop URL" },
-      { key: "hero_image_mobile_url", label: "Imagen móvil URL" },
-      { key: "hero_video_desktop_url", label: "Vídeo desktop URL" },
-      { key: "hero_video_mobile_url", label: "Vídeo móvil URL" },
-      { key: "hero_flyer_enabled", label: "Mostrar flyer sobre el hero", type: "checkbox" },
-      { key: "hero_flyer_url", label: "Flyer del evento (imagen)" },
+      { key: "hero_cta_primary_text", label: "Botón principal · texto" },
+      { key: "hero_cta_primary_url", label: "Botón principal · enlace" },
+      { key: "hero_cta_secondary_text", label: "Botón secundario · texto" },
+      { key: "hero_cta_secondary_url", label: "Botón secundario · enlace" },
+      { key: "hero_image_desktop_url", label: "Imagen para ordenador" },
+      { key: "hero_image_mobile_url", label: "Imagen para móvil" },
+      { key: "hero_video_desktop_url", label: "Vídeo para ordenador" },
+      { key: "hero_video_mobile_url", label: "Vídeo para móvil" },
+      { key: "hero_flyer_enabled", label: "Mostrar flyer sobre el banner", type: "checkbox" },
+      { key: "hero_flyer_url", label: "Flyer del evento" },
     ],
   },
   {
-    title: "Cuenta atrás",
+    title: "⏱️ Cuenta atrás",
     fields: [
       { key: "countdown_enabled", label: "Activada", type: "checkbox" },
-      { key: "countdown_datetime", label: "Fecha/hora (ISO)" },
+      { key: "countdown_datetime", label: "Fecha y hora (formato ISO)", hint: "Ej: 2025-07-12T22:00:00+02:00" },
       { key: "countdown_title", label: "Título" },
       { key: "countdown_subtext", label: "Subtexto" },
-      { key: "countdown_cta_text", label: "CTA texto" },
-      { key: "countdown_cta_url", label: "CTA URL" },
+      { key: "countdown_cta_text", label: "Botón · texto" },
+      { key: "countdown_cta_url", label: "Botón · enlace" },
     ],
   },
   {
-    title: "Entradas",
+    title: "🎫 Entradas",
     fields: [
-      { key: "ticket_status", label: "Estado (available/coming_soon/sold_out)" },
+      { key: "ticket_status", label: "Estado", type: "select", options: [
+        { value: "available", label: "Disponibles" },
+        { value: "coming_soon", label: "Próximamente" },
+        { value: "sold_out", label: "Agotadas" },
+      ]},
       { key: "ticket_title", label: "Título" },
       { key: "ticket_text", label: "Descripción", rows: 2 },
-      { key: "ticket_iframe_url", label: "Fourvenues iframe URL" },
-      { key: "ticket_fallback_url", label: "URL fallback" },
-      { key: "ticket_show_fallback", label: "Mostrar fallback", type: "checkbox" },
-      { key: "ticket_trust_text", label: "Texto de confianza" },
+      { key: "ticket_iframe_url", label: "URL del iframe (Fourvenues u otro)" },
+      { key: "ticket_fallback_url", label: "URL alternativa (si falla el iframe)" },
+      { key: "ticket_show_fallback", label: "Mostrar enlace alternativo", type: "checkbox" },
+      { key: "ticket_trust_text", label: "Mensaje de confianza" },
     ],
   },
   {
-    title: "Ubicación",
+    title: "📍 Ubicación",
     fields: [
-      { key: "location_name", label: "Nombre" },
+      { key: "location_name", label: "Nombre del lugar" },
       { key: "location_address", label: "Dirección" },
       { key: "location_city", label: "Ciudad" },
-      { key: "location_maps_url", label: "Google Maps URL" },
-      { key: "location_embed_url", label: "Embed iframe URL" },
-      { key: "location_button_text", label: "Texto botón" },
+      { key: "location_maps_url", label: "Enlace a Google Maps" },
+      { key: "location_embed_url", label: "Iframe del mapa" },
+      { key: "location_button_text", label: "Texto del botón" },
       { key: "location_parking_text", label: "Parking" },
       { key: "location_access_text", label: "Acceso" },
     ],
   },
   {
-    title: "Autorización menores",
+    title: "📝 Autorización de menores",
     fields: [
       { key: "authorization_title", label: "Título" },
       { key: "authorization_description", label: "Descripción", rows: 2 },
-      { key: "authorization_pdf_url", label: "PDF URL" },
-      { key: "authorization_button_text", label: "Texto botón" },
+      { key: "authorization_pdf_url", label: "PDF descargable" },
+      { key: "authorization_button_text", label: "Texto del botón" },
     ],
   },
   {
-    title: "CTA final",
+    title: "🚀 Llamada a la acción final",
     fields: [
       { key: "final_cta_title", label: "Título" },
       { key: "final_cta_text", label: "Texto" },
-      { key: "final_cta_button_text", label: "Botón texto" },
-      { key: "final_cta_button_url", label: "Botón URL" },
-      { key: "final_cta_background_url", label: "Fondo URL" },
+      { key: "final_cta_button_text", label: "Botón · texto" },
+      { key: "final_cta_button_url", label: "Botón · enlace" },
+      { key: "final_cta_background_url", label: "Imagen de fondo" },
     ],
   },
   {
-    title: "Footer",
+    title: "📱 Redes sociales",
+    description: "Aparecen como iconos en el footer. Deja en blanco las que no uses.",
     fields: [
-      { key: "footer_copyright", label: "Copyright" },
-      { key: "footer_email", label: "Email" },
-      { key: "footer_instagram_url", label: "Instagram" },
-      { key: "footer_tiktok_url", label: "TikTok" },
-      { key: "footer_facebook_url", label: "Facebook" },
-      { key: "footer_legal_url", label: "Aviso legal URL" },
-      { key: "footer_privacy_url", label: "Privacidad URL" },
-      { key: "footer_cookies_url", label: "Cookies URL" },
-      { key: "footer_logo_url", label: "Logo URL" },
+      { key: "footer_instagram_url", label: "Instagram", placeholder: "https://instagram.com/..." },
+      { key: "footer_tiktok_url", label: "TikTok", placeholder: "https://tiktok.com/@..." },
+      { key: "footer_facebook_url", label: "Facebook", placeholder: "https://facebook.com/..." },
+      { key: "footer_youtube_url", label: "YouTube", placeholder: "https://youtube.com/@..." },
+      { key: "footer_twitter_url", label: "Twitter / X", placeholder: "https://twitter.com/..." },
+      { key: "footer_spotify_url", label: "Spotify", placeholder: "https://open.spotify.com/..." },
+      { key: "footer_soundcloud_url", label: "SoundCloud", placeholder: "https://soundcloud.com/..." },
+      { key: "footer_whatsapp_url", label: "WhatsApp", placeholder: "https://wa.me/..." },
+      { key: "footer_telegram_url", label: "Telegram", placeholder: "https://t.me/..." },
     ],
   },
   {
-    title: "Apariencia",
+    title: "🦶 Footer · textos y enlaces legales",
+    fields: [
+      { key: "footer_copyright", label: "Aviso de copyright" },
+      { key: "footer_email", label: "Email de contacto" },
+      { key: "footer_legal_url", label: "Aviso legal · URL" },
+      { key: "footer_privacy_url", label: "Política de privacidad · URL" },
+      { key: "footer_cookies_url", label: "Política de cookies · URL" },
+      { key: "footer_logo_url", label: "Logo grande del footer (opcional)" },
+    ],
+  },
+  {
+    title: "🎨 Apariencia (colores rápidos)",
+    description: "Para cambios profundos usa la pestaña “Atmósfera”.",
     fields: [
       { key: "primary_color", label: "Color primario (hex)" },
       { key: "secondary_color", label: "Color secundario (hex)" },
-      { key: "background_color", label: "Color fondo (hex)" },
-      { key: "glow_color", label: "Glow color (rgba)" },
-      { key: "appearance_preset", label: "Preset" },
-      { key: "appearance_particles", label: "Partículas", type: "checkbox" },
-      { key: "appearance_texture", label: "Textura", type: "checkbox" },
+      { key: "background_color", label: "Color de fondo (hex)" },
+      { key: "glow_color", label: "Color del glow (rgba)" },
     ],
   },
 ];
+
 
 function SettingsEditor({ data, onSaved }: { data: any; onSaved: () => void }) {
   const [values, setValues] = useState<Record<string, any>>(data ?? {});
   const save = useServerFn(upsertRow);
   const mut = useMutation({
     mutationFn: () => save({ data: { table: "site_settings", values } }),
-    onSuccess: () => { toast.success("Guardado"); onSaved(); },
+    onSuccess: () => { toast.success("✓ Cambios guardados"); onSaved(); },
     onError: (e: any) => toast.error(e.message),
   });
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {SETTING_GROUPS.map((g) => (
-        <section key={g.title} className="rounded-2xl border border-white/10 bg-[var(--dark-panel)] p-5">
-          <h2 className="text-sm uppercase tracking-widest text-white/60 mb-4">{g.title}</h2>
+        <section key={g.title} className="rounded-2xl border border-white/10 bg-[var(--dark-panel)] p-5 md:p-6">
+          <header className="mb-4">
+            <h2 className="text-base font-bold">{g.title}</h2>
+            {g.description && <p className="text-xs text-white/50 mt-1">{g.description}</p>}
+          </header>
           <div className="grid md:grid-cols-2 gap-4">
             {g.fields.map((f) => (
               <FieldInput key={f.key} field={f} value={values[f.key]} onChange={(v) => setValues({ ...values, [f.key]: v })} />
@@ -256,16 +343,16 @@ function SettingsEditor({ data, onSaved }: { data: any; onSaved: () => void }) {
         <button
           onClick={() => mut.mutate()}
           disabled={mut.isPending}
-          className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-blue)] text-black font-bold px-6 py-3 text-sm uppercase tracking-widest shadow-lg"
+          className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-blue)] text-black font-bold px-6 py-3 text-sm uppercase tracking-widest shadow-[0_0_32px_var(--blue-glow)] hover:scale-105 transition-transform"
         >
-          <Save className="h-4 w-4" /> {mut.isPending ? "Guardando…" : "Guardar"}
+          <Save className="h-4 w-4" /> {mut.isPending ? "Guardando…" : "Guardar todos los cambios"}
         </button>
       </div>
     </div>
   );
 }
 
-function FieldInput({ field, value, onChange }: { field: { key: string; label: string; type?: string; rows?: number }; value: any; onChange: (v: any) => void }) {
+function FieldInput({ field, value, onChange }: { field: SettingField; value: any; onChange: (v: any) => void }) {
   // Media upload override based on field key
   const mediaConfig = getMediaConfig(field.key);
   if (mediaConfig) {
@@ -279,20 +366,75 @@ function FieldInput({ field, value, onChange }: { field: { key: string; label: s
           value={value}
           onChange={onChange}
         />
+        {field.hint && <p className="text-xs text-white/40 mt-1">{field.hint}</p>}
       </div>
     );
   }
   if (field.type === "checkbox") {
     return (
-      <label className="flex items-center gap-2 text-sm">
-        <input type="checkbox" checked={!!value} onChange={(e) => onChange(e.target.checked)} />
-        <span>{field.label}</span>
+      <label className="flex items-center gap-3 text-sm cursor-pointer rounded-lg border border-white/10 bg-black/30 px-3 py-2.5 hover:border-white/20">
+        <input
+          type="checkbox"
+          checked={!!value}
+          onChange={(e) => onChange(e.target.checked)}
+          className="h-4 w-4 accent-[var(--brand-blue)]"
+        />
+        <span className="flex-1">{field.label}</span>
       </label>
+    );
+  }
+  if (field.type === "select") {
+    return (
+      <div>
+        <label className="text-xs uppercase tracking-widest text-white/50">{field.label}</label>
+        <select
+          value={value ?? ""}
+          onChange={(e) => onChange(e.target.value)}
+          className="mt-1 w-full rounded-lg bg-black/40 border border-white/10 px-3 py-2 text-sm focus:border-[var(--brand-blue)] outline-none"
+          style={field.key.startsWith("font_") ? { fontFamily: `"${value}", system-ui, sans-serif` } : undefined}
+        >
+          <option value="">— elegir —</option>
+          {field.options?.map((o) => (
+            <option
+              key={o.value}
+              value={o.value}
+              style={field.key.startsWith("font_") ? { fontFamily: `"${o.value}", system-ui, sans-serif` } : undefined}
+            >
+              {o.label}
+            </option>
+          ))}
+        </select>
+        {field.key.startsWith("font_") && value && (
+          <div
+            className="mt-2 rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-base"
+            style={{ fontFamily: `"${value}", system-ui, sans-serif` }}
+          >
+            DUALITY · Aa Bb 123 — vista previa
+          </div>
+        )}
+        {field.hint && <p className="text-xs text-white/40 mt-1">{field.hint}</p>}
+      </div>
+    );
+  }
+  if (field.type === "number") {
+    return (
+      <div>
+        <label className="text-xs uppercase tracking-widest text-white/50">{field.label}</label>
+        <input
+          type="number"
+          min={field.min}
+          max={field.max}
+          value={value ?? ""}
+          onChange={(e) => onChange(e.target.value === "" ? null : Number(e.target.value))}
+          className="mt-1 w-full rounded-lg bg-black/40 border border-white/10 px-3 py-2 text-sm focus:border-[var(--brand-blue)] outline-none"
+        />
+        {field.hint && <p className="text-xs text-white/40 mt-1">{field.hint}</p>}
+      </div>
     );
   }
   if (field.rows && field.rows > 1) {
     return (
-      <div>
+      <div className="md:col-span-2">
         <label className="text-xs uppercase tracking-widest text-white/50">{field.label}</label>
         <textarea
           rows={field.rows}
@@ -300,6 +442,7 @@ function FieldInput({ field, value, onChange }: { field: { key: string; label: s
           onChange={(e) => onChange(e.target.value)}
           className="mt-1 w-full rounded-lg bg-black/40 border border-white/10 px-3 py-2 text-sm focus:border-[var(--brand-blue)] outline-none"
         />
+        {field.hint && <p className="text-xs text-white/40 mt-1">{field.hint}</p>}
       </div>
     );
   }
@@ -309,9 +452,11 @@ function FieldInput({ field, value, onChange }: { field: { key: string; label: s
       <input
         type="text"
         value={value ?? ""}
+        placeholder={field.placeholder}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-1 w-full rounded-lg bg-black/40 border border-white/10 px-3 py-2 text-sm focus:border-[var(--brand-blue)] outline-none"
+        className="mt-1 w-full rounded-lg bg-black/40 border border-white/10 px-3 py-2 text-sm focus:border-[var(--brand-blue)] outline-none placeholder:text-white/20"
       />
+      {field.hint && <p className="text-xs text-white/40 mt-1">{field.hint}</p>}
     </div>
   );
 }
@@ -324,6 +469,7 @@ function getMediaConfig(key: string): { bucket: string; kind: "image" | "video" 
   if (key === "hero_flyer_url") return { bucket: "hero-media", kind: "image", prefix: "flyer" };
   if (key === "final_cta_background_url") return { bucket: "general-assets", kind: "image", prefix: "final-cta" };
   if (key === "footer_logo_url") return { bucket: "general-assets", kind: "image", prefix: "logo" };
+  if (key === "header_logo_url") return { bucket: "general-assets", kind: "image", prefix: "header-logo" };
   if (key === "authorization_pdf_url") return { bucket: "authorization-pdfs", kind: "pdf", prefix: "auth" };
   if (key === "image_url") return { bucket: "artist-images", kind: "image", prefix: "artist" };
   if (key === "media_url" || key === "thumbnail_url") return { bucket: "gallery", kind: "image", prefix: "item" };
