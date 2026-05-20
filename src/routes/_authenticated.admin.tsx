@@ -5,7 +5,10 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { getAdminData, upsertRow, deleteRow, isCurrentUserAdmin } from "@/lib/admin.functions";
 import { toast } from "sonner";
-import { LogOut, Plus, Trash2, Save, Eye, EyeOff } from "lucide-react";
+import {
+  LogOut, Plus, Trash2, Save, Eye, EyeOff, Settings, Layers, Mic2, Clock, Info,
+  Bus, Image as ImageIcon, HelpCircle, Sparkles, ExternalLink,
+} from "lucide-react";
 import { MediaUpload } from "@/components/admin/MediaUpload";
 import { AtmosphereEditor } from "@/components/admin/AtmosphereEditor";
 
@@ -15,15 +18,15 @@ export const Route = createFileRoute("/_authenticated/admin")({
 });
 
 const TABS = [
-  { key: "settings", label: "Evento & Settings" },
-  { key: "sections", label: "Secciones" },
-  { key: "artists", label: "Artistas" },
-  { key: "schedule", label: "Horarios" },
-  { key: "quickInfo", label: "Info rápida" },
-  { key: "buses", label: "Autobuses" },
-  { key: "gallery", label: "Galería" },
-  { key: "faqs", label: "FAQ" },
-  { key: "atmosphere", label: "Fondos y atmósfera" },
+  { key: "settings",   label: "Evento",         icon: Settings,    hint: "Datos básicos, hero, entradas, marca, tipografía y redes sociales." },
+  { key: "sections",   label: "Secciones",      icon: Layers,      hint: "Activa o oculta secciones enteras de la web." },
+  { key: "artists",    label: "Artistas",       icon: Mic2,        hint: "Añade DJs y artistas con foto, hora y redes." },
+  { key: "schedule",   label: "Horarios",       icon: Clock,       hint: "Define el line-up por hora y escenario." },
+  { key: "quickInfo",  label: "Info rápida",    icon: Info,        hint: "Tarjetas con fecha, edad mínima, ubicación, etc." },
+  { key: "buses",      label: "Autobuses",      icon: Bus,         hint: "Rutas de bus, horarios y precios." },
+  { key: "gallery",    label: "Galería",        icon: ImageIcon,   hint: "Fotos y vídeos de ediciones anteriores." },
+  { key: "faqs",       label: "FAQ",            icon: HelpCircle,  hint: "Preguntas frecuentes para tus asistentes." },
+  { key: "atmosphere", label: "Atmósfera",      icon: Sparkles,    hint: "Fondos, colores y texturas de la web." },
 ] as const;
 type TabKey = (typeof TABS)[number]["key"];
 
