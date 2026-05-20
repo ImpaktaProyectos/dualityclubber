@@ -3,7 +3,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 export const getLandingData = createServerFn({ method: "GET" }).handler(async () => {
   const admin = supabaseAdmin;
-  const [settings, sections, quickInfo, artists, schedule, gallery, buses, faqs, atmosphere, sectionBgs] = await Promise.all([
+  const [settings, sections, quickInfo, artists, schedule, gallery, buses, faqs, atmosphere, sectionBgs, stages] = await Promise.all([
     admin.from("site_settings").select("*").limit(1).maybeSingle(),
     admin.from("page_sections").select("*").order("sort_order"),
     admin.from("quick_info_items").select("*").eq("is_visible", true).order("sort_order"),
@@ -14,6 +14,7 @@ export const getLandingData = createServerFn({ method: "GET" }).handler(async ()
     admin.from("faqs").select("*").eq("is_visible", true).order("sort_order"),
     admin.from("visual_settings").select("*").limit(1).maybeSingle(),
     admin.from("section_backgrounds").select("*"),
+    admin.from("stages").select("*").eq("is_visible", true).order("sort_order"),
   ]);
   return {
     settings: settings.data,
@@ -26,5 +27,6 @@ export const getLandingData = createServerFn({ method: "GET" }).handler(async ()
     faqs: faqs.data ?? [],
     atmosphere: atmosphere.data,
     sectionBackgrounds: sectionBgs.data ?? [],
+    stages: stages.data ?? [],
   };
 });

@@ -93,9 +93,9 @@ function Landing() {
       <header className="fixed top-0 inset-x-0 z-50 glass border-b border-white/5">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-8 h-16">
           <a href="#top" className="flex items-center gap-2">
-            {s?.header_logo_url ? (
+            {(s?.brand_logo_main_url || s?.header_logo_url) ? (
               <img
-                src={s.header_logo_url}
+                src={s.brand_logo_main_url || s.header_logo_url}
                 alt={s?.event_name ?? "DUALITY"}
                 style={{ height: `${s?.header_logo_height ?? 36}px` }}
                 className="w-auto object-contain"

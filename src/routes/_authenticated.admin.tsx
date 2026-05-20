@@ -7,12 +7,16 @@ import { getAdminData, upsertRow, deleteRow, isCurrentUserAdmin } from "@/lib/ad
 import { toast } from "sonner";
 import {
   LogOut, Plus, Trash2, Save, Eye, EyeOff, Settings, Layers, Mic2, Clock, Info,
-  Bus, Image as ImageIcon, HelpCircle, Sparkles, ExternalLink,
+  Bus, Image as ImageIcon, HelpCircle, Sparkles, ExternalLink, MapPin,
 } from "lucide-react";
 import { MediaUpload } from "@/components/admin/MediaUpload";
 import { AtmosphereEditor } from "@/components/admin/AtmosphereEditor";
 import { BulkArtistsImporter } from "@/components/admin/BulkArtistsImporter";
 import { FontPicker } from "@/components/admin/FontPicker";
+import { BrandLogosEditor } from "@/components/admin/BrandLogosEditor";
+import { SectionsReorder } from "@/components/admin/SectionsReorder";
+import { StagesManager } from "@/components/admin/StagesManager";
+import { BulkScheduleImporter } from "@/components/admin/BulkScheduleImporter";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [{ title: "Panel admin · DUALITY" }] }),
@@ -21,7 +25,8 @@ export const Route = createFileRoute("/_authenticated/admin")({
 
 const TABS = [
   { key: "settings",   label: "Evento",         icon: Settings,    hint: "Datos básicos, hero, entradas, marca, tipografía y redes sociales." },
-  { key: "sections",   label: "Secciones",      icon: Layers,      hint: "Activa o oculta secciones enteras de la web." },
+  { key: "sections",   label: "Secciones",      icon: Layers,      hint: "Arrastra las secciones para reordenar la landing." },
+  { key: "stages",     label: "Escenarios",     icon: MapPin,      hint: "Gestiona los escenarios internos (Open Air, Main Room…)." },
   { key: "artists",    label: "Artistas",       icon: Mic2,        hint: "Añade DJs y artistas con foto, hora y redes." },
   { key: "schedule",   label: "Horarios",       icon: Clock,       hint: "Define el line-up por hora y escenario." },
   { key: "quickInfo",  label: "Info rápida",    icon: Info,        hint: "Tarjetas con fecha, edad mínima, ubicación, etc." },
@@ -133,15 +138,31 @@ function AdminPage() {
           <p className="text-white/60">Cargando datos…</p>
         ) : (
           <>
-            {tab === "settings" && <SettingsEditor data={data.settings} onSaved={refresh} />}
-            {tab === "sections" && <SectionsEditor rows={data.sections} onSaved={refresh} />}
+            {tab === "settings" && (
+              <div className="space-y-6">
+                <BrandLogosEditor data={data.settings} onSaved={refresh} />
+                <SettingsEditor data={data.settings} onSaved={refresh} />
+              </div>
+            )}
+            {tab === "sections" && <SectionsReorder rows={data.sections as any} onSaved={refresh} />}
+            {tab === "stages" && <StagesManager rows={(data as any).stages ?? []} onSaved={refresh} />}
             {tab === "artists" && (
               <div className="space-y-6">
                 <BulkArtistsImporter existingArtists={data.artists} onSaved={refresh} />
                 <ListEditor table="artists" rows={data.artists} fields={ARTIST_FIELDS} onSaved={refresh} />
               </div>
             )}
-            {tab === "schedule" && <ListEditor table="schedule_items" rows={data.schedule} fields={SCHEDULE_FIELDS} onSaved={refresh} />}
+            {tab === "schedule" && (
+              <div className="space-y-6">
+                <BulkScheduleImporter
+                  stages={(data as any).stages ?? []}
+                  artists={data.artists as any}
+                  existingSchedule={data.schedule as any}
+                  onSaved={refresh}
+                />
+                <ListEditor table="schedule_items" rows={data.schedule} fields={SCHEDULE_FIELDS} onSaved={refresh} />
+              </div>
+            )}
             {tab === "quickInfo" && <ListEditor table="quick_info_items" rows={data.quickInfo} fields={QUICK_INFO_FIELDS} onSaved={refresh} />}
             {tab === "buses" && <ListEditor table="bus_routes" rows={data.buses} fields={BUS_FIELDS} onSaved={refresh} />}
             {tab === "gallery" && <ListEditor table="gallery_items" rows={data.gallery} fields={GALLERY_FIELDS} onSaved={refresh} />}
