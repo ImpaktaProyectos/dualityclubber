@@ -39,8 +39,9 @@ function Landing() {
     if (s.secondary_color) root.style.setProperty("--brand-red", s.secondary_color);
     if (s.font_display) root.style.setProperty("--font-display", `"${s.font_display}", system-ui, sans-serif`);
     if (s.font_body) root.style.setProperty("--font-sans", `"${s.font_body}", system-ui, sans-serif`);
+    if (s.font_button) root.style.setProperty("--font-button", `"${s.font_button}", system-ui, sans-serif`);
     // load google fonts dynamically
-    const families = [s.font_display, s.font_body].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i);
+    const families = [s.font_display, s.font_body, s.font_button].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i);
     if (families.length) {
       const href = `https://fonts.googleapis.com/css2?${families.map((f: string) => `family=${encodeURIComponent(f)}:wght@300;400;500;600;700;800;900`).join("&")}&display=swap`;
       const id = "duality-dynamic-fonts";
