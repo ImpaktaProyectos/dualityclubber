@@ -374,6 +374,8 @@ function AtmosphereFields({
 
   return (
     <div className="space-y-5">
+      <ScrollBehaviorSection values={values} set={set} />
+
       <section className="rounded-2xl border border-white/10 bg-[var(--dark-panel)] p-5 space-y-4">
         <h3 className="text-sm uppercase tracking-widest text-white/60">Capa base</h3>
         <div className="grid md:grid-cols-2 gap-4">
