@@ -473,6 +473,7 @@ export type Database = {
           opening_time: string | null
           primary_color: string | null
           secondary_color: string | null
+          ticket_embed_script: string | null
           ticket_fallback_url: string | null
           ticket_iframe_url: string | null
           ticket_mode: string
@@ -563,6 +564,7 @@ export type Database = {
           opening_time?: string | null
           primary_color?: string | null
           secondary_color?: string | null
+          ticket_embed_script?: string | null
           ticket_fallback_url?: string | null
           ticket_iframe_url?: string | null
           ticket_mode?: string
@@ -653,6 +655,7 @@ export type Database = {
           opening_time?: string | null
           primary_color?: string | null
           secondary_color?: string | null
+          ticket_embed_script?: string | null
           ticket_fallback_url?: string | null
           ticket_iframe_url?: string | null
           ticket_mode?: string

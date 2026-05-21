@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Heart, Instagram, MapPin, Music, ShoppingBag, ChevronDown, Youtube, Facebook, Twitter, MessageCircle, Send, Headphones } from "lucide-react";
 import { getLandingData } from "@/lib/site.functions";
@@ -584,13 +584,41 @@ function sanitizeTicketUrl(raw?: string): { url?: string; error?: string } {
   }
 }
 
+// Extrae el src de un fragmento "<script src='...'></script>" o devuelve la URL tal cual si ya lo es.
+function extractScriptSrc(raw?: string): string | undefined {
+  if (!raw) return undefined;
+  const trimmed = raw.trim();
+  if (!trimmed) return undefined;
+  const m = trimmed.match(/<script[^>]*\ssrc\s*=\s*["']([^"']+)["']/i);
+  if (m?.[1]) return m[1].trim();
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return undefined;
+}
+
+function FourvenuesEmbed({ scriptUrl }: { scriptUrl: string }) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!scriptUrl || !el) return;
+    el.innerHTML = "";
+    const script = document.createElement("script");
+    script.src = scriptUrl;
+    script.async = true;
+    el.appendChild(script);
+    return () => { if (el) el.innerHTML = ""; };
+  }, [scriptUrl]);
+  return <div ref={containerRef} className="fourvenues-container w-full min-h-[600px]" />;
+}
+
 function TicketsSection({ s, bg }: { s: any; bg?: any }) {
   const mode: "iframe" | "external" | "both" = s?.ticket_mode ?? "both";
+  const scriptSrc = extractScriptSrc(s?.ticket_embed_script as string | undefined);
   const { url, error: urlError } = sanitizeTicketUrl(s?.ticket_iframe_url as string | undefined);
   const fallback = s?.ticket_fallback_url as string | undefined;
 
-  const showIframe = (mode === "iframe" || mode === "both") && !!url;
-  const alwaysShowFallbackBtn = mode === "external" || mode === "both" || s?.ticket_show_fallback || !!urlError;
+  const showScript = !!scriptSrc && mode !== "external";
+  const showIframe = !showScript && (mode === "iframe" || mode === "both") && !!url;
+  const alwaysShowFallbackBtn = mode === "external" || mode === "both" || s?.ticket_show_fallback || (!showScript && !!urlError);
 
   return (
     <section id="entradas" className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
@@ -599,6 +627,12 @@ function TicketsSection({ s, bg }: { s: any; bg?: any }) {
         <SectionLabel>Entradas</SectionLabel>
         <h2 className="text-display text-4xl md:text-6xl font-black mb-3">{s?.ticket_title}</h2>
         <p className="text-white/70 mb-8">{s?.ticket_text}</p>
+
+        {showScript && (
+          <div className="rounded-2xl overflow-hidden border border-[var(--brand-blue)]/30 bg-[var(--dark-panel)] glow-blue mx-auto p-2 md:p-4" style={{ maxWidth: 1120 }}>
+            <FourvenuesEmbed scriptUrl={scriptSrc!} />
+          </div>
+        )}
 
         {showIframe && (
           <div className="rounded-2xl overflow-hidden border border-[var(--brand-blue)]/30 bg-[var(--dark-panel)] glow-blue mx-auto" style={{ maxWidth: 1120 }}>
@@ -613,6 +647,7 @@ function TicketsSection({ s, bg }: { s: any; bg?: any }) {
             />
           </div>
         )}
+
 
         {urlError && mode !== "external" && (
           <div className="rounded-2xl border border-[var(--brand-red)]/40 bg-[var(--dark-panel)] p-6 text-center text-white/80 mb-4">
