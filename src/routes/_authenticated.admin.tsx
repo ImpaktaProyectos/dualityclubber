@@ -260,24 +260,24 @@ const SETTING_GROUPS: { title: string; description?: string; fields: SettingFiel
     ],
   },
   {
-    title: "🎫 Entradas",
-    description: "Si Fourvenues bloquea el iframe, cambia a “Botón externo” y los compradores irán a la página oficial sin perder ninguna venta.",
+    title: "🎫 Entradas · Fourvenues",
+    description: "⭐ Pega aquí el código <script> que te da Fourvenues. Es el método recomendado.",
     fields: [
-      { key: "ticket_mode", label: "Modo de venta", type: "select", hint: "Cómo verá el usuario el módulo de venta.", options: [
-        { value: "iframe", label: "Iframe integrado (en la propia web)" },
-        { value: "external", label: "Botón externo (abre Fourvenues en nueva pestaña)" },
-        { value: "both", label: "Iframe + botón externo (lo más seguro)" },
+      { key: "ticket_embed_script", label: "⭐ SCRIPT DE FOURVENUES (RECOMENDADO) — pega aquí <script src=\"...\"></script>", type: "textarea", rows: 4, hint: "Campo principal. Pega el código tal cual te lo da Fourvenues. Se extrae el src y se carga como script real (no iframe)." },
+      { key: "ticket_fallback_url", label: "URL de venta oficial (botón de respaldo 'Abrir venta oficial')", placeholder: "https://www.fourvenues.com/..." },
+      { key: "ticket_mode", label: "Modo de venta", type: "select", hint: "Con el script, deja 'Embed + botón externo'.", options: [
+        { value: "iframe", label: "Solo embed integrado (script o iframe)" },
+        { value: "external", label: "Solo botón externo (nueva pestaña)" },
+        { value: "both", label: "Embed + botón externo (lo más seguro)" },
       ]},
-      { key: "ticket_status", label: "Estado", type: "select", options: [
+      { key: "ticket_status", label: "Estado de las entradas", type: "select", options: [
         { value: "available", label: "Disponibles" },
         { value: "coming_soon", label: "Próximamente" },
         { value: "sold_out", label: "Agotadas" },
       ]},
-      { key: "ticket_title", label: "Título" },
+      { key: "ticket_title", label: "Título de la sección" },
       { key: "ticket_text", label: "Descripción", rows: 2 },
-      { key: "ticket_embed_script", label: "Script de Fourvenues (pega <script src=\"...\"></script>)", type: "textarea", rows: 3, hint: "Pega el código completo que te da Fourvenues. Se extrae el src automáticamente y se carga como script (no como iframe)." },
-      { key: "ticket_iframe_url", label: "URL de iframe alternativa (opcional, si no usas script)" },
-      { key: "ticket_fallback_url", label: "URL alternativa (botón 'Abrir venta oficial')" },
+      { key: "ticket_iframe_url", label: "URL de iframe alternativa (solo si NO usas el script)", placeholder: "https://..." },
       { key: "ticket_show_fallback", label: "Mostrar siempre enlace alternativo", type: "checkbox" },
       { key: "ticket_trust_text", label: "Mensaje de confianza" },
     ],
