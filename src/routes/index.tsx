@@ -116,10 +116,13 @@ function Landing() {
               </span>
             )}
           </a>
-          <nav className="hidden md:flex gap-7 text-sm uppercase tracking-widest">
+          <nav className="hidden md:flex gap-7 text-sm uppercase tracking-widest items-center">
             {navItems.map((n) => (
               <a key={n.key} href={n.href} className="hover:text-[var(--brand-blue)] transition-colors">{n.label}</a>
             ))}
+            {isOn("countdown") && s?.countdown_datetime && (
+              <MiniCountdown targetIso={s.countdown_datetime} />
+            )}
           </nav>
           {isOn("tickets") && (
             <a href="#entradas" className="hidden md:inline-flex items-center gap-2 px-5 py-2 rounded-full bg-[var(--brand-blue)] text-black font-bold text-sm uppercase tracking-wider hover:scale-105 transition-transform glow-blue">
@@ -129,6 +132,13 @@ function Landing() {
         </div>
       </header>
 
+      {/* Mobile countdown ribbon */}
+      {isOn("countdown") && s?.countdown_datetime && (
+        <div className="md:hidden fixed top-16 inset-x-0 z-40 glass border-b border-white/5 flex items-center justify-center h-8">
+          <MiniCountdown targetIso={s.countdown_datetime} />
+        </div>
+      )}
+
       {/* Mobile sticky buy */}
       {isOn("tickets") && (
         <a href="#entradas" className="md:hidden fixed bottom-4 inset-x-4 z-50 flex items-center justify-center gap-2 py-4 rounded-full bg-[var(--brand-blue)] text-black font-black uppercase tracking-wider glow-blue">
@@ -137,7 +147,7 @@ function Landing() {
       )}
 
       {/* HERO */}
-      {isOn("hero") && <Hero s={s} bg={sectionBg("hero")} />}
+      {isOn("hero") && <Hero s={s} bg={sectionBg("hero")} extraTopPadding={isOn("countdown") && !!s?.countdown_datetime} />}
 
       {/* QUICK INFO */}
       {isOn("quick_info") && data.quickInfo.length > 0 && (
@@ -153,18 +163,6 @@ function Landing() {
         </section>
       )}
 
-      {/* COUNTDOWN */}
-      {isOn("countdown") && s?.countdown_datetime && (
-        <Countdown
-          targetIso={s.countdown_datetime}
-          title={s.countdown_title}
-          subtitle={s.countdown_subtitle}
-          subtext={s.countdown_subtext}
-          ctaText={s.countdown_cta_text}
-          ctaUrl={s.countdown_cta_url}
-          bg={sectionBg("countdown")}
-        />
-      )}
 
       {/* TICKETS */}
       {isOn("tickets") && <TicketsSection s={s} bg={sectionBg("tickets")} />}
@@ -336,7 +334,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 }
 
 // ============== HERO ==============
-function Hero({ s, bg }: { s: any; bg?: any }) {
+function Hero({ s, bg, extraTopPadding }: { s: any; bg?: any; extraTopPadding?: boolean }) {
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     const fn = () => setIsMobile(window.innerWidth < 768);
@@ -348,7 +346,7 @@ function Hero({ s, bg }: { s: any; bg?: any }) {
   const image = isMobile ? s?.hero_image_mobile_url || s?.hero_image_desktop_url : s?.hero_image_desktop_url;
 
   return (
-    <section id="top" className="relative min-h-[100svh] flex items-center overflow-hidden pt-16">
+    <section id="top" className={`relative min-h-[100svh] flex items-center overflow-hidden ${extraTopPadding ? "pt-24" : "pt-16"}`}>
       {bg && <SectionBackground cfg={bg} />}
       <div className="absolute inset-0">
         {video ? (
@@ -529,13 +527,8 @@ function ArtistCard({ a, fav, onFav }: { a: any; fav: boolean; onFav: () => void
   );
 }
 
-// ============== COUNTDOWN (premium) ==============
-function Countdown({
-  targetIso, title, subtitle, subtext, ctaText, ctaUrl, bg,
-}: {
-  targetIso: string; title?: string; subtitle?: string; subtext?: string;
-  ctaText?: string; ctaUrl?: string; bg?: any;
-}) {
+// ============== MINI COUNTDOWN (header ribbon) ==============
+function MiniCountdown({ targetIso }: { targetIso: string }) {
   const target = useMemo(() => new Date(targetIso).getTime(), [targetIso]);
   const [now, setNow] = useState<number | null>(null);
   useEffect(() => {
@@ -548,77 +541,30 @@ function Countdown({
   const h = Math.floor((diff % 86400000) / 3600000);
   const m = Math.floor((diff % 3600000) / 60000);
   const sec = Math.floor((diff % 60000) / 1000);
-  const cells: readonly { label: string; val: string; pulse?: boolean }[] = now === null
-    ? [{label:"Días",val:"--"},{label:"Horas",val:"--"},{label:"Min",val:"--"},{label:"Seg",val:"--"}]
+  const items = now === null
+    ? [
+        { label: "D", val: "--" },
+        { label: "H", val: "--" },
+        { label: "M", val: "--" },
+        { label: "S", val: "--" },
+      ]
     : [
-      {label:"Días",val:String(d).padStart(2,"0")},
-      {label:"Horas",val:String(h).padStart(2,"0")},
-      {label:"Min",val:String(m).padStart(2,"0")},
-      {label:"Seg",val:String(sec).padStart(2,"0"), pulse: true},
-    ];
+        { label: "D", val: String(d).padStart(2, "0") },
+        { label: "H", val: String(h).padStart(2, "0") },
+        { label: "M", val: String(m).padStart(2, "0") },
+        { label: "S", val: String(sec).padStart(2, "0") },
+      ];
 
   return (
-    <section className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
-      {bg && <SectionBackground cfg={bg} />}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[color-mix(in_oklab,var(--brand-blue)_8%,transparent)] to-transparent" />
-        <div className="absolute inset-x-0 top-1/2 h-px bg-gradient-to-r from-transparent via-[var(--brand-blue)]/60 to-transparent" />
-        <div className="absolute inset-x-0 top-[calc(50%+2px)] h-px bg-gradient-to-r from-transparent via-[var(--brand-red)]/30 to-transparent" />
-      </div>
-      <div className="relative max-w-5xl mx-auto text-center">
-        <div className="inline-flex items-center gap-3 mb-4 text-[10px] uppercase tracking-[0.45em] text-[var(--brand-blue)]">
-          <span className="h-px w-8 bg-[var(--brand-blue)]/60" />
-          T · MINUS
-          <span className="h-px w-8 bg-[var(--brand-blue)]/60" />
-        </div>
-        <h3 className="text-display text-3xl md:text-5xl font-black mb-2 text-glow-blue">{title}</h3>
-        {subtitle && (
-          <p className="text-white/70 text-xs md:text-sm uppercase tracking-[0.3em] mb-2">{subtitle}</p>
-        )}
-        {subtext && <p className="text-white/55 text-sm md:text-base mb-10">{subtext}</p>}
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5 mb-10">
-          {cells.map((c) => (
-            <div
-              key={c.label}
-              className="relative rounded-2xl p-4 md:p-8 border border-white/10 bg-[var(--dark-panel)]/70 backdrop-blur-sm overflow-hidden"
-            >
-              <div className="absolute inset-x-3 top-3 flex items-center justify-between text-[8px] uppercase tracking-[0.4em] text-white/30">
-                <span>◆</span><span>{c.label.slice(0, 1)}</span>
-              </div>
-              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--brand-blue)]/60 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[var(--brand-red)]/40 to-transparent" />
-              <div className="relative z-10 pt-3">
-                <div
-                  key={c.pulse ? c.val : undefined}
-                  className={`text-display text-5xl md:text-7xl lg:text-8xl font-black text-glow-blue tabular-nums leading-none ${
-                    c.pulse ? "animate-[countdown-pulse_1s_ease-out]" : ""
-                  }`}
-                >
-                  {c.val}
-                </div>
-                <div className="text-[10px] md:text-xs uppercase tracking-[0.4em] text-white/60 mt-3 md:mt-5">
-                  {c.label}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {ctaText && ctaUrl && (
-          <a href={ctaUrl} className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-[var(--brand-red)] text-white font-black uppercase tracking-widest glow-red hover:scale-105 transition-transform">
-            {ctaText}
-          </a>
-        )}
-      </div>
-      <style>{`
-        @keyframes countdown-pulse {
-          0% { transform: scale(1); text-shadow: 0 0 0 transparent; }
-          30% { transform: scale(1.06); text-shadow: 0 0 24px var(--blue-glow, rgba(0,174,239,.7)); }
-          100% { transform: scale(1); text-shadow: 0 0 0 transparent; }
-        }
-      `}</style>
-    </section>
+    <div className="flex items-center gap-1 text-[10px] md:text-xs uppercase tracking-widest">
+      {items.map((it, i) => (
+        <span key={it.label} className="flex items-baseline gap-0.5">
+          <span className="font-black text-[var(--brand-blue)] tabular-nums">{it.val}</span>
+          <span className="text-white/40">{it.label}</span>
+          {i < items.length - 1 && <span className="text-white/20 mx-0.5">|</span>}
+        </span>
+      ))}
+    </div>
   );
 }
 
