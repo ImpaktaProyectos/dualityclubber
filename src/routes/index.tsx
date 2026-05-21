@@ -620,24 +620,7 @@ function TicketsSection({ s, bg }: { s: any; bg?: any }) {
           </div>
         )}
 
-        {false && fallback && (
-          <div className="rounded-2xl border border-[var(--brand-red)]/40 bg-[var(--dark-panel)] p-8 md:p-10 text-center space-y-4">
-            <div className="text-xs uppercase tracking-[0.3em] text-[var(--brand-red)]">Venta externa</div>
-            <p className="text-white/80 max-w-md mx-auto">
-              No hemos podido cargar la venta integrada. Puedes abrir la venta oficial en una nueva pestaña.
-            </p>
-            <a
-              href={fallback}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-[var(--brand-red)] text-white font-black uppercase tracking-widest glow-red hover:scale-105 transition-transform"
-            >
-              Abrir venta oficial
-            </a>
-          </div>
-        )}
-
-        {mode === "external" && fallback && !iframeFailed && (
+        {mode === "external" && fallback && (
           <div className="rounded-2xl border border-[var(--brand-blue)]/30 bg-[var(--dark-panel)] p-8 md:p-12 text-center space-y-5 glow-blue">
             <div className="text-xs uppercase tracking-[0.3em] text-[var(--brand-blue)]">Venta oficial</div>
             <p className="text-white/80 max-w-md mx-auto">
@@ -654,15 +637,20 @@ function TicketsSection({ s, bg }: { s: any; bg?: any }) {
           </div>
         )}
 
-        {!url && mode !== "external" && (
+        {!url && mode !== "external" && !urlError && (
           <div className="rounded-2xl border border-white/10 bg-[var(--dark-panel)] flex flex-col items-center justify-center text-center p-10 min-h-[420px] gap-4">
             <div className="text-sm uppercase tracking-widest text-[var(--brand-blue)]">Próximamente</div>
             <p className="text-white/70 max-w-md">El módulo oficial de venta se publicará pronto.</p>
           </div>
         )}
 
-        {showButton && mode === "both" && fallback && !iframeFailed && (
-          <div className="mt-6 text-center">
+        {alwaysShowFallbackBtn && mode !== "external" && fallback && (
+          <div className="mt-6 text-center space-y-2">
+            {(urlError || !url) && (
+              <p className="text-white/70 text-sm">
+                Si la venta integrada no carga correctamente, abre la venta oficial.
+              </p>
+            )}
             <a
               href={fallback}
               target="_blank"
