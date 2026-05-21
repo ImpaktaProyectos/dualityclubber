@@ -334,7 +334,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 }
 
 // ============== HERO ==============
-function Hero({ s, bg }: { s: any; bg?: any }) {
+function Hero({ s, bg, extraTopPadding }: { s: any; bg?: any; extraTopPadding?: boolean }) {
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     const fn = () => setIsMobile(window.innerWidth < 768);
@@ -346,7 +346,7 @@ function Hero({ s, bg }: { s: any; bg?: any }) {
   const image = isMobile ? s?.hero_image_mobile_url || s?.hero_image_desktop_url : s?.hero_image_desktop_url;
 
   return (
-    <section id="top" className="relative min-h-[100svh] flex items-center overflow-hidden pt-16">
+    <section id="top" className={`relative min-h-[100svh] flex items-center overflow-hidden ${extraTopPadding ? "pt-24" : "pt-16"}`}>
       {bg && <SectionBackground cfg={bg} />}
       <div className="absolute inset-0">
         {video ? (
