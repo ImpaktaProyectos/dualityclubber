@@ -163,18 +163,6 @@ function Landing() {
         </section>
       )}
 
-      {/* COUNTDOWN */}
-      {isOn("countdown") && s?.countdown_datetime && (
-        <Countdown
-          targetIso={s.countdown_datetime}
-          title={s.countdown_title}
-          subtitle={s.countdown_subtitle}
-          subtext={s.countdown_subtext}
-          ctaText={s.countdown_cta_text}
-          ctaUrl={s.countdown_cta_url}
-          bg={sectionBg("countdown")}
-        />
-      )}
 
       {/* TICKETS */}
       {isOn("tickets") && <TicketsSection s={s} bg={sectionBg("tickets")} />}
