@@ -569,24 +569,28 @@ function MiniCountdown({ targetIso }: { targetIso: string }) {
 }
 
 // ============== TICKETS ==============
+function sanitizeTicketUrl(raw?: string): { url?: string; error?: string } {
+  if (!raw) return {};
+  const trimmed = raw.trim();
+  if (!/^https:\/\//i.test(trimmed)) return { error: "La URL debe ser HTTPS." };
+  try {
+    const u = new URL(trimmed);
+    if (typeof window !== "undefined" && u.hostname === window.location.hostname) {
+      return { error: "La URL apunta a la propia web (provoca redirección infinita). Usa la URL oficial de Fourvenues." };
+    }
+    return { url: u.toString() };
+  } catch {
+    return { error: "URL inválida." };
+  }
+}
+
 function TicketsSection({ s, bg }: { s: any; bg?: any }) {
-  const mode: "iframe" | "external" | "both" = s?.ticket_mode ?? "iframe";
-  const url = s?.ticket_iframe_url as string | undefined;
+  const mode: "iframe" | "external" | "both" = s?.ticket_mode ?? "both";
+  const { url, error: urlError } = sanitizeTicketUrl(s?.ticket_iframe_url as string | undefined);
   const fallback = s?.ticket_fallback_url as string | undefined;
-  const [iframeFailed, setIframeFailed] = useState(false);
-  const [iframeLoaded, setIframeLoaded] = useState(false);
 
-  // Iframe timeout watchdog — if Fourvenues blocks embedding (X-Frame-Options / CSP),
-  // onLoad never fires properly. After 8s without load, show the fallback.
-  useEffect(() => {
-    if (mode === "external" || !url) return;
-    if (iframeLoaded) return;
-    const t = setTimeout(() => { if (!iframeLoaded) setIframeFailed(true); }, 8000);
-    return () => clearTimeout(t);
-  }, [mode, url, iframeLoaded]);
-
-  const showIframe = (mode === "iframe" || mode === "both") && url && !iframeFailed;
-  const showButton = mode === "external" || mode === "both" || iframeFailed || s?.ticket_show_fallback;
+  const showIframe = (mode === "iframe" || mode === "both") && !!url;
+  const alwaysShowFallbackBtn = mode === "external" || mode === "both" || s?.ticket_show_fallback || !!urlError;
 
   return (
     <section id="entradas" className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
@@ -597,39 +601,26 @@ function TicketsSection({ s, bg }: { s: any; bg?: any }) {
         <p className="text-white/70 mb-8">{s?.ticket_text}</p>
 
         {showIframe && (
-          <div className="rounded-2xl overflow-hidden border border-[var(--brand-blue)]/30 bg-[var(--dark-panel)] glow-blue">
+          <div className="rounded-2xl overflow-hidden border border-[var(--brand-blue)]/30 bg-[var(--dark-panel)] glow-blue mx-auto" style={{ maxWidth: 1120 }}>
             <iframe
               src={url}
               title="Compra de entradas DUALITY"
               allow="payment *; fullscreen; clipboard-write; encrypted-media"
               loading="lazy"
               referrerPolicy="strict-origin-when-cross-origin"
-              onLoad={() => setIframeLoaded(true)}
-              onError={() => setIframeFailed(true)}
               className="w-full block border-0 min-h-[860px] md:min-h-[780px]"
               style={{ border: 0 }}
             />
           </div>
         )}
 
-        {iframeFailed && fallback && (
-          <div className="rounded-2xl border border-[var(--brand-red)]/40 bg-[var(--dark-panel)] p-8 md:p-10 text-center space-y-4">
-            <div className="text-xs uppercase tracking-[0.3em] text-[var(--brand-red)]">Venta externa</div>
-            <p className="text-white/80 max-w-md mx-auto">
-              No hemos podido cargar la venta integrada. Puedes abrir la venta oficial en una nueva pestaña.
-            </p>
-            <a
-              href={fallback}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-[var(--brand-red)] text-white font-black uppercase tracking-widest glow-red hover:scale-105 transition-transform"
-            >
-              Abrir venta oficial
-            </a>
+        {urlError && mode !== "external" && (
+          <div className="rounded-2xl border border-[var(--brand-red)]/40 bg-[var(--dark-panel)] p-6 text-center text-white/80 mb-4">
+            {urlError}
           </div>
         )}
 
-        {mode === "external" && fallback && !iframeFailed && (
+        {mode === "external" && fallback && (
           <div className="rounded-2xl border border-[var(--brand-blue)]/30 bg-[var(--dark-panel)] p-8 md:p-12 text-center space-y-5 glow-blue">
             <div className="text-xs uppercase tracking-[0.3em] text-[var(--brand-blue)]">Venta oficial</div>
             <p className="text-white/80 max-w-md mx-auto">
@@ -646,15 +637,20 @@ function TicketsSection({ s, bg }: { s: any; bg?: any }) {
           </div>
         )}
 
-        {!url && mode !== "external" && (
+        {!url && mode !== "external" && !urlError && (
           <div className="rounded-2xl border border-white/10 bg-[var(--dark-panel)] flex flex-col items-center justify-center text-center p-10 min-h-[420px] gap-4">
             <div className="text-sm uppercase tracking-widest text-[var(--brand-blue)]">Próximamente</div>
             <p className="text-white/70 max-w-md">El módulo oficial de venta se publicará pronto.</p>
           </div>
         )}
 
-        {showButton && mode === "both" && fallback && !iframeFailed && (
-          <div className="mt-6 text-center">
+        {alwaysShowFallbackBtn && mode !== "external" && fallback && (
+          <div className="mt-6 text-center space-y-2">
+            {(urlError || !url) && (
+              <p className="text-white/70 text-sm">
+                Si la venta integrada no carga correctamente, abre la venta oficial.
+              </p>
+            )}
             <a
               href={fallback}
               target="_blank"
