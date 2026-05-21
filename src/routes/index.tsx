@@ -147,7 +147,7 @@ function Landing() {
       )}
 
       {/* HERO */}
-      {isOn("hero") && <Hero s={s} bg={sectionBg("hero")} />}
+      {isOn("hero") && <Hero s={s} bg={sectionBg("hero")} extraTopPadding={isOn("countdown") && !!s?.countdown_datetime} />}
 
       {/* QUICK INFO */}
       {isOn("quick_info") && data.quickInfo.length > 0 && (
