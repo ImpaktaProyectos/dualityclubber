@@ -116,10 +116,13 @@ function Landing() {
               </span>
             )}
           </a>
-          <nav className="hidden md:flex gap-7 text-sm uppercase tracking-widest">
+          <nav className="hidden md:flex gap-7 text-sm uppercase tracking-widest items-center">
             {navItems.map((n) => (
               <a key={n.key} href={n.href} className="hover:text-[var(--brand-blue)] transition-colors">{n.label}</a>
             ))}
+            {isOn("countdown") && s?.countdown_datetime && (
+              <MiniCountdown targetIso={s.countdown_datetime} />
+            )}
           </nav>
           {isOn("tickets") && (
             <a href="#entradas" className="hidden md:inline-flex items-center gap-2 px-5 py-2 rounded-full bg-[var(--brand-blue)] text-black font-bold text-sm uppercase tracking-wider hover:scale-105 transition-transform glow-blue">
@@ -128,6 +131,13 @@ function Landing() {
           )}
         </div>
       </header>
+
+      {/* Mobile countdown ribbon */}
+      {isOn("countdown") && s?.countdown_datetime && (
+        <div className="md:hidden fixed top-16 inset-x-0 z-40 glass border-b border-white/5 flex items-center justify-center h-8">
+          <MiniCountdown targetIso={s.countdown_datetime} />
+        </div>
+      )}
 
       {/* Mobile sticky buy */}
       {isOn("tickets") && (
