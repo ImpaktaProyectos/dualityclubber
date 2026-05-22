@@ -394,6 +394,51 @@ export type Database = {
         }
         Relationships: []
       }
+      shop_products: {
+        Row: {
+          button_text: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_featured: boolean
+          is_visible: boolean
+          name: string
+          price: string | null
+          sort_order: number
+          updated_at: string
+          whatsapp_message: string | null
+        }
+        Insert: {
+          button_text?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_featured?: boolean
+          is_visible?: boolean
+          name: string
+          price?: string | null
+          sort_order?: number
+          updated_at?: string
+          whatsapp_message?: string | null
+        }
+        Update: {
+          button_text?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_featured?: boolean
+          is_visible?: boolean
+          name?: string
+          price?: string | null
+          sort_order?: number
+          updated_at?: string
+          whatsapp_message?: string | null
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           appearance_glow_intensity: number | null
@@ -474,6 +519,12 @@ export type Database = {
           opening_time: string | null
           primary_color: string | null
           secondary_color: string | null
+          shop_cta_message: string | null
+          shop_fallback_text: string | null
+          shop_fallback_url: string | null
+          shop_subtitle: string | null
+          shop_title: string | null
+          shop_whatsapp_phone: string | null
           ticket_alert_enabled: boolean | null
           ticket_alert_text: string | null
           ticket_alert_type: string | null
@@ -575,6 +626,12 @@ export type Database = {
           opening_time?: string | null
           primary_color?: string | null
           secondary_color?: string | null
+          shop_cta_message?: string | null
+          shop_fallback_text?: string | null
+          shop_fallback_url?: string | null
+          shop_subtitle?: string | null
+          shop_title?: string | null
+          shop_whatsapp_phone?: string | null
           ticket_alert_enabled?: boolean | null
           ticket_alert_text?: string | null
           ticket_alert_type?: string | null
@@ -676,6 +733,12 @@ export type Database = {
           opening_time?: string | null
           primary_color?: string | null
           secondary_color?: string | null
+          shop_cta_message?: string | null
+          shop_fallback_text?: string | null
+          shop_fallback_url?: string | null
+          shop_subtitle?: string | null
+          shop_title?: string | null
+          shop_whatsapp_phone?: string | null
           ticket_alert_enabled?: boolean | null
           ticket_alert_text?: string | null
           ticket_alert_type?: string | null
