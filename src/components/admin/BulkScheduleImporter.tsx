@@ -128,12 +128,17 @@ function splitArtistStage(rest: string, stages: Stage[], fallback: string): { ar
 
 type Status = "ok" | "new-artist" | "no-stage" | "duplicate" | "error" | "overlap";
 
+function normalizeName(s: string) {
+  return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "").trim();
+}
+
 function statusFor(item: ParsedItem, artists: Artist[], stages: Stage[], existingKey: Set<string>): { status: Status; label: string } {
   if (item.error) return { status: "error", label: item.error };
   if (!item.stage_name) return { status: "no-stage", label: "Sin escenario" };
-  const key = `${item.start_time}|${item.artist_name.toLowerCase()}|${slugify(item.stage_name)}`;
+  const key = `${item.start_time}|${normalizeName(item.artist_name)}|${slugify(item.stage_name)}`;
   if (existingKey.has(key)) return { status: "duplicate", label: "Duplicado" };
-  const artist = artists.find((a) => a.name.toLowerCase().trim() === item.artist_name.toLowerCase().trim());
+  const normKey = normalizeName(item.artist_name);
+  const artist = artists.find((a) => normalizeName(a.name) === normKey);
   if (!artist) return { status: "new-artist", label: "Se creará el artista" };
   return { status: "ok", label: "OK" };
 }
