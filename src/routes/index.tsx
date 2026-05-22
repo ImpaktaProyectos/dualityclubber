@@ -485,51 +485,9 @@ function ArtistsSection({ artists, isFavorite, toggle, bg }: { artists: any[]; i
         <h2 className="text-display text-4xl md:text-6xl font-black mb-3">Artistas</h2>
         <p className="text-white/70 mb-8">Marca tus artistas favoritos y crea tu planning de la noche.</p>
 
-        {/* Marquee */}
-        {filtered.length > 0 && (
-          <div className="mb-6 border-y border-white/5">
-            <div className="overflow-hidden py-4">
-              <div className="flex gap-10 animate-[scroll_30s_linear_infinite] whitespace-nowrap text-display text-3xl md:text-5xl font-black text-white/30 uppercase">
-                {[...filtered, ...filtered].map((a: any, i: number) => (
-                  <span key={i} className="artist-name-hover cursor-default">
-                    {a.name} <span className="text-[var(--brand-red)]">·</span>
-                  </span>
-                ))}
-              </div>
-            </div>
-            <div className="flex justify-center pb-3">
-              <button
-                onClick={() => setExpanded((v) => !v)}
-                className="px-4 py-1.5 rounded-full text-[11px] uppercase tracking-widest font-bold border border-white/15 text-white/70 hover:text-white hover:border-white/40 transition-colors"
-              >
-                {expanded ? "Ocultar" : "Ver todos"}
-              </button>
-            </div>
-            {expanded && (
-              <div className="pb-4 space-y-3">
-                {grouped.map(([st, list], gi) => (
-                  <div key={st} className="overflow-hidden">
-                    <div className="text-[10px] uppercase tracking-widest text-[var(--brand-blue)] mb-1 px-1">{st}</div>
-                    <div
-                      className="flex gap-8 whitespace-nowrap text-display text-xl md:text-3xl font-black text-white/50 uppercase"
-                      style={{ animation: `scroll ${40 + gi * 5}s linear infinite`, animationDirection: gi % 2 ? "reverse" : "normal" }}
-                    >
-                      {[...list, ...list].map((a: any, i: number) => (
-                        <span key={i} className="artist-name-hover cursor-default">
-                          {a.name} <span className="text-[var(--brand-red)]">·</span>
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
         {/* Stage filters */}
         {stages.length > 1 && (
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide mb-8 -mx-4 px-4 md:mx-0 md:px-0">
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide mb-6 -mx-4 px-4 md:mx-0 md:px-0">
             <FilterChip active={stage === "all"} onClick={() => setStage("all")}>Todos</FilterChip>
             {stages.map((st) => (
               <FilterChip key={st} active={stage === st} onClick={() => setStage(st)}>{st}</FilterChip>
@@ -543,28 +501,31 @@ function ArtistsSection({ artists, isFavorite, toggle, bg }: { artists: any[]; i
           </div>
         ) : (
           <>
+            {/* Nombres por escenario (marquee único) */}
+            <div className="mb-10 border-y border-white/5 py-5 space-y-3">
+              {grouped.map(([st, list], gi) => (
+                <div key={st} className="overflow-hidden">
+                  <div className="text-[10px] uppercase tracking-widest text-[var(--brand-blue)] mb-1 px-1">{st}</div>
+                  <div
+                    className="flex gap-10 whitespace-nowrap text-display text-2xl md:text-4xl font-black text-white/40 uppercase"
+                    style={{ animation: `scroll ${40 + gi * 5}s linear infinite`, animationDirection: gi % 2 ? "reverse" : "normal", width: "max-content" }}
+                  >
+                    {[...list, ...list].map((a: any, i: number) => (
+                      <span key={i} className="artist-name-hover cursor-default">
+                        {a.name} <span className="text-[var(--brand-red)]">·</span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Fotos */}
             {withImage.length > 0 && (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {withImage.map((a: any) => (
                   <ArtistCard key={a.id} a={a} fav={isFavorite(a.id)} onFav={() => toggle(a.id)} />
                 ))}
-              </div>
-            )}
-            {withoutImage.length > 0 && (
-              <div className="mt-8">
-                <div className="text-xs uppercase tracking-widest text-white/50 mb-3">También en cartel</div>
-                <div className="flex flex-wrap gap-x-5 gap-y-2">
-                  {withoutImage.map((a: any) => (
-                    <button
-                      key={a.id}
-                      onClick={() => toggle(a.id)}
-                      className="text-display font-black text-lg md:text-xl uppercase text-white/80 hover:text-white artist-name-hover inline-flex items-center gap-2"
-                    >
-                      {a.name}
-                      <Heart className={`w-4 h-4 ${isFavorite(a.id) ? "fill-[var(--brand-red)] text-[var(--brand-red)]" : "text-white/40"}`} />
-                    </button>
-                  ))}
-                </div>
               </div>
             )}
           </>
