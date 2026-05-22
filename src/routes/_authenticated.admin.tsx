@@ -25,6 +25,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 
 const TABS = [
   { key: "settings",   label: "Evento",         icon: Settings,    hint: "Datos básicos, hero, entradas, marca, tipografía y redes sociales." },
+  { key: "tickets",    label: "Entradas",       icon: Ticket,      hint: "Tiquetera visual: tramos, alerta y mini cuenta atrás. Alternativa al iframe de Fourvenues." },
   { key: "sections",   label: "Secciones",      icon: Layers,      hint: "Arrastra las secciones para reordenar la landing." },
   { key: "stages",     label: "Escenarios",     icon: MapPin,      hint: "Gestiona los escenarios internos (Open Air, Main Room…)." },
   { key: "artists",    label: "Artistas",       icon: Mic2,        hint: "Añade DJs y artistas con foto, hora y redes." },
