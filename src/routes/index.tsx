@@ -394,9 +394,12 @@ function Hero({ s, bg, extraTopPadding }: { s: any; bg?: any; extraTopPadding?: 
           <img src={image} alt="DUALITY" loading="eager" fetchPriority="high" decoding="async" className="absolute inset-0 w-full h-full object-cover opacity-70" />
         ) : (
           <div className="absolute inset-0 bg-[var(--dark-bg)]" />
+        )}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[var(--dark-bg)]/40 to-[var(--dark-bg)]" />
         <div className="absolute inset-0 grain" />
       </div>
+
+
 
 
 
