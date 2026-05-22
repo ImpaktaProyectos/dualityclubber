@@ -521,6 +521,45 @@ function ArtistsSection({ artists, isFavorite, toggle, bg }: { artists: any[]; i
   );
 }
 
+function StageMarquee({ stage, list, index }: { stage: string; list: any[]; index: number }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1 px-1">
+        <div className="text-[10px] uppercase tracking-widest text-[var(--brand-blue)]">{stage}</div>
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="px-3 py-1 rounded-full text-[10px] uppercase tracking-widest font-bold border border-white/15 text-white/70 hover:text-white hover:border-white/40 transition-colors"
+        >
+          {open ? "Ocultar" : `Ver todos (${list.length})`}
+        </button>
+      </div>
+      {open ? (
+        <div className="flex flex-wrap gap-x-6 gap-y-2 text-display text-xl md:text-3xl font-black text-white/70 uppercase py-2">
+          {list.map((a: any) => (
+            <span key={a.id} className="artist-name-hover">
+              {a.name} <span className="text-[var(--brand-red)]">·</span>
+            </span>
+          ))}
+        </div>
+      ) : (
+        <div className="overflow-hidden">
+          <div
+            className="flex gap-10 whitespace-nowrap text-display text-2xl md:text-4xl font-black text-white/40 uppercase"
+            style={{ animation: `scroll ${40 + index * 5}s linear infinite`, animationDirection: index % 2 ? "reverse" : "normal", width: "max-content" }}
+          >
+            {[...list, ...list].map((a: any, i: number) => (
+              <span key={i} className="artist-name-hover cursor-default">
+                {a.name} <span className="text-[var(--brand-red)]">·</span>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function FilterChip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button
