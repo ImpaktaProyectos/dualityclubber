@@ -223,6 +223,10 @@ function Landing() {
               </div>
             </section>
           ),
+          shop: () => isOn("shop") && ((data as any).shopProducts ?? []).length > 0 && (
+            <ShopSection s={s} products={(data as any).shopProducts} bg={sectionBg("shop")} />
+          ),
+
 
           faq: () => isOn("faq") && data.faqs.length > 0 && (
             <section id="faq" className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
