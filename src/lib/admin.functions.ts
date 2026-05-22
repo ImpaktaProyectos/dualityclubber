@@ -78,14 +78,33 @@ export const upsertRow = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await requireAdmin(context.userId);
     assertTable(data.table);
+    const values: Record<string, unknown> = { ...data.values };
+    // Provide safe defaults for NOT NULL columns when creating a new row,
+    // so the admin UI can add a blank row and edit it inline.
+    const isNew = !values.id;
+    if (isNew) {
+      const defaults: Record<string, Record<string, unknown>> = {
+        artists: { name: "Nuevo artista" },
+        stages: { name: "Nuevo escenario", slug: `stage-${Date.now()}` },
+        shop_products: { name: "Nuevo producto" },
+        ticket_tiers: { name: "Nueva entrada" },
+        bus_routes: { town: "Nueva ruta" },
+        schedule_items: { stage: "main" },
+        faqs: { question: "Nueva pregunta", answer: "" },
+        gallery_items: { media_url: "" },
+      };
+      const d = defaults[data.table];
+      if (d) for (const k of Object.keys(d)) if (values[k] == null || values[k] === "") values[k] = d[k];
+    }
     const { data: row, error } = await supabaseAdmin
       .from(data.table)
-      .upsert(data.values)
+      .upsert(values)
       .select()
       .maybeSingle();
     if (error) throw new Error(error.message);
     return row;
   });
+
 
 export const deleteRow = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
