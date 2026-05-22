@@ -17,6 +17,7 @@ import { BrandLogosEditor } from "@/components/admin/BrandLogosEditor";
 import { SectionsReorder } from "@/components/admin/SectionsReorder";
 import { StagesManager } from "@/components/admin/StagesManager";
 import { BulkScheduleImporter } from "@/components/admin/BulkScheduleImporter";
+import { ArtistsScheduleMatrix } from "@/components/admin/ArtistsScheduleMatrix";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [{ title: "Panel admin · DUALITY" }] }),
