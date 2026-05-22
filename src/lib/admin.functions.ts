@@ -14,6 +14,7 @@ const ALLOWED_TABLES = [
   "visual_settings",
   "section_backgrounds",
   "stages",
+  "ticket_tiers",
 ] as const;
 type TableName = (typeof ALLOWED_TABLES)[number];
 
