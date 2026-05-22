@@ -569,20 +569,7 @@ function MiniCountdown({ targetIso }: { targetIso: string }) {
 }
 
 // ============== TICKETS ==============
-function sanitizeTicketUrl(raw?: string): { url?: string; error?: string } {
-  if (!raw) return {};
-  const trimmed = raw.trim();
-  if (!/^https:\/\//i.test(trimmed)) return { error: "La URL debe ser HTTPS." };
-  try {
-    const u = new URL(trimmed);
-    if (typeof window !== "undefined" && u.hostname === window.location.hostname) {
-      return { error: "La URL apunta a la propia web (provoca redirección infinita). Usa la URL oficial de Fourvenues." };
-    }
-    return { url: u.toString() };
-  } catch {
-    return { error: "URL inválida." };
-  }
-}
+
 
 function TicketsSection({ s, bg, tiers }: { s: any; bg?: any; tiers?: any[] }) {
   const mode: string = s?.ticket_mode ?? "visual_tiers";
