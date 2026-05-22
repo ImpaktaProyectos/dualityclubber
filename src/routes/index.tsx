@@ -387,15 +387,15 @@ function Hero({ s, bg, extraTopPadding }: { s: any; bg?: any; extraTopPadding?: 
             muted
             loop
             playsInline
-            poster={image || heroArt}
+            poster={image || undefined}
             className="absolute inset-0 w-full h-full object-cover opacity-70"
           />
+        ) : image ? (
+          <img src={image} alt="DUALITY" loading="eager" fetchPriority="high" decoding="async" className="absolute inset-0 w-full h-full object-cover opacity-70" />
         ) : (
-          <img src={image || heroArt} alt="DUALITY" className="absolute inset-0 w-full h-full object-cover opacity-70" />
+          <div className="absolute inset-0 bg-[var(--dark-bg)]" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[var(--dark-bg)]/40 to-[var(--dark-bg)]" />
-        <div className="absolute inset-0 grain" />
-      </div>
+
       <div className="relative max-w-7xl mx-auto px-4 md:px-8 w-full grid md:grid-cols-2 gap-8 md:gap-12 items-center">
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
           <div className="text-xs uppercase tracking-[0.4em] text-[var(--brand-blue)] mb-4">{s?.event_subtitle}</div>
