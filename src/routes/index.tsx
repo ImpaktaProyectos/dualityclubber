@@ -259,7 +259,16 @@ function Landing() {
         <footer className="border-t border-white/5 py-12 px-4 md:px-8">
           <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8 items-center">
             <div className="text-display text-3xl font-black tracking-widest">
-              DUA<span style={{ color: "var(--brand-red)" }}>L</span><span style={{ color: "var(--brand-blue)" }}>I</span>TY
+              {(s?.brand_logo_light_url || s?.brand_logo_main_url) ? (
+                <img
+                  src={s.brand_logo_light_url || s.brand_logo_main_url}
+                  alt={s?.event_name ?? "DUALITY"}
+                  className="object-contain"
+                  style={{ height: `${s?.header_logo_height ?? 48}px` }}
+                />
+              ) : (
+                <>DUA<span style={{ color: "var(--brand-red)" }}>L</span><span style={{ color: "var(--brand-blue)" }}>I</span>TY</>
+              )}
             </div>
             <div className="flex flex-wrap gap-3 md:justify-center">
               {[
