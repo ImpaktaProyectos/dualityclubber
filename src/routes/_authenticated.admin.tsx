@@ -783,6 +783,25 @@ function TicketsAdminPanel({ settings, tiers, onSaved }: { settings: any; tiers:
 
   return (
     <div className="space-y-6">
+      {/* 🎫 Visual tiers editor — MOVED TO TOP with distinct preview styling */}
+      <section className="rounded-2xl border border-[var(--brand-blue)]/40 bg-gradient-to-br from-[var(--brand-blue)]/8 via-[var(--dark-panel)] to-[var(--brand-red)]/8 p-5 md:p-6 space-y-4 shadow-[0_0_40px_rgba(0,174,239,0.12)]">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-black tracking-wider">🎫 Tramos de entradas</h2>
+            <p className="text-xs text-[var(--brand-blue)] mt-1 font-semibold uppercase tracking-widest">Esto es lo que verá el público en la web</p>
+          </div>
+          <span className="text-[10px] uppercase tracking-widest px-2 py-1 rounded-full bg-[var(--brand-blue)]/15 text-[var(--brand-blue)] border border-[var(--brand-blue)]/30">Preview visual</span>
+        </div>
+
+        {mode === "visual_tiers" && visibleTiers.length === 0 && (
+          <div className="rounded-lg border border-yellow-500/40 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-200">
+            ⚠️ No hay tramos de entradas visibles. La sección quedará vacía en la landing.
+          </div>
+        )}
+
+        <TicketTiersList tiers={tiers} onSaved={onSaved} />
+      </section>
+
       {/* Mode selector */}
       <section className="rounded-2xl border border-white/10 bg-[var(--dark-panel)] p-5 md:p-6 space-y-4">
         <div>
@@ -865,24 +884,6 @@ function TicketsAdminPanel({ settings, tiers, onSaved }: { settings: any; tiers:
           <Save className="h-4 w-4" /> {saveSettings.isPending ? "Guardando…" : "Guardar ajustes de entradas"}
         </button>
       </div>
-
-      {/* Visual tiers editor */}
-      <section className="rounded-2xl border border-white/10 bg-[var(--dark-panel)] p-5 md:p-6 space-y-4">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h2 className="text-base font-bold">🎫 Tramos de entradas (tiquetera visual)</h2>
-            <p className="text-xs text-white/50 mt-1">Crea, edita y reordena los tramos que verá el público.</p>
-          </div>
-        </div>
-
-        {mode === "visual_tiers" && visibleTiers.length === 0 && (
-          <div className="rounded-lg border border-yellow-500/40 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-200">
-            ⚠️ No hay tramos de entradas visibles. La sección quedará vacía en la landing.
-          </div>
-        )}
-
-        <TicketTiersList tiers={tiers} onSaved={onSaved} />
-      </section>
     </div>
   );
 }
