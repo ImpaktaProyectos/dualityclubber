@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Heart, Instagram, MapPin, Music, ShoppingBag, ChevronDown, Youtube, Facebook, Twitter, MessageCircle, Send, Headphones } from "lucide-react";
+import { Heart, Instagram, MapPin, Music, ShoppingBag, ChevronDown, Youtube, Facebook, Twitter, MessageCircle, Send, Headphones, FileDown, Bus, Clock, ExternalLink } from "lucide-react";
 import { getLandingData } from "@/lib/site.functions";
 import { useFavorites } from "@/hooks/useFavorites";
 import { SectionBackground, resolveSectionBg } from "@/components/SectionBackground";
@@ -234,6 +234,73 @@ function Landing() {
           ),
           shop: () => isOn("shop") && ((data as any).shopProducts ?? []).length > 0 && (
             <ShopSection s={s} products={(data as any).shopProducts} bg={sectionBg("shop")} />
+          ),
+
+          buses: () => isOn("buses") && (data.buses ?? []).length > 0 && (
+            <section id="buses" className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
+              <SectionBackground cfg={sectionBg("buses")} />
+              <div className="relative max-w-6xl mx-auto">
+                <SectionLabel>Transporte</SectionLabel>
+                <h2 className="text-display text-4xl md:text-6xl font-black mb-3">Buses oficiales</h2>
+                <p className="text-white/60 mb-10 text-lg max-w-2xl">Llega y vuelve sin preocuparte por el coche.</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {data.buses.map((b: any) => {
+                    const soldOut = b.status === "sold_out";
+                    return (
+                      <article key={b.id} className="relative flex flex-col rounded-2xl border border-white/10 bg-[var(--dark-panel)] p-6 transition-all hover:border-[var(--brand-blue)]/50 hover:shadow-[0_0_30px_rgba(0,174,239,0.12)]">
+                        <div className="flex items-start justify-between gap-3 mb-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-11 h-11 rounded-full bg-[var(--brand-blue)]/15 text-[var(--brand-blue)] flex items-center justify-center shrink-0">
+                              <Bus className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <h3 className="font-black text-xl leading-tight">{b.town}</h3>
+                              {b.departure_point && <div className="text-xs text-white/50 mt-0.5">{b.departure_point}</div>}
+                            </div>
+                          </div>
+                          {b.price && <span className="text-lg font-black text-[var(--brand-blue)] whitespace-nowrap">{b.price}</span>}
+                        </div>
+                        <div className="space-y-2 text-sm text-white/70 mb-5">
+                          {b.departure_time && (
+                            <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-white/40" /><span className="text-white/50 w-16">Ida</span><span className="font-bold text-white">{b.departure_time}</span></div>
+                          )}
+                          {b.return_time && (
+                            <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-white/40" /><span className="text-white/50 w-16">Vuelta</span><span className="font-bold text-white">{b.return_time}</span></div>
+                          )}
+                        </div>
+                        {soldOut ? (
+                          <span className="mt-auto inline-flex items-center justify-center px-4 py-2.5 rounded-full bg-white/5 text-white/40 font-bold text-xs uppercase tracking-widest">Agotado</span>
+                        ) : b.booking_url ? (
+                          <a href={b.booking_url} target="_blank" rel="noopener noreferrer" className="mt-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full bg-[var(--brand-blue)] text-black font-bold text-xs uppercase tracking-widest hover:scale-105 transition-transform">
+                            Reservar plaza <ExternalLink className="w-3.5 h-3.5" />
+                          </a>
+                        ) : (
+                          <span className="mt-auto inline-flex items-center justify-center px-4 py-2.5 rounded-full border border-white/10 text-white/60 font-bold text-xs uppercase tracking-widest">Próximamente</span>
+                        )}
+                      </article>
+                    );
+                  })}
+                </div>
+              </div>
+            </section>
+          ),
+          authorization: () => isOn("authorization") && s?.authorization_pdf_url && (
+            <section id="autorizacion" className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
+              <SectionBackground cfg={sectionBg("authorization")} />
+              <div className="relative max-w-3xl mx-auto text-center">
+                <SectionLabel>Menores</SectionLabel>
+                <h2 className="text-display text-4xl md:text-6xl font-black mb-4">{s?.authorization_title || "Autorización para menores"}</h2>
+                {s?.authorization_description && <p className="text-white/70 text-lg mb-10 max-w-2xl mx-auto">{s.authorization_description}</p>}
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <a href={s.authorization_pdf_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full border border-white/15 bg-white/5 text-white font-bold uppercase tracking-widest text-sm hover:border-[var(--brand-blue)] hover:text-[var(--brand-blue)] transition-colors">
+                    <ExternalLink className="w-4 h-4" /> Descarga aquí tu autorización
+                  </a>
+                  <a href={s.authorization_pdf_url} download target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full bg-[var(--brand-blue)] text-black font-black uppercase tracking-widest text-sm glow-blue hover:scale-105 transition-transform">
+                    <FileDown className="w-4 h-4" /> {s?.authorization_button_text || "Descargar PDF"}
+                  </a>
+                </div>
+              </div>
+            </section>
           ),
 
 
