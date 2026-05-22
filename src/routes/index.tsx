@@ -109,7 +109,11 @@ function Landing() {
                 alt={s?.event_name ?? "DUALITY"}
                 style={{ height: `${s?.header_logo_height ?? 36}px` }}
                 className="w-auto object-contain"
+                loading="eager"
+                fetchPriority="high"
+                decoding="sync"
               />
+
             ) : (
               <span className="text-display text-2xl font-black tracking-widest">
                 DUA<span style={{ color: "var(--brand-red)" }}>L</span><span style={{ color: "var(--brand-blue)" }}>I</span>TY
