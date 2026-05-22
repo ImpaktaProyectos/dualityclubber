@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -105,6 +105,13 @@ export function SectionsReorder({ rows, onSaved }: { rows: Section[]; onSaved: (
   const [dirty, setDirty] = useState(false);
   const reorder = useServerFn(reorderSections);
   const upsert = useServerFn(upsertRow);
+
+  // Re-sync local items when parent rows refresh (after toggle/visibility changes)
+  useEffect(() => {
+    if (!dirty) {
+      setItems([...rows].sort((a, b) => a.sort_order - b.sort_order));
+    }
+  }, [rows, dirty]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
