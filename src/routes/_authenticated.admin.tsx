@@ -17,6 +17,7 @@ import { BrandLogosEditor } from "@/components/admin/BrandLogosEditor";
 import { SectionsReorder } from "@/components/admin/SectionsReorder";
 import { StagesManager } from "@/components/admin/StagesManager";
 import { BulkScheduleImporter } from "@/components/admin/BulkScheduleImporter";
+import { ArtistsScheduleMatrix } from "@/components/admin/ArtistsScheduleMatrix";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [{ title: "Panel admin · DUALITY" }] }),
@@ -171,6 +172,12 @@ function AdminPage() {
             )}
             {tab === "schedule" && (
               <div className="space-y-6">
+                <ArtistsScheduleMatrix
+                  artists={data.artists as any}
+                  stages={(data as any).stages ?? []}
+                  schedule={data.schedule as any}
+                  onSaved={refresh}
+                />
                 <BulkScheduleImporter
                   stages={(data as any).stages ?? []}
                   artists={data.artists as any}

@@ -133,6 +133,15 @@ function slugify(s: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+function normalizeName(s: string) {
+  return s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "")
+    .trim();
+}
+
 // Bulk import schedule items. Items shape:
 //   { start_time, end_time?, artist_name, stage_name, sort_order }
 // Options:
@@ -153,7 +162,7 @@ export const bulkUpsertSchedule = createServerFn({ method: "POST" })
       supabaseAdmin.from("artists").select("id,name,stage_id"),
     ]);
     const stagesBySlug = new Map<string, any>((stagesRows ?? []).map((s: any) => [s.slug, s]));
-    const artistsByLower = new Map<string, any>((artistsRows ?? []).map((a: any) => [a.name.toLowerCase().trim(), a]));
+    const artistsByLower = new Map<string, any>((artistsRows ?? []).map((a: any) => [normalizeName(a.name), a]));
 
     // Ensure all stages exist
     for (const it of data.items) {
@@ -172,7 +181,7 @@ export const bulkUpsertSchedule = createServerFn({ method: "POST" })
     // Ensure artists exist (if option enabled)
     if (opts.createMissingArtists !== false) {
       for (const it of data.items) {
-        const key = it.artist_name.toLowerCase().trim();
+        const key = normalizeName(it.artist_name);
         if (!key) continue;
         if (!artistsByLower.has(key)) {
           const stage = stagesBySlug.get(slugify(it.stage_name));
@@ -200,7 +209,7 @@ export const bulkUpsertSchedule = createServerFn({ method: "POST" })
     let order = 0;
     for (const it of data.items) {
       const stage = stagesBySlug.get(slugify(it.stage_name));
-      const artist = artistsByLower.get(it.artist_name.toLowerCase().trim());
+      const artist = artistsByLower.get(normalizeName(it.artist_name));
 
       // optional: update artist stage if empty
       if (opts.updateArtistStageIfEmpty !== false && artist && !artist.stage_id && stage) {
