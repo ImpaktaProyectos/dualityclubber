@@ -109,7 +109,11 @@ function Landing() {
                 alt={s?.event_name ?? "DUALITY"}
                 style={{ height: `${s?.header_logo_height ?? 36}px` }}
                 className="w-auto object-contain"
+                loading="eager"
+                fetchPriority="high"
+                decoding="sync"
               />
+
             ) : (
               <span className="text-display text-2xl font-black tracking-widest">
                 DUA<span style={{ color: "var(--brand-red)" }}>L</span><span style={{ color: "var(--brand-blue)" }}>I</span>TY
@@ -146,194 +150,183 @@ function Landing() {
         </a>
       )}
 
-      {/* HERO */}
-      {isOn("hero") && <Hero s={s} bg={sectionBg("hero")} extraTopPadding={isOn("countdown") && !!s?.countdown_datetime} />}
-
-      {/* QUICK INFO */}
-      {isOn("quick_info") && data.quickInfo.length > 0 && (
-        <section className="relative border-y border-white/5 overflow-hidden">
-          <SectionBackground cfg={sectionBg("quick_info")} />
-          <div className="relative max-w-7xl mx-auto px-4 md:px-8 py-6 flex gap-3 md:gap-6 overflow-x-auto scrollbar-hide">
-            {data.quickInfo.map((q: any) => (
-              <div key={q.id} className="shrink-0 px-4 py-2 rounded-full border border-white/10 text-xs md:text-sm uppercase tracking-widest font-bold text-white/90 whitespace-nowrap">
-                {q.label}{q.value && <span className="text-white/50 normal-case font-normal ml-2">{q.value}</span>}
+      {(() => {
+        const renderers: Record<string, () => React.ReactNode> = {
+          hero: () => isOn("hero") && <Hero s={s} bg={sectionBg("hero")} extraTopPadding={isOn("countdown") && !!s?.countdown_datetime} />,
+          quick_info: () => isOn("quick_info") && data.quickInfo.length > 0 && (
+            <section className="relative border-y border-white/5 overflow-hidden">
+              <SectionBackground cfg={sectionBg("quick_info")} />
+              <div className="relative max-w-7xl mx-auto px-4 md:px-8 py-6 flex gap-3 md:gap-6 overflow-x-auto scrollbar-hide">
+                {data.quickInfo.map((q: any) => (
+                  <div key={q.id} className="shrink-0 px-4 py-2 rounded-full border border-white/10 text-xs md:text-sm uppercase tracking-widest font-bold text-white/90 whitespace-nowrap">
+                    {q.label}{q.value && <span className="text-white/50 normal-case font-normal ml-2">{q.value}</span>}
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-
-      {/* TICKETS */}
-      {isOn("tickets") && <TicketsSection s={s} bg={sectionBg("tickets")} tiers={(data as any).ticketTiers ?? []} />}
-
-      {/* ARTISTS */}
-      {isOn("artists") && data.artists.length > 0 && (
-        <ArtistsSection artists={data.artists} isFavorite={isFavorite} toggle={toggle} bg={sectionBg("artists")} />
-      )}
-
-      {/* SCHEDULE */}
-      {isOn("schedule") && (
-        <Schedule
-          schedule={data.schedule}
-          artists={data.artists}
-          favorites={favorites}
-          favKeyForSchedule={favKeyForSchedule}
-          toggle={toggle}
-          isFavorite={isFavorite}
-          clearFavorites={clear}
-          isArtistsOn={isOn("artists")}
-          bg={sectionBg("schedule")}
-        />
-      )}
-
-      {/* LOCATION */}
-      {isOn("location") && (
-        <section id="ubicacion" className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
-          <SectionBackground cfg={sectionBg("location")} />
-          <div className="relative max-w-5xl mx-auto">
-            <SectionLabel>Ubicación</SectionLabel>
-            <h2 className="text-display text-4xl md:text-6xl font-black mb-6">{s?.location_name}</h2>
-            <div className="flex items-center gap-2 text-white/70 mb-8">
-              <MapPin className="w-5 h-5 text-[var(--brand-red)]" />
-              {s?.location_address}
-            </div>
-            <div className="aspect-video rounded-2xl overflow-hidden border border-white/10 bg-[var(--dark-panel)] mb-6">
-              {s?.location_embed_url ? (
-                <iframe src={s.location_embed_url} className="w-full h-full border-0" loading="lazy" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-white/40">Mapa próximamente</div>
-              )}
-            </div>
-            <div className="grid md:grid-cols-2 gap-6 mb-6">
-              <InfoCard title="Parking">{s?.location_parking_text}</InfoCard>
-              <InfoCard title="Acceso">{s?.location_access_text}</InfoCard>
-            </div>
-            {s?.location_maps_url && (
-              <a href={s.location_maps_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[var(--brand-blue)] text-black font-bold uppercase tracking-wider glow-blue">
-                {s.location_button_text}
-              </a>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* GALLERY */}
-      {isOn("gallery") && data.gallery.length > 0 && (
-        <section id="galeria" className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
-          <SectionBackground cfg={sectionBg("gallery")} />
-          <div className="relative max-w-7xl mx-auto">
-            <SectionLabel>Galería</SectionLabel>
-            <h2 className="text-display text-4xl md:text-6xl font-black mb-10">Momentos DUALITY</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-              {data.gallery.map((g: any) => (
-                <div key={g.id} className="relative aspect-square rounded-xl overflow-hidden border border-white/10 bg-[var(--dark-panel)] group">
-                  {g.media_type === "video" ? (
-                    <video src={g.media_url} poster={g.thumbnail_url || undefined} className="w-full h-full object-cover" muted loop playsInline autoPlay />
+            </section>
+          ),
+          tickets: () => isOn("tickets") && <TicketsSection s={s} bg={sectionBg("tickets")} tiers={(data as any).ticketTiers ?? []} />,
+          artists: () => isOn("artists") && data.artists.length > 0 && (
+            <ArtistsSection artists={data.artists} isFavorite={isFavorite} toggle={toggle} bg={sectionBg("artists")} />
+          ),
+          schedule: () => isOn("schedule") && (
+            <Schedule
+              schedule={data.schedule}
+              artists={data.artists}
+              favorites={favorites}
+              favKeyForSchedule={favKeyForSchedule}
+              toggle={toggle}
+              isFavorite={isFavorite}
+              clearFavorites={clear}
+              isArtistsOn={isOn("artists")}
+              bg={sectionBg("schedule")}
+            />
+          ),
+          location: () => isOn("location") && (
+            <section id="ubicacion" className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
+              <SectionBackground cfg={sectionBg("location")} />
+              <div className="relative max-w-5xl mx-auto">
+                <SectionLabel>Ubicación</SectionLabel>
+                <h2 className="text-display text-4xl md:text-6xl font-black mb-6">{s?.location_name}</h2>
+                <div className="flex items-center gap-2 text-white/70 mb-8">
+                  <MapPin className="w-5 h-5 text-[var(--brand-red)]" />
+                  {s?.location_address}
+                </div>
+                <div className="aspect-video rounded-2xl overflow-hidden border border-white/10 bg-[var(--dark-panel)] mb-6">
+                  {s?.location_embed_url ? (
+                    <iframe src={s.location_embed_url} className="w-full h-full border-0" loading="lazy" />
                   ) : (
-                    <img src={g.media_url} alt={g.title || "Galería"} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                    <div className="w-full h-full flex items-center justify-center text-white/40">Mapa próximamente</div>
                   )}
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* FAQ */}
-      {isOn("faq") && data.faqs.length > 0 && (
-        <section id="faq" className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
-          <SectionBackground cfg={sectionBg("faq")} />
-          <div className="relative max-w-3xl mx-auto">
-            <SectionLabel>FAQ</SectionLabel>
-            <h2 className="text-display text-4xl md:text-6xl font-black mb-10">Preguntas frecuentes</h2>
-            <div className="space-y-3">
-              {data.faqs.map((f: any) => <FAQItem key={f.id} q={f.question} a={f.answer} />)}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* FINAL CTA */}
-      {isOn("final_cta") && (
-        <section className="relative py-28 md:py-40 px-4 md:px-8 overflow-hidden">
-          <SectionBackground cfg={sectionBg("final_cta")} />
-          {s?.final_cta_background_url && (
-            <>
-              <img src={s.final_cta_background_url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-40" />
-              <div className="absolute inset-0 bg-gradient-to-b from-[var(--dark-bg)]/60 via-[var(--dark-bg)]/80 to-[var(--dark-bg)]" />
-            </>
-          )}
-          <div className="relative max-w-3xl mx-auto text-center">
-            <h2 className="text-display text-5xl md:text-8xl font-black mb-6 text-glow-blue">
-              {s?.final_cta_title}
-            </h2>
-            <p className="text-lg md:text-xl text-white/80 mb-10">{s?.final_cta_text}</p>
-            <a href={s?.final_cta_button_url || "#entradas"} className="inline-flex items-center gap-2 px-10 py-5 rounded-full bg-[var(--brand-red)] text-white font-black uppercase tracking-widest text-lg glow-red hover:scale-105 transition-transform">
-              {s?.final_cta_button_text}
-            </a>
-          </div>
-        </section>
-      )}
-
-      {/* FOOTER */}
-      {isOn("footer") && (
-        <footer className="border-t border-white/5 py-12 px-4 md:px-8">
-          <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8 items-center">
-            <div className="text-display text-3xl font-black tracking-widest">
-              {(s?.brand_logo_light_url || s?.brand_logo_main_url) ? (
-                <img
-                  src={s.brand_logo_light_url || s.brand_logo_main_url}
-                  alt={s?.event_name ?? "DUALITY"}
-                  className="object-contain"
-                  style={{ height: `${s?.header_logo_height ?? 48}px` }}
-                />
-              ) : (
-                <>DUA<span style={{ color: "var(--brand-red)" }}>L</span><span style={{ color: "var(--brand-blue)" }}>I</span>TY</>
-              )}
-            </div>
-            <div className="flex flex-wrap gap-3 md:justify-center">
-              {[
-                { url: s?.footer_instagram_url, Icon: Instagram, label: "Instagram", color: "var(--brand-blue)" },
-                { url: s?.footer_tiktok_url, Icon: Music, label: "TikTok", color: "var(--brand-red)" },
-                { url: s?.footer_facebook_url, Icon: Facebook, label: "Facebook", color: "var(--brand-blue)" },
-                { url: s?.footer_youtube_url, Icon: Youtube, label: "YouTube", color: "var(--brand-red)" },
-                { url: s?.footer_twitter_url ?? s?.footer_x_url, Icon: Twitter, label: "Twitter / X", color: "var(--brand-blue)" },
-                { url: s?.footer_spotify_url, Icon: Music, label: "Spotify", color: "var(--brand-blue)" },
-                { url: s?.footer_soundcloud_url, Icon: Headphones, label: "SoundCloud", color: "var(--brand-red)" },
-                { url: s?.footer_whatsapp_url, Icon: MessageCircle, label: "WhatsApp", color: "var(--brand-blue)" },
-                { url: s?.footer_telegram_url, Icon: Send, label: "Telegram", color: "var(--brand-blue)" },
-              ]
-                .filter((x) => x.url)
-                .map(({ url, Icon, label, color }) => (
-                  <a
-                    key={label}
-                    href={url!}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={label}
-                    title={label}
-                    className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center transition-colors hover:scale-110"
-                    style={{ ["--hover" as any]: color }}
-                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = color; e.currentTarget.style.color = color; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = ""; e.currentTarget.style.color = ""; }}
-                  >
-                    <Icon className="w-5 h-5" />
+                <div className="grid md:grid-cols-2 gap-6 mb-6">
+                  <InfoCard title="Parking">{s?.location_parking_text}</InfoCard>
+                  <InfoCard title="Acceso">{s?.location_access_text}</InfoCard>
+                </div>
+                {s?.location_maps_url && (
+                  <a href={s.location_maps_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[var(--brand-blue)] text-black font-bold uppercase tracking-wider glow-blue">
+                    {s.location_button_text}
                   </a>
-                ))}
-            </div>
-            <div className="text-xs text-white/40 md:text-right space-y-1">
-              <div>{s?.footer_copyright}</div>
-              <div className="flex gap-3 md:justify-end">
-                <a href={s?.footer_legal_url}>Aviso legal</a>
-                <a href={s?.footer_privacy_url}>Privacidad</a>
-                <a href={s?.footer_cookies_url}>Cookies</a>
+                )}
               </div>
-            </div>
-          </div>
-        </footer>
-      )}
+            </section>
+          ),
+          gallery: () => isOn("gallery") && data.gallery.length > 0 && (
+            <section id="galeria" className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
+              <SectionBackground cfg={sectionBg("gallery")} />
+              <div className="relative max-w-7xl mx-auto">
+                <SectionLabel>Galería</SectionLabel>
+                <h2 className="text-display text-4xl md:text-6xl font-black mb-10">Momentos DUALITY</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+                  {data.gallery.map((g: any) => (
+                    <div key={g.id} className="relative aspect-square rounded-xl overflow-hidden border border-white/10 bg-[var(--dark-panel)] group">
+                      {g.media_type === "video" ? (
+                        <video src={g.media_url} poster={g.thumbnail_url || undefined} className="w-full h-full object-cover" muted loop playsInline autoPlay />
+                      ) : (
+                        <img src={g.media_url} alt={g.title || "Galería"} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          ),
+          faq: () => isOn("faq") && data.faqs.length > 0 && (
+            <section id="faq" className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
+              <SectionBackground cfg={sectionBg("faq")} />
+              <div className="relative max-w-3xl mx-auto">
+                <SectionLabel>FAQ</SectionLabel>
+                <h2 className="text-display text-4xl md:text-6xl font-black mb-10">Preguntas frecuentes</h2>
+                <div className="space-y-3">
+                  {data.faqs.map((f: any) => <FAQItem key={f.id} q={f.question} a={f.answer} />)}
+                </div>
+              </div>
+            </section>
+          ),
+          final_cta: () => isOn("final_cta") && (
+            <section className="relative py-28 md:py-40 px-4 md:px-8 overflow-hidden">
+              <SectionBackground cfg={sectionBg("final_cta")} />
+              {s?.final_cta_background_url && (
+                <>
+                  <img src={s.final_cta_background_url} alt="" className="absolute inset-0 w-full h-full object-cover opacity-40" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-[var(--dark-bg)]/60 via-[var(--dark-bg)]/80 to-[var(--dark-bg)]" />
+                </>
+              )}
+              <div className="relative max-w-3xl mx-auto text-center">
+                <h2 className="text-display text-5xl md:text-8xl font-black mb-6 text-glow-blue">
+                  {s?.final_cta_title}
+                </h2>
+                <p className="text-lg md:text-xl text-white/80 mb-10">{s?.final_cta_text}</p>
+                <a href={s?.final_cta_button_url || "#entradas"} className="inline-flex items-center gap-2 px-10 py-5 rounded-full bg-[var(--brand-red)] text-white font-black uppercase tracking-widest text-lg glow-red hover:scale-105 transition-transform">
+                  {s?.final_cta_button_text}
+                </a>
+              </div>
+            </section>
+          ),
+          footer: () => isOn("footer") && (
+            <footer className="border-t border-white/5 py-12 px-4 md:px-8">
+              <div className="max-w-7xl mx-auto grid md:grid-cols-3 gap-8 items-center">
+                <div className="text-display text-3xl font-black tracking-widest">
+                  {(s?.brand_logo_light_url || s?.brand_logo_main_url) ? (
+                    <img
+                      src={s.brand_logo_light_url || s.brand_logo_main_url}
+                      alt={s?.event_name ?? "DUALITY"}
+                      className="object-contain"
+                      style={{ height: `${s?.header_logo_height ?? 48}px` }}
+                    />
+                  ) : (
+                    <>DUA<span style={{ color: "var(--brand-red)" }}>L</span><span style={{ color: "var(--brand-blue)" }}>I</span>TY</>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-3 md:justify-center">
+                  {[
+                    { url: s?.footer_instagram_url, Icon: Instagram, label: "Instagram", color: "var(--brand-blue)" },
+                    { url: s?.footer_tiktok_url, Icon: Music, label: "TikTok", color: "var(--brand-red)" },
+                    { url: s?.footer_facebook_url, Icon: Facebook, label: "Facebook", color: "var(--brand-blue)" },
+                    { url: s?.footer_youtube_url, Icon: Youtube, label: "YouTube", color: "var(--brand-red)" },
+                    { url: s?.footer_twitter_url ?? s?.footer_x_url, Icon: Twitter, label: "Twitter / X", color: "var(--brand-blue)" },
+                    { url: s?.footer_spotify_url, Icon: Music, label: "Spotify", color: "var(--brand-blue)" },
+                    { url: s?.footer_soundcloud_url, Icon: Headphones, label: "SoundCloud", color: "var(--brand-red)" },
+                    { url: s?.footer_whatsapp_url, Icon: MessageCircle, label: "WhatsApp", color: "var(--brand-blue)" },
+                    { url: s?.footer_telegram_url, Icon: Send, label: "Telegram", color: "var(--brand-blue)" },
+                  ]
+                    .filter((x) => x.url)
+                    .map(({ url, Icon, label, color }) => (
+                      <a
+                        key={label}
+                        href={url!}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={label}
+                        title={label}
+                        className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center transition-colors hover:scale-110"
+                        style={{ ["--hover" as any]: color }}
+                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = color; e.currentTarget.style.color = color; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.borderColor = ""; e.currentTarget.style.color = ""; }}
+                      >
+                        <Icon className="w-5 h-5" />
+                      </a>
+                    ))}
+                </div>
+                <div className="text-xs text-white/40 md:text-right space-y-1">
+                  <div>{s?.footer_copyright}</div>
+                  <div className="flex gap-3 md:justify-end">
+                    <a href={s?.footer_legal_url}>Aviso legal</a>
+                    <a href={s?.footer_privacy_url}>Privacidad</a>
+                    <a href={s?.footer_cookies_url}>Cookies</a>
+                  </div>
+                </div>
+              </div>
+            </footer>
+          ),
+        };
+        const ordered = [...(data.sections as any[])].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+        return ordered.map((sec) => (
+          <span key={sec.section_key} style={{ display: "contents" }}>{renderers[sec.section_key]?.()}</span>
+        ));
+      })()}
       <style>{`@keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }`}</style>
+
     </div>
   );
 }
