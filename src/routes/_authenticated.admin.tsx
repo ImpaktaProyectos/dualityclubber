@@ -7,7 +7,7 @@ import { getAdminData, upsertRow, deleteRow, isCurrentUserAdmin } from "@/lib/ad
 import { toast } from "sonner";
 import {
   LogOut, Plus, Trash2, Save, Eye, EyeOff, Settings, Layers, Mic2, Clock, Info,
-  Bus, Image as ImageIcon, HelpCircle, Sparkles, ExternalLink, MapPin,
+  Bus, Image as ImageIcon, HelpCircle, Sparkles, ExternalLink, MapPin, Ticket,
 } from "lucide-react";
 import { MediaUpload } from "@/components/admin/MediaUpload";
 import { AtmosphereEditor } from "@/components/admin/AtmosphereEditor";
@@ -25,6 +25,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 
 const TABS = [
   { key: "settings",   label: "Evento",         icon: Settings,    hint: "Datos básicos, hero, entradas, marca, tipografía y redes sociales." },
+  { key: "tickets",    label: "Entradas",       icon: Ticket,      hint: "Tiquetera visual: tramos, alerta y mini cuenta atrás. Alternativa al iframe de Fourvenues." },
   { key: "sections",   label: "Secciones",      icon: Layers,      hint: "Arrastra las secciones para reordenar la landing." },
   { key: "stages",     label: "Escenarios",     icon: MapPin,      hint: "Gestiona los escenarios internos (Open Air, Main Room…)." },
   { key: "artists",    label: "Artistas",       icon: Mic2,        hint: "Añade DJs y artistas con foto, hora y redes." },
@@ -144,6 +145,13 @@ function AdminPage() {
                 <SettingsEditor data={data.settings} onSaved={refresh} />
               </div>
             )}
+            {tab === "tickets" && (
+              <TicketsAdminPanel
+                settings={data.settings}
+                tiers={(data as any).ticketTiers ?? []}
+                onSaved={refresh}
+              />
+            )}
             {tab === "sections" && <SectionsReorder rows={data.sections as any} onSaved={refresh} />}
             {tab === "stages" && <StagesManager rows={(data as any).stages ?? []} onSaved={refresh} />}
             {tab === "artists" && (
@@ -260,16 +268,18 @@ const SETTING_GROUPS: { title: string; description?: string; fields: SettingFiel
     ],
   },
   {
-    title: "🎫 Entradas · Fourvenues",
-    description: "⭐ Pega aquí el código <script> que te da Fourvenues. Es el método recomendado.",
+    title: "🎫 Entradas · Fourvenues / Tiquetera visual",
+    description: "Elige el modo de venta. La 'Tiquetera visual' se configura desde la pestaña Entradas.",
     fields: [
-      { key: "ticket_embed_script", label: "⭐ SCRIPT DE FOURVENUES (RECOMENDADO) — pega aquí <script src=\"...\"></script>", type: "textarea", rows: 4, hint: "Campo principal. Pega el código tal cual te lo da Fourvenues. Se extrae el src y se carga como script real (no iframe)." },
-      { key: "ticket_fallback_url", label: "URL de venta oficial (botón de respaldo 'Abrir venta oficial')", placeholder: "https://www.fourvenues.com/..." },
-      { key: "ticket_mode", label: "Modo de venta", type: "select", hint: "Con el script, deja 'Embed + botón externo'.", options: [
-        { value: "iframe", label: "Solo embed integrado (script o iframe)" },
+      { key: "ticket_mode", label: "Modo de venta", type: "select", hint: "Recomendado: 'Tiquetera visual' (configurable en la pestaña Entradas).", options: [
+        { value: "visual_tiers", label: "🎟️ Tiquetera visual (tramos editables)" },
+        { value: "fourvenues_script", label: "Script de Fourvenues" },
+        { value: "iframe", label: "Iframe de Fourvenues" },
         { value: "external", label: "Solo botón externo (nueva pestaña)" },
-        { value: "both", label: "Embed + botón externo (lo más seguro)" },
+        { value: "both", label: "Iframe + botón externo" },
       ]},
+      { key: "ticket_embed_script", label: "Script de Fourvenues — pega aquí <script src=\"...\"></script>", type: "textarea", rows: 4, hint: "Solo si usas modo 'Script de Fourvenues'." },
+      { key: "ticket_fallback_url", label: "URL de venta oficial (botón de respaldo)", placeholder: "https://www.fourvenues.com/..." },
       { key: "ticket_status", label: "Estado de las entradas", type: "select", options: [
         { value: "available", label: "Disponibles" },
         { value: "coming_soon", label: "Próximamente" },
@@ -277,7 +287,7 @@ const SETTING_GROUPS: { title: string; description?: string; fields: SettingFiel
       ]},
       { key: "ticket_title", label: "Título de la sección" },
       { key: "ticket_text", label: "Descripción", rows: 2 },
-      { key: "ticket_iframe_url", label: "URL de iframe alternativa (solo si NO usas el script)", placeholder: "https://..." },
+      { key: "ticket_iframe_url", label: "URL de iframe (solo si usas modo iframe)", placeholder: "https://..." },
       { key: "ticket_show_fallback", label: "Mostrar siempre enlace alternativo", type: "checkbox" },
       { key: "ticket_trust_text", label: "Mensaje de confianza" },
     ],
@@ -718,6 +728,270 @@ function ListEditor({ table, rows, fields, onSaved }: { table: string; rows: any
                     options: f.options,
                     rows: f.type === "textarea" ? 3 : undefined,
                     hint: f.hint,
+                  }}
+                  value={editing[f.key]}
+                  onChange={(v) => setEditing({ ...editing, [f.key]: f.type === "number" ? Number(v) : v })}
+                />
+              ))}
+            </div>
+            <div className="flex justify-end gap-2 mt-6">
+              <button onClick={() => setEditing(null)} className="px-4 py-2 rounded-full border border-white/10 text-sm">Cancelar</button>
+              <button onClick={() => onSave(editing)} className="px-4 py-2 rounded-full bg-[var(--brand-blue)] text-black font-bold text-sm">Guardar</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ====================== TICKETS ADMIN ======================
+const TIER_STATUSES = [
+  { value: "available",    label: "Disponible" },
+  { value: "last_tickets", label: "Últimas entradas" },
+  { value: "sold_out",     label: "Agotado" },
+  { value: "coming_soon",  label: "Próximamente" },
+  { value: "hidden",       label: "Oculto" },
+];
+
+function TicketsAdminPanel({ settings, tiers, onSaved }: { settings: any; tiers: any[]; onSaved: () => void }) {
+  const [values, setValues] = useState<Record<string, any>>(settings ?? {});
+  const save = useServerFn(upsertRow);
+  const saveSettings = useMutation({
+    mutationFn: () => save({ data: { table: "site_settings", values } }),
+    onSuccess: () => { toast.success("✓ Ajustes guardados"); onSaved(); },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const mode = values.ticket_mode ?? "visual_tiers";
+  const visibleTiers = (tiers ?? []).filter((t) => t.is_visible && t.status !== "hidden");
+
+  return (
+    <div className="space-y-6">
+      {/* Mode selector */}
+      <section className="rounded-2xl border border-white/10 bg-[var(--dark-panel)] p-5 md:p-6 space-y-4">
+        <div>
+          <h2 className="text-base font-bold">🎟️ Modo de venta</h2>
+          <p className="text-xs text-white/50 mt-1">Elige cómo se muestran las entradas en la landing.</p>
+        </div>
+        <div className="grid md:grid-cols-2 gap-3">
+          {[
+            { value: "visual_tiers", label: "Tiquetera visual", desc: "Tramos editables que redirigen al enlace oficial." },
+            { value: "fourvenues_script", label: "Script Fourvenues", desc: "Pega el <script> de Fourvenues." },
+            { value: "iframe", label: "Iframe Fourvenues", desc: "Embed clásico por URL." },
+            { value: "external", label: "Solo botón externo", desc: "Botón a la venta oficial." },
+            { value: "both", label: "Iframe + botón externo", desc: "Embed con botón de respaldo." },
+          ].map((opt) => {
+            const active = mode === opt.value;
+            return (
+              <button
+                key={opt.value}
+                onClick={() => setValues({ ...values, ticket_mode: opt.value })}
+                className={`text-left p-4 rounded-xl border transition-colors ${
+                  active
+                    ? "border-[var(--brand-blue)] bg-[var(--brand-blue)]/10 shadow-[0_0_20px_var(--blue-glow)]"
+                    : "border-white/10 hover:border-white/30 bg-black/30"
+                }`}
+              >
+                <div className="font-bold text-sm">{opt.label}</div>
+                <div className="text-xs text-white/50 mt-1">{opt.desc}</div>
+              </button>
+            );
+          })}
+        </div>
+        <div className="grid md:grid-cols-2 gap-4">
+          <FieldInput field={{ key: "ticket_title", label: "Título de la sección" }} value={values.ticket_title} onChange={(v) => setValues({ ...values, ticket_title: v })} />
+          <FieldInput field={{ key: "ticket_trust_text", label: "Mensaje de confianza" }} value={values.ticket_trust_text} onChange={(v) => setValues({ ...values, ticket_trust_text: v })} />
+          <FieldInput field={{ key: "ticket_text", label: "Subtítulo / descripción", rows: 2 }} value={values.ticket_text} onChange={(v) => setValues({ ...values, ticket_text: v })} />
+          <FieldInput field={{ key: "ticket_fallback_url", label: "URL oficial de respaldo", placeholder: "https://www.fourvenues.com/..." }} value={values.ticket_fallback_url} onChange={(v) => setValues({ ...values, ticket_fallback_url: v })} />
+        </div>
+      </section>
+
+      {/* Global url & alert */}
+      <section className="rounded-2xl border border-white/10 bg-[var(--dark-panel)] p-5 md:p-6 space-y-4">
+        <div>
+          <h2 className="text-base font-bold">🌐 Enlace global & alerta</h2>
+          <p className="text-xs text-white/50 mt-1">Opciones que aplican a la tiquetera visual.</p>
+        </div>
+        <div className="grid md:grid-cols-2 gap-4">
+          <FieldInput field={{ key: "ticket_global_url", label: "Enlace global de compra", placeholder: "https://www.fourvenues.com/..." }} value={values.ticket_global_url} onChange={(v) => setValues({ ...values, ticket_global_url: v })} />
+          <FieldInput field={{ key: "use_global_ticket_url", label: "Usar mismo enlace para todos los tramos", type: "checkbox" }} value={values.use_global_ticket_url} onChange={(v) => setValues({ ...values, use_global_ticket_url: v })} />
+          <FieldInput field={{ key: "ticket_alert_enabled", label: "Mostrar alerta de entradas", type: "checkbox" }} value={values.ticket_alert_enabled} onChange={(v) => setValues({ ...values, ticket_alert_enabled: v })} />
+          <FieldInput field={{ key: "ticket_alert_type", label: "Tipo de alerta", type: "select", options: [
+            { value: "info", label: "Informativa" },
+            { value: "urgency", label: "Urgencia" },
+            { value: "last_tickets", label: "Últimas entradas" },
+            { value: "price_change", label: "Cambio de precio" },
+          ]}} value={values.ticket_alert_type} onChange={(v) => setValues({ ...values, ticket_alert_type: v })} />
+          <FieldInput field={{ key: "ticket_alert_text", label: "Texto de la alerta", rows: 2 }} value={values.ticket_alert_text} onChange={(v) => setValues({ ...values, ticket_alert_text: v })} />
+          <FieldInput field={{ key: "ticket_alert_url", label: "Enlace opcional de la alerta" }} value={values.ticket_alert_url} onChange={(v) => setValues({ ...values, ticket_alert_url: v })} />
+        </div>
+      </section>
+
+      {/* Tier countdown */}
+      <section className="rounded-2xl border border-white/10 bg-[var(--dark-panel)] p-5 md:p-6 space-y-4">
+        <div>
+          <h2 className="text-base font-bold">⏳ Mini cuenta atrás de cambio de tramo</h2>
+          <p className="text-xs text-white/50 mt-1">Aparece dentro de la sección Entradas, más pequeña que la cuenta atrás principal.</p>
+        </div>
+        <div className="grid md:grid-cols-2 gap-4">
+          <FieldInput field={{ key: "tier_countdown_enabled", label: "Activar mini cuenta atrás", type: "checkbox" }} value={values.tier_countdown_enabled} onChange={(v) => setValues({ ...values, tier_countdown_enabled: v })} />
+          <FieldInput field={{ key: "tier_countdown_datetime", label: "Fecha/hora del cambio (ISO)", placeholder: "2026-07-01T22:00:00+02:00" }} value={values.tier_countdown_datetime} onChange={(v) => setValues({ ...values, tier_countdown_datetime: v })} />
+          <FieldInput field={{ key: "tier_countdown_text", label: "Texto", placeholder: "Cambio de precio en…" }} value={values.tier_countdown_text} onChange={(v) => setValues({ ...values, tier_countdown_text: v })} />
+        </div>
+      </section>
+
+      <div className="sticky bottom-4 flex justify-end">
+        <button
+          onClick={() => saveSettings.mutate()}
+          disabled={saveSettings.isPending}
+          className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-blue)] text-black font-bold px-6 py-3 text-sm uppercase tracking-widest shadow-[0_0_32px_var(--blue-glow)] hover:scale-105 transition-transform"
+        >
+          <Save className="h-4 w-4" /> {saveSettings.isPending ? "Guardando…" : "Guardar ajustes de entradas"}
+        </button>
+      </div>
+
+      {/* Visual tiers editor */}
+      <section className="rounded-2xl border border-white/10 bg-[var(--dark-panel)] p-5 md:p-6 space-y-4">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-base font-bold">🎫 Tramos de entradas (tiquetera visual)</h2>
+            <p className="text-xs text-white/50 mt-1">Crea, edita y reordena los tramos que verá el público.</p>
+          </div>
+        </div>
+
+        {mode === "visual_tiers" && visibleTiers.length === 0 && (
+          <div className="rounded-lg border border-yellow-500/40 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-200">
+            ⚠️ No hay tramos de entradas visibles. La sección quedará vacía en la landing.
+          </div>
+        )}
+
+        <TicketTiersList tiers={tiers} onSaved={onSaved} />
+      </section>
+    </div>
+  );
+}
+
+const TIER_FIELDS: ListField[] = [
+  { key: "name", label: "Nombre del tramo" },
+  { key: "description", label: "Descripción corta" },
+  { key: "price", label: "Precio (ej: 18)" },
+  { key: "previous_price", label: "Precio anterior (opcional)" },
+  { key: "currency", label: "Moneda (ej: €)" },
+  { key: "status", label: "Estado", type: "select", options: TIER_STATUSES },
+  { key: "badge_text", label: "Etiqueta visual (ej: Más vendida)" },
+  { key: "button_text", label: "Texto del botón" },
+  { key: "purchase_url", label: "Enlace de compra (https://...)" },
+  { key: "open_in_new_tab", label: "Abrir en nueva pestaña", type: "checkbox" },
+  { key: "is_featured", label: "Tramo destacado", type: "checkbox" },
+  { key: "is_visible", label: "Visible", type: "checkbox" },
+  { key: "sort_order", label: "Orden", type: "number" },
+];
+
+function TicketTiersList({ tiers, onSaved }: { tiers: any[]; onSaved: () => void }) {
+  const save = useServerFn(upsertRow);
+  const del = useServerFn(deleteRow);
+  const [editing, setEditing] = useState<Record<string, any> | null>(null);
+
+  const blank = {
+    name: "Nuevo tramo",
+    description: "",
+    price: "",
+    previous_price: "",
+    currency: "€",
+    status: "available",
+    badge_text: "",
+    button_text: "Comprar entrada",
+    purchase_url: "",
+    open_in_new_tab: true,
+    is_featured: false,
+    is_visible: true,
+    sort_order: (tiers?.length ?? 0),
+  };
+
+  const onSave = async (row: Record<string, any>) => {
+    if (row.purchase_url && !/^https:\/\//i.test(row.purchase_url)) {
+      toast.warning("El enlace debería empezar por https://");
+    }
+    if (row.status === "available" && !row.purchase_url && !row.use_global) {
+      toast.warning("Tramo 'Disponible' sin enlace de compra.");
+    }
+    try {
+      await save({ data: { table: "ticket_tiers", values: row } });
+      toast.success("Guardado");
+      setEditing(null);
+      onSaved();
+    } catch (e: any) { toast.error(e.message); }
+  };
+
+  const onDelete = async (id: string) => {
+    if (!confirm("¿Eliminar este tramo?")) return;
+    try {
+      await del({ data: { table: "ticket_tiers", id } });
+      toast.success("Eliminado"); onSaved();
+    } catch (e: any) { toast.error(e.message); }
+  };
+
+  const onDuplicate = async (row: any) => {
+    const { id, created_at, updated_at, ...rest } = row;
+    setEditing({ ...rest, name: `${row.name} (copia)`, sort_order: (tiers?.length ?? 0) });
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex justify-end">
+        <button
+          onClick={() => setEditing({ ...blank })}
+          className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-blue)] text-black font-bold px-4 py-2 text-xs uppercase tracking-widest"
+        >
+          <Plus className="h-4 w-4" /> Nuevo tramo
+        </button>
+      </div>
+
+      {tiers.length === 0 && <p className="text-white/40 text-sm">Sin tramos todavía.</p>}
+
+      <div className="grid gap-3 md:grid-cols-2">
+        {tiers.map((t) => {
+          const statusLabel = TIER_STATUSES.find((s) => s.value === t.status)?.label ?? t.status;
+          return (
+            <div key={t.id} className={`rounded-xl border p-4 bg-black/30 ${t.is_featured ? "border-[var(--brand-blue)] shadow-[0_0_18px_var(--blue-glow)]" : "border-white/10"}`}>
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <div className="font-bold">{t.name}</div>
+                  <div className="text-xs text-white/50">{t.price ? `${t.price}${t.currency ?? "€"}` : "—"} · {statusLabel}</div>
+                  {t.badge_text && <div className="inline-block mt-1 text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full bg-[var(--brand-red)]/20 text-[var(--brand-red)]">{t.badge_text}</div>}
+                </div>
+                <div className="flex flex-col gap-1 items-end">
+                  {!t.is_visible && <span className="text-[10px] uppercase text-white/40">Oculto</span>}
+                  {t.is_featured && <span className="text-[10px] uppercase text-[var(--brand-blue)]">★ Destacado</span>}
+                </div>
+              </div>
+              {t.description && <p className="text-xs text-white/60 mt-2 line-clamp-2">{t.description}</p>}
+              <div className="flex gap-2 mt-3 flex-wrap">
+                <button onClick={() => setEditing({ ...t })} className="text-xs uppercase tracking-widest px-3 py-1.5 rounded-full border border-white/10 hover:border-white/30">Editar</button>
+                <button onClick={() => onDuplicate(t)} className="text-xs uppercase tracking-widest px-3 py-1.5 rounded-full border border-white/10 hover:border-white/30">Duplicar</button>
+                <button onClick={() => onDelete(t.id)} className="text-xs uppercase tracking-widest px-3 py-1.5 rounded-full border border-white/10 text-red-300 hover:border-red-400">
+                  <Trash2 className="h-3 w-3 inline" />
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {editing && (
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-[var(--dark-panel)] border border-white/10 rounded-2xl max-w-2xl w-full p-6 my-8">
+            <h3 className="font-bold mb-4">{editing.id ? "Editar tramo" : "Crear tramo"}</h3>
+            <div className="grid md:grid-cols-2 gap-4">
+              {TIER_FIELDS.map((f) => (
+                <FieldInput
+                  key={f.key}
+                  field={{
+                    key: f.key,
+                    label: f.label,
+                    type: f.type === "checkbox" ? "checkbox" : f.type === "select" ? "select" : f.type === "number" ? "number" : undefined,
+                    options: f.options,
                   }}
                   value={editing[f.key]}
                   onChange={(v) => setEditing({ ...editing, [f.key]: f.type === "number" ? Number(v) : v })}
