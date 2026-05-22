@@ -276,7 +276,20 @@ const SETTING_GROUPS: { title: string; description?: string; fields: SettingFiel
       { key: "countdown_cta_url", label: "Botón · enlace" },
     ],
   },
+  {
+    title: "🖼️ Galería · Estilo de visualización",
+    description: "Elige cómo se muestran las fotos en la sección Galería de la web.",
+    fields: [
+      { key: "gallery_layout", label: "Tipo de galería", type: "select", options: [
+        { value: "grid", label: "Cuadrícula clásica (todas a la vez)" },
+        { value: "carousel_auto", label: "Carrusel automático (pasando solo)" },
+        { value: "carousel_manual", label: "Carrusel con botones (◀ ▶ manual)" },
+        { value: "mosaic", label: "Mosaico creativo (tamaños mixtos)" },
+      ], hint: "Se aplica al guardar y se ve en la landing." },
+    ],
+  },
   // Nota: la configuración de Entradas vive en su propia pestaña "Entradas" para evitar duplicidad.
+
 
   {
     title: "📍 Ubicación",
