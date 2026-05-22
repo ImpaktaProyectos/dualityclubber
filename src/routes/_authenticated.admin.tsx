@@ -82,8 +82,17 @@ function AdminPage() {
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 glass border-b border-white/10">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-8 h-16">
-          <div className="text-display text-xl font-black tracking-widest">
-            DUA<span style={{ color: "var(--brand-red)" }}>L</span><span style={{ color: "var(--brand-blue)" }}>I</span>TY
+          <div className="text-display text-xl font-black tracking-widest flex items-center gap-2">
+            {(data?.settings?.brand_logo_light_url || data?.settings?.brand_logo_main_url) ? (
+              <img
+                src={(data.settings.brand_logo_light_url || data.settings.brand_logo_main_url) as string}
+                alt={data?.settings?.event_name ?? "DUALITY"}
+                className="object-contain"
+                style={{ height: "32px" }}
+              />
+            ) : (
+              <>DUA<span style={{ color: "var(--brand-red)" }}>L</span><span style={{ color: "var(--brand-blue)" }}>I</span>TY</>
+            )}
             <span className="text-white/40 text-xs ml-2 font-normal tracking-normal">Panel del organizador</span>
           </div>
           <div className="flex items-center gap-3">
