@@ -610,23 +610,42 @@ function FourvenuesEmbed({ scriptUrl }: { scriptUrl: string }) {
   return <div ref={containerRef} className="fourvenues-container w-full min-h-[600px]" />;
 }
 
-function TicketsSection({ s, bg }: { s: any; bg?: any }) {
-  const mode: "iframe" | "external" | "both" = s?.ticket_mode ?? "both";
+function TicketsSection({ s, bg, tiers }: { s: any; bg?: any; tiers?: any[] }) {
+  const mode: string = s?.ticket_mode ?? "visual_tiers";
   const scriptSrc = extractScriptSrc(s?.ticket_embed_script as string | undefined);
   const { url, error: urlError } = sanitizeTicketUrl(s?.ticket_iframe_url as string | undefined);
   const fallback = s?.ticket_fallback_url as string | undefined;
 
-  const showScript = !!scriptSrc && mode !== "external";
-  const showIframe = !showScript && (mode === "iframe" || mode === "both") && !!url;
-  const alwaysShowFallbackBtn = mode === "external" || mode === "both" || s?.ticket_show_fallback || (!showScript && !!urlError);
+  const isVisual = mode === "visual_tiers";
+  const showScript = !isVisual && !!scriptSrc && (mode === "fourvenues_script" || mode === "iframe" || mode === "both");
+  const showIframe = !isVisual && !showScript && (mode === "iframe" || mode === "both") && !!url;
+  const alwaysShowFallbackBtn = !isVisual && (mode === "external" || mode === "both" || s?.ticket_show_fallback || (!showScript && !!urlError));
 
   return (
     <section id="entradas" className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
       <SectionBackground cfg={bg} />
-      <div className="relative max-w-5xl mx-auto">
+      <div className="relative max-w-6xl mx-auto">
         <SectionLabel>Entradas</SectionLabel>
-        <h2 className="text-display text-4xl md:text-6xl font-black mb-3">{s?.ticket_title}</h2>
-        <p className="text-white/70 mb-8">{s?.ticket_text}</p>
+        <h2 className="text-display text-4xl md:text-6xl font-black mb-3">{s?.ticket_title ?? "Compra tus entradas"}</h2>
+        <p className="text-white/70 mb-6">{s?.ticket_text ?? "Elige tu tramo y accede a la venta oficial."}</p>
+
+        {/* Ticket alert bar */}
+        {s?.ticket_alert_enabled && s?.ticket_alert_text && (
+          <TicketAlert text={s.ticket_alert_text} type={s.ticket_alert_type} url={s.ticket_alert_url} />
+        )}
+
+        {/* Mini tier countdown */}
+        {s?.tier_countdown_enabled && s?.tier_countdown_datetime && (
+          <TierCountdown datetime={s.tier_countdown_datetime} text={s.tier_countdown_text} />
+        )}
+
+        {isVisual && (
+          <VisualTicketTiers
+            tiers={tiers ?? []}
+            globalUrl={s?.ticket_global_url}
+            useGlobal={!!s?.use_global_ticket_url}
+          />
+        )}
 
         {showScript && (
           <div className="rounded-2xl overflow-hidden border border-[var(--brand-blue)]/30 bg-[var(--dark-panel)] glow-blue mx-auto p-2 md:p-4" style={{ maxWidth: 1120 }}>
@@ -648,8 +667,7 @@ function TicketsSection({ s, bg }: { s: any; bg?: any }) {
           </div>
         )}
 
-
-        {urlError && mode !== "external" && (
+        {!isVisual && urlError && mode !== "external" && (
           <div className="rounded-2xl border border-[var(--brand-red)]/40 bg-[var(--dark-panel)] p-6 text-center text-white/80 mb-4">
             {urlError}
           </div>
@@ -672,20 +690,8 @@ function TicketsSection({ s, bg }: { s: any; bg?: any }) {
           </div>
         )}
 
-        {!url && mode !== "external" && !urlError && (
-          <div className="rounded-2xl border border-white/10 bg-[var(--dark-panel)] flex flex-col items-center justify-center text-center p-10 min-h-[420px] gap-4">
-            <div className="text-sm uppercase tracking-widest text-[var(--brand-blue)]">Próximamente</div>
-            <p className="text-white/70 max-w-md">El módulo oficial de venta se publicará pronto.</p>
-          </div>
-        )}
-
         {alwaysShowFallbackBtn && mode !== "external" && fallback && (
           <div className="mt-6 text-center space-y-2">
-            {(urlError || !url) && (
-              <p className="text-white/70 text-sm">
-                Si la venta integrada no carga correctamente, abre la venta oficial.
-              </p>
-            )}
             <a
               href={fallback}
               target="_blank"
@@ -698,10 +704,149 @@ function TicketsSection({ s, bg }: { s: any; bg?: any }) {
         )}
 
         {s?.ticket_trust_text && (
-          <p className="text-center mt-6 text-xs uppercase tracking-widest text-white/50">{s.ticket_trust_text}</p>
+          <p className="text-center mt-8 text-xs uppercase tracking-widest text-white/50">{s.ticket_trust_text}</p>
         )}
       </div>
     </section>
+  );
+}
+
+function TicketAlert({ text, type, url }: { text: string; type?: string; url?: string }) {
+  const color =
+    type === "urgency" || type === "last_tickets"
+      ? "border-[var(--brand-red)]/50 bg-[var(--brand-red)]/10 text-[var(--brand-red)]"
+      : type === "price_change"
+      ? "border-amber-400/50 bg-amber-400/10 text-amber-200"
+      : "border-[var(--brand-blue)]/40 bg-[var(--brand-blue)]/10 text-[var(--brand-blue)]";
+  const inner = (
+    <div className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-sm font-medium ${color}`}>
+      <span className="inline-block w-2 h-2 rounded-full bg-current animate-pulse" />
+      <span className="flex-1">{text}</span>
+      {url && <span className="text-xs uppercase tracking-widest opacity-80">Ver más →</span>}
+    </div>
+  );
+  return (
+    <div className="mb-5">
+      {url ? <a href={url} target="_blank" rel="noopener noreferrer">{inner}</a> : inner}
+    </div>
+  );
+}
+
+function TierCountdown({ datetime, text }: { datetime: string; text?: string }) {
+  const [now, setNow] = useState<number>(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const target = new Date(datetime).getTime();
+  const diff = Math.max(0, target - now);
+  if (!target || diff <= 0) return null;
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  return (
+    <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/40 px-4 py-2 text-xs uppercase tracking-widest text-white/70">
+      <span className="opacity-70">{text ?? "Cambio de precio en"}:</span>
+      <span className="font-black text-[var(--brand-blue)] tabular-nums">{d}d</span>
+      <span className="font-black text-[var(--brand-blue)] tabular-nums">{String(h).padStart(2, "0")}h</span>
+      <span className="font-black text-[var(--brand-blue)] tabular-nums">{String(m).padStart(2, "0")}m</span>
+      <span className="font-black text-[var(--brand-blue)] tabular-nums">{String(s).padStart(2, "0")}s</span>
+    </div>
+  );
+}
+
+const TIER_STATUS_LABEL: Record<string, string> = {
+  available: "Disponible",
+  last_tickets: "Últimas entradas",
+  sold_out: "Agotado",
+  coming_soon: "Próximamente",
+};
+
+function VisualTicketTiers({ tiers, globalUrl, useGlobal }: { tiers: any[]; globalUrl?: string; useGlobal: boolean }) {
+  const visible = (tiers ?? []).filter((t) => t.is_visible !== false && t.status !== "hidden");
+
+  if (visible.length === 0) {
+    return (
+      <div className="rounded-2xl border border-white/10 bg-[var(--dark-panel)] p-10 text-center text-white/60">
+        No hay entradas disponibles en este momento.
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+      {visible.map((t) => {
+        const status = t.status ?? "available";
+        const isFeatured = !!t.is_featured;
+        const isSoldOut = status === "sold_out";
+        const isComingSoon = status === "coming_soon";
+        const isLast = status === "last_tickets";
+        const isActive = status === "available" || status === "last_tickets";
+        const link = (useGlobal && globalUrl) ? globalUrl : t.purchase_url;
+        const currency = t.currency || "€";
+        const buttonText = isSoldOut ? "Agotado" : isComingSoon ? "Próximamente" : (t.button_text || "Comprar entrada");
+        const badge = t.badge_text || (isLast ? "Últimas entradas" : isFeatured ? "Más vendida" : isSoldOut ? "Agotado" : isComingSoon ? "Próximamente" : null);
+
+        return (
+          <div
+            key={t.id}
+            className={`relative rounded-2xl border bg-[var(--dark-panel)] p-6 flex flex-col transition-transform ${
+              isFeatured ? "border-[var(--brand-blue)] shadow-[0_0_30px_var(--blue-glow)] md:scale-[1.03]" : "border-white/10"
+            } ${isSoldOut ? "opacity-60" : ""}`}
+          >
+            {badge && (
+              <div className={`absolute -top-3 left-6 px-3 py-1 rounded-full text-[10px] uppercase tracking-widest font-black ${
+                isLast || isSoldOut
+                  ? "bg-[var(--brand-red)] text-white"
+                  : isComingSoon
+                  ? "bg-white/10 text-white/70 border border-white/20"
+                  : "bg-[var(--brand-blue)] text-black"
+              } ${isLast ? "animate-pulse" : ""}`}>
+                {badge}
+              </div>
+            )}
+
+            <div className="text-xs uppercase tracking-widest text-white/50">{TIER_STATUS_LABEL[status] ?? status}</div>
+            <h3 className="text-display text-2xl md:text-3xl font-black mt-1 mb-2">{t.name}</h3>
+            {t.description && <p className="text-sm text-white/60 mb-4">{t.description}</p>}
+
+            <div className="flex items-baseline gap-2 mb-5">
+              <span className="text-display text-4xl md:text-5xl font-black text-[var(--brand-blue)] tabular-nums">
+                {t.price ?? "—"}<span className="text-2xl ml-1">{currency}</span>
+              </span>
+              {t.previous_price && (
+                <span className="text-white/40 line-through text-lg">{t.previous_price}{currency}</span>
+              )}
+            </div>
+
+            <div className="mt-auto">
+              {isActive && link ? (
+                <a
+                  href={link}
+                  target={t.open_in_new_tab === false ? "_self" : "_blank"}
+                  rel="noopener noreferrer"
+                  className={`block text-center w-full px-5 py-3 rounded-full font-black uppercase tracking-widest text-sm transition-transform hover:scale-105 ${
+                    isFeatured || isLast
+                      ? "bg-[var(--brand-blue)] text-black glow-blue"
+                      : "bg-white text-black"
+                  }`}
+                >
+                  {buttonText}
+                </a>
+              ) : (
+                <button
+                  disabled
+                  className="block w-full px-5 py-3 rounded-full font-black uppercase tracking-widest text-sm bg-white/5 text-white/40 border border-white/10 cursor-not-allowed"
+                >
+                  {buttonText}
+                </button>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
