@@ -170,7 +170,7 @@ export function BulkScheduleImporter({
     const s = new Set<string>();
     for (const it of existingSchedule) {
       const stageSlug = slugify(it.stage ?? "");
-      const name = (it.custom_artist_name ?? artists.find((a) => a.id === it.artist_id)?.name ?? "").toLowerCase().trim();
+      const name = normalizeName(it.custom_artist_name ?? artists.find((a) => a.id === it.artist_id)?.name ?? "");
       s.add(`${it.start_time}|${name}|${stageSlug}`);
     }
     return s;
