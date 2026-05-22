@@ -172,6 +172,12 @@ function AdminPage() {
             )}
             {tab === "schedule" && (
               <div className="space-y-6">
+                <ArtistsScheduleMatrix
+                  artists={data.artists as any}
+                  stages={(data as any).stages ?? []}
+                  schedule={data.schedule as any}
+                  onSaved={refresh}
+                />
                 <BulkScheduleImporter
                   stages={(data as any).stages ?? []}
                   artists={data.artists as any}
