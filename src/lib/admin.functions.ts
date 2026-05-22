@@ -15,6 +15,7 @@ const ALLOWED_TABLES = [
   "section_backgrounds",
   "stages",
   "ticket_tiers",
+  "shop_products",
 ] as const;
 type TableName = (typeof ALLOWED_TABLES)[number];
 
@@ -39,7 +40,7 @@ export const getAdminData = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await requireAdmin(context.userId);
-    const [settings, sections, quickInfo, artists, schedule, gallery, buses, faqs, atmosphere, sectionBgs, stages, ticketTiers] = await Promise.all([
+    const [settings, sections, quickInfo, artists, schedule, gallery, buses, faqs, atmosphere, sectionBgs, stages, ticketTiers, shopProducts] = await Promise.all([
       supabaseAdmin.from("site_settings").select("*").limit(1).maybeSingle(),
       supabaseAdmin.from("page_sections").select("*").order("sort_order"),
       supabaseAdmin.from("quick_info_items").select("*").order("sort_order"),
@@ -52,6 +53,7 @@ export const getAdminData = createServerFn({ method: "GET" })
       supabaseAdmin.from("section_backgrounds").select("*").order("section_key"),
       supabaseAdmin.from("stages").select("*").order("sort_order"),
       supabaseAdmin.from("ticket_tiers").select("*").order("sort_order"),
+      supabaseAdmin.from("shop_products").select("*").order("sort_order"),
     ]);
     return {
       settings: settings.data,
@@ -66,6 +68,7 @@ export const getAdminData = createServerFn({ method: "GET" })
       sectionBackgrounds: sectionBgs.data ?? [],
       stages: stages.data ?? [],
       ticketTiers: ticketTiers.data ?? [],
+      shopProducts: shopProducts.data ?? [],
     };
   });
 
