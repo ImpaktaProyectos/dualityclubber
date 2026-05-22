@@ -261,16 +261,18 @@ const SETTING_GROUPS: { title: string; description?: string; fields: SettingFiel
     ],
   },
   {
-    title: "🎫 Entradas · Fourvenues",
-    description: "⭐ Pega aquí el código <script> que te da Fourvenues. Es el método recomendado.",
+    title: "🎫 Entradas · Fourvenues / Tiquetera visual",
+    description: "Elige el modo de venta. La 'Tiquetera visual' se configura desde la pestaña Entradas.",
     fields: [
-      { key: "ticket_embed_script", label: "⭐ SCRIPT DE FOURVENUES (RECOMENDADO) — pega aquí <script src=\"...\"></script>", type: "textarea", rows: 4, hint: "Campo principal. Pega el código tal cual te lo da Fourvenues. Se extrae el src y se carga como script real (no iframe)." },
-      { key: "ticket_fallback_url", label: "URL de venta oficial (botón de respaldo 'Abrir venta oficial')", placeholder: "https://www.fourvenues.com/..." },
-      { key: "ticket_mode", label: "Modo de venta", type: "select", hint: "Con el script, deja 'Embed + botón externo'.", options: [
-        { value: "iframe", label: "Solo embed integrado (script o iframe)" },
+      { key: "ticket_mode", label: "Modo de venta", type: "select", hint: "Recomendado: 'Tiquetera visual' (configurable en la pestaña Entradas).", options: [
+        { value: "visual_tiers", label: "🎟️ Tiquetera visual (tramos editables)" },
+        { value: "fourvenues_script", label: "Script de Fourvenues" },
+        { value: "iframe", label: "Iframe de Fourvenues" },
         { value: "external", label: "Solo botón externo (nueva pestaña)" },
-        { value: "both", label: "Embed + botón externo (lo más seguro)" },
+        { value: "both", label: "Iframe + botón externo" },
       ]},
+      { key: "ticket_embed_script", label: "Script de Fourvenues — pega aquí <script src=\"...\"></script>", type: "textarea", rows: 4, hint: "Solo si usas modo 'Script de Fourvenues'." },
+      { key: "ticket_fallback_url", label: "URL de venta oficial (botón de respaldo)", placeholder: "https://www.fourvenues.com/..." },
       { key: "ticket_status", label: "Estado de las entradas", type: "select", options: [
         { value: "available", label: "Disponibles" },
         { value: "coming_soon", label: "Próximamente" },
@@ -278,7 +280,7 @@ const SETTING_GROUPS: { title: string; description?: string; fields: SettingFiel
       ]},
       { key: "ticket_title", label: "Título de la sección" },
       { key: "ticket_text", label: "Descripción", rows: 2 },
-      { key: "ticket_iframe_url", label: "URL de iframe alternativa (solo si NO usas el script)", placeholder: "https://..." },
+      { key: "ticket_iframe_url", label: "URL de iframe (solo si usas modo iframe)", placeholder: "https://..." },
       { key: "ticket_show_fallback", label: "Mostrar siempre enlace alternativo", type: "checkbox" },
       { key: "ticket_trust_text", label: "Mensaje de confianza" },
     ],
