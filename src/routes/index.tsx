@@ -296,24 +296,8 @@ function Landing() {
               </div>
             </section>
           ),
-          authorization: () => isOn("authorization") && s?.authorization_pdf_url && (
-            <section id="autorizacion" className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
-              <SectionBackground cfg={sectionBg("authorization")} />
-              <div className="relative max-w-3xl mx-auto text-center">
-                <SectionLabel>Menores</SectionLabel>
-                <h2 className="text-display text-4xl md:text-6xl font-black mb-4">{s?.authorization_title || "Autorización para menores"}</h2>
-                {s?.authorization_description && <p className="text-white/70 text-lg mb-10 max-w-2xl mx-auto">{s.authorization_description}</p>}
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <a href={s.authorization_pdf_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full border border-white/15 bg-white/5 text-white font-bold uppercase tracking-widest text-sm hover:border-[var(--brand-blue)] hover:text-[var(--brand-blue)] transition-colors">
-                    <ExternalLink className="w-4 h-4" /> Descarga aquí tu autorización
-                  </a>
-                  <a href={s.authorization_pdf_url} download target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full bg-[var(--brand-blue)] text-black font-black uppercase tracking-widest text-sm glow-blue hover:scale-105 transition-transform">
-                    <FileDown className="w-4 h-4" /> {s?.authorization_button_text || "Descargar PDF"}
-                  </a>
-                </div>
-              </div>
-            </section>
-          ),
+          authorization: () => null,
+
 
 
           faq: () => isOn("faq") && data.faqs.length > 0 && (
