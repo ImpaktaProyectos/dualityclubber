@@ -260,8 +260,50 @@ export const bulkUpsertSchedule = createServerFn({ method: "POST" })
       if (error) throw new Error(error.message);
     }
 
+    await syncArtistTimesInternal();
     return { ok: true, inserted: rows.length };
   });
+
+// Recomputes `artists.performance_time` from `schedule_items` so the artist
+// card on the landing reflects the current schedule. End time = next slot's
+// start time within the same stage (sorted by sort_order). Artists without
+// any schedule entry are left untouched.
+async function syncArtistTimesInternal() {
+  const { data: items } = await supabaseAdmin
+    .from("schedule_items")
+    .select("artist_id,stage_id,start_time,sort_order")
+    .order("sort_order");
+  if (!items) return;
+  const byStage = new Map<string, any[]>();
+  for (const it of items) {
+    const k = it.stage_id ?? "__none__";
+    if (!byStage.has(k)) byStage.set(k, []);
+    byStage.get(k)!.push(it);
+  }
+  const updates: { id: string; performance_time: string }[] = [];
+  for (const arr of byStage.values()) {
+    arr.sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
+    for (let i = 0; i < arr.length; i++) {
+      const cur = arr[i];
+      if (!cur.artist_id || !cur.start_time) continue;
+      const next = arr[i + 1];
+      const text = next?.start_time ? `${cur.start_time} - ${next.start_time}` : cur.start_time;
+      updates.push({ id: cur.artist_id, performance_time: text });
+    }
+  }
+  await Promise.all(updates.map((u) =>
+    supabaseAdmin.from("artists").update({ performance_time: u.performance_time }).eq("id", u.id),
+  ));
+}
+
+export const resyncArtistTimes = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await requireAdmin(context.userId);
+    await syncArtistTimesInternal();
+    return { ok: true };
+  });
+
 
 export const claimFirstAdmin = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
