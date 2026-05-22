@@ -217,20 +217,11 @@ function Landing() {
               <div className="relative max-w-7xl mx-auto">
                 <SectionLabel>Galería</SectionLabel>
                 <h2 className="text-display text-4xl md:text-6xl font-black mb-10">Momentos DUALITY</h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-                  {data.gallery.map((g: any) => (
-                    <div key={g.id} className="relative aspect-square rounded-xl overflow-hidden border border-white/10 bg-[var(--dark-panel)] group">
-                      {g.media_type === "video" ? (
-                        <video src={g.media_url} poster={g.thumbnail_url || undefined} className="w-full h-full object-cover" muted loop playsInline autoPlay />
-                      ) : (
-                        <img src={g.media_url} alt={g.title || "Galería"} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
-                      )}
-                    </div>
-                  ))}
-                </div>
+                <GalleryDisplay items={data.gallery as any} layout={s?.gallery_layout} />
               </div>
             </section>
           ),
+
           faq: () => isOn("faq") && data.faqs.length > 0 && (
             <section id="faq" className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
               <SectionBackground cfg={sectionBg("faq")} />
