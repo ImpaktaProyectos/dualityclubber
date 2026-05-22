@@ -191,6 +191,13 @@ function AdminPage() {
             {tab === "quickInfo" && <ListEditor table="quick_info_items" rows={data.quickInfo} fields={QUICK_INFO_FIELDS} onSaved={refresh} />}
             {tab === "buses" && <ListEditor table="bus_routes" rows={data.buses} fields={BUS_FIELDS} onSaved={refresh} />}
             {tab === "gallery" && <ListEditor table="gallery_items" rows={data.gallery} fields={GALLERY_FIELDS} onSaved={refresh} />}
+            {tab === "shop" && (
+              <ShopAdminPanel
+                settings={data.settings}
+                products={(data as any).shopProducts ?? []}
+                onSaved={refresh}
+              />
+            )}
             {tab === "faqs" && <ListEditor table="faqs" rows={data.faqs} fields={FAQ_FIELDS} onSaved={refresh} />}
             {tab === "atmosphere" && (
               <AtmosphereEditor atmosphere={data.atmosphere} sectionBackgrounds={data.sectionBackgrounds} onSaved={refresh} />
