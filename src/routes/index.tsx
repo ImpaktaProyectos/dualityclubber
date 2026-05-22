@@ -165,7 +165,7 @@ function Landing() {
 
 
       {/* TICKETS */}
-      {isOn("tickets") && <TicketsSection s={s} bg={sectionBg("tickets")} />}
+      {isOn("tickets") && <TicketsSection s={s} bg={sectionBg("tickets")} tiers={(data as any).ticketTiers ?? []} />}
 
       {/* ARTISTS */}
       {isOn("artists") && data.artists.length > 0 && (
