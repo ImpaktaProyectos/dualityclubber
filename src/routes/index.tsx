@@ -203,25 +203,37 @@ function Landing() {
                   <MapPin className="w-5 h-5 text-[var(--brand-red)]" />
                   {s?.location_address}
                 </div>
-                <div className="aspect-video rounded-2xl overflow-hidden border border-white/10 bg-[var(--dark-panel)] mb-6">
-                  {s?.location_embed_url ? (
-                    <iframe src={s.location_embed_url} className="w-full h-full border-0" loading="lazy" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white/40">Mapa próximamente</div>
-                  )}
-                </div>
-                <div className="grid md:grid-cols-2 gap-6 mb-6">
+                <div className="grid md:grid-cols-2 gap-6 mb-8">
                   <InfoCard title="Parking">{s?.location_parking_text}</InfoCard>
                   <InfoCard title="Acceso">{s?.location_access_text}</InfoCard>
                 </div>
-                {s?.location_maps_url && (
-                  <a href={s.location_maps_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[var(--brand-blue)] text-black font-bold uppercase tracking-wider glow-blue">
-                    {s.location_button_text}
-                  </a>
+                <div className="flex flex-col sm:flex-row gap-3 flex-wrap mb-12">
+                  {s?.location_maps_url && (
+                    <a href={s.location_maps_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[var(--brand-blue)] text-black font-bold uppercase tracking-wider text-sm glow-blue hover:scale-105 transition-transform">
+                      <MapPin className="w-4 h-4" /> {s?.location_button_text || "Cómo llegar"}
+                    </a>
+                  )}
+                </div>
+
+                {isOn("authorization") && s?.authorization_pdf_url && (
+                  <div className="mt-10 pt-10 border-t border-white/10">
+                    <SectionLabel>Menores</SectionLabel>
+                    <h3 className="text-display text-3xl md:text-4xl font-black mb-3">{s?.authorization_title || "Autorización para menores"}</h3>
+                    {s?.authorization_description && <p className="text-white/70 text-base mb-6 max-w-2xl">{s.authorization_description}</p>}
+                    <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
+                      <a href={s.authorization_pdf_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full border border-white/15 bg-white/5 text-white font-bold uppercase tracking-widest text-xs hover:border-[var(--brand-blue)] hover:text-[var(--brand-blue)] transition-colors">
+                        <ExternalLink className="w-4 h-4" /> Descarga aquí tu autorización
+                      </a>
+                      <a href={s.authorization_pdf_url} download target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[var(--brand-blue)] text-black font-black uppercase tracking-widest text-xs glow-blue hover:scale-105 transition-transform">
+                        <FileDown className="w-4 h-4" /> {s?.authorization_button_text || "Descargar PDF"}
+                      </a>
+                    </div>
+                  </div>
                 )}
               </div>
             </section>
           ),
+
           gallery: () => isOn("gallery") && data.gallery.length > 0 && (
             <section id="galeria" className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
               <SectionBackground cfg={sectionBg("gallery")} />
