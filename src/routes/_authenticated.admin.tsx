@@ -1040,3 +1040,74 @@ function TicketTiersList({ tiers, onSaved }: { tiers: any[]; onSaved: () => void
     </div>
   );
 }
+
+// ====================== SHOP ADMIN ======================
+const SHOP_FIELDS: ListField[] = [
+  { key: "name", label: "Nombre del producto" },
+  { key: "description", label: "Descripción", type: "textarea" },
+  { key: "price", label: "Precio (texto, ej: 25€)" },
+  { key: "product_image_url", label: "Imagen del producto", hint: "Sube una foto cuadrada o vertical." },
+  { key: "whatsapp_message", label: "Mensaje WhatsApp (opcional, sobrescribe el global)", type: "textarea" },
+  { key: "button_text", label: "Texto del botón", hint: "Por defecto: Pedir por WhatsApp" },
+  { key: "is_featured", label: "Destacado", type: "checkbox" },
+  { key: "is_visible", label: "Visible", type: "checkbox" },
+  { key: "sort_order", label: "Orden", type: "number" },
+];
+
+function ShopAdminPanel({ settings, products, onSaved }: { settings: any; products: any[]; onSaved: () => void }) {
+  const [values, setValues] = useState<Record<string, any>>(settings ?? {});
+  const save = useServerFn(upsertRow);
+  const saveSettings = useMutation({
+    mutationFn: () => save({ data: { table: "site_settings", values } }),
+    onSuccess: () => { toast.success("✓ Ajustes de tienda guardados"); onSaved(); },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  // Map DB column image_url <-> field product_image_url so MediaUpload uses the shop bucket
+  const rowsMapped = useMemo(() => products.map((p) => ({ ...p, product_image_url: p.image_url ?? null })), [products]);
+  const saveRow = useServerFn(upsertRow);
+  const onSaveProduct = async (row: any) => {
+    const { product_image_url, ...rest } = row;
+    await saveRow({ data: { table: "shop_products", values: { ...rest, image_url: product_image_url ?? rest.image_url ?? null } } });
+  };
+
+  return (
+    <div className="space-y-6">
+      <section className="rounded-2xl border border-[var(--brand-blue)]/40 bg-gradient-to-br from-[var(--brand-blue)]/8 via-[var(--dark-panel)] to-[var(--brand-red)]/8 p-5 md:p-6 space-y-4 shadow-[0_0_40px_rgba(0,174,239,0.12)]">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-black tracking-wider">🛍️ Configuración de la tienda</h2>
+            <p className="text-xs text-[var(--brand-blue)] mt-1 font-semibold uppercase tracking-widest">Estos textos y el WhatsApp se usan en la landing</p>
+          </div>
+        </div>
+        <div className="grid md:grid-cols-2 gap-4">
+          <FieldInput field={{ key: "shop_title", label: "Título de la sección" }} value={values.shop_title} onChange={(v) => setValues({ ...values, shop_title: v })} />
+          <FieldInput field={{ key: "shop_subtitle", label: "Subtítulo de la sección" }} value={values.shop_subtitle} onChange={(v) => setValues({ ...values, shop_subtitle: v })} />
+          <FieldInput field={{ key: "shop_whatsapp_phone", label: "Teléfono WhatsApp", placeholder: "+34600000000", hint: "Formato internacional. Sin espacios." }} value={values.shop_whatsapp_phone} onChange={(v) => setValues({ ...values, shop_whatsapp_phone: v })} />
+          <FieldInput field={{ key: "shop_cta_message", label: "Mensaje CTA por defecto", rows: 3, hint: "Se incluye automáticamente el nombre del producto." }} value={values.shop_cta_message} onChange={(v) => setValues({ ...values, shop_cta_message: v })} />
+          <FieldInput field={{ key: "shop_fallback_url", label: "Enlace alternativo (sin WhatsApp)", placeholder: "https://...", hint: "Se muestra si no hay teléfono de WhatsApp." }} value={values.shop_fallback_url} onChange={(v) => setValues({ ...values, shop_fallback_url: v })} />
+          <FieldInput field={{ key: "shop_fallback_text", label: "Texto del botón alternativo" }} value={values.shop_fallback_text} onChange={(v) => setValues({ ...values, shop_fallback_text: v })} />
+        </div>
+        <div className="flex justify-end">
+          <button onClick={() => saveSettings.mutate()} disabled={saveSettings.isPending} className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-blue)] text-black font-bold px-5 py-2.5 text-xs uppercase tracking-widest">
+            <Save className="h-4 w-4" /> {saveSettings.isPending ? "Guardando…" : "Guardar ajustes"}
+          </button>
+        </div>
+      </section>
+
+      <section className="space-y-3">
+        <div className="flex items-baseline justify-between">
+          <h2 className="text-lg font-black tracking-wider">Productos</h2>
+          <span className="text-xs text-white/40">{rowsMapped.length} producto(s)</span>
+        </div>
+        <ListEditor
+          table="shop_products"
+          rows={rowsMapped}
+          fields={SHOP_FIELDS}
+          onSaved={onSaved}
+          customSave={onSaveProduct}
+        />
+      </section>
+    </div>
+  );
+}
