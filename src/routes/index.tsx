@@ -462,7 +462,20 @@ function ArtistsSection({ artists, isFavorite, toggle, bg }: { artists: any[]; i
     return Array.from(set);
   }, [artists]);
   const [stage, setStage] = useState<string>("all");
+  const [expanded, setExpanded] = useState(false);
   const filtered = stage === "all" ? artists : artists.filter((a) => a.stage === stage);
+  const withImage = filtered.filter((a) => a.image_url);
+  const withoutImage = filtered.filter((a) => !a.image_url);
+
+  const grouped = useMemo(() => {
+    const map = new Map<string, any[]>();
+    filtered.forEach((a) => {
+      const k = a.stage || "Otros";
+      if (!map.has(k)) map.set(k, []);
+      map.get(k)!.push(a);
+    });
+    return Array.from(map.entries());
+  }, [filtered]);
 
   return (
     <section id="artistas" className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
@@ -473,15 +486,46 @@ function ArtistsSection({ artists, isFavorite, toggle, bg }: { artists: any[]; i
         <p className="text-white/70 mb-8">Marca tus artistas favoritos y crea tu planning de la noche.</p>
 
         {/* Marquee */}
-        <div className="overflow-hidden mb-8 border-y border-white/5 py-4">
-          <div className="flex gap-10 animate-[scroll_30s_linear_infinite] whitespace-nowrap text-display text-3xl md:text-5xl font-black text-white/30">
-            {[...artists, ...artists].map((a: any, i: number) => (
-              <span key={i} className="artist-name-hover cursor-default">
-                {a.name} <span className="text-[var(--brand-red)]">·</span>
-              </span>
-            ))}
+        {filtered.length > 0 && (
+          <div className="mb-6 border-y border-white/5">
+            <div className="overflow-hidden py-4">
+              <div className="flex gap-10 animate-[scroll_30s_linear_infinite] whitespace-nowrap text-display text-3xl md:text-5xl font-black text-white/30 uppercase">
+                {[...filtered, ...filtered].map((a: any, i: number) => (
+                  <span key={i} className="artist-name-hover cursor-default">
+                    {a.name} <span className="text-[var(--brand-red)]">·</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="flex justify-center pb-3">
+              <button
+                onClick={() => setExpanded((v) => !v)}
+                className="px-4 py-1.5 rounded-full text-[11px] uppercase tracking-widest font-bold border border-white/15 text-white/70 hover:text-white hover:border-white/40 transition-colors"
+              >
+                {expanded ? "Ocultar" : "Ver todos"}
+              </button>
+            </div>
+            {expanded && (
+              <div className="pb-4 space-y-3">
+                {grouped.map(([st, list], gi) => (
+                  <div key={st} className="overflow-hidden">
+                    <div className="text-[10px] uppercase tracking-widest text-[var(--brand-blue)] mb-1 px-1">{st}</div>
+                    <div
+                      className="flex gap-8 whitespace-nowrap text-display text-xl md:text-3xl font-black text-white/50 uppercase"
+                      style={{ animation: `scroll ${40 + gi * 5}s linear infinite`, animationDirection: gi % 2 ? "reverse" : "normal" }}
+                    >
+                      {[...list, ...list].map((a: any, i: number) => (
+                        <span key={i} className="artist-name-hover cursor-default">
+                          {a.name} <span className="text-[var(--brand-red)]">·</span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
+        )}
 
         {/* Stage filters */}
         {stages.length > 1 && (
@@ -498,11 +542,32 @@ function ArtistsSection({ artists, isFavorite, toggle, bg }: { artists: any[]; i
             No hay artistas visibles en este escenario todavía.
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filtered.map((a: any) => (
-              <ArtistCard key={a.id} a={a} fav={isFavorite(a.id)} onFav={() => toggle(a.id)} />
-            ))}
-          </div>
+          <>
+            {withImage.length > 0 && (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {withImage.map((a: any) => (
+                  <ArtistCard key={a.id} a={a} fav={isFavorite(a.id)} onFav={() => toggle(a.id)} />
+                ))}
+              </div>
+            )}
+            {withoutImage.length > 0 && (
+              <div className="mt-8">
+                <div className="text-xs uppercase tracking-widest text-white/50 mb-3">También en cartel</div>
+                <div className="flex flex-wrap gap-x-5 gap-y-2">
+                  {withoutImage.map((a: any) => (
+                    <button
+                      key={a.id}
+                      onClick={() => toggle(a.id)}
+                      className="text-display font-black text-lg md:text-xl uppercase text-white/80 hover:text-white artist-name-hover inline-flex items-center gap-2"
+                    >
+                      {a.name}
+                      <Heart className={`w-4 h-4 ${isFavorite(a.id) ? "fill-[var(--brand-red)] text-[var(--brand-red)]" : "text-white/40"}`} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </section>
