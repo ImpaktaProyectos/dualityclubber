@@ -8,20 +8,28 @@ import { SectionBackground, resolveSectionBg } from "@/components/SectionBackgro
 import { GalleryDisplay } from "@/components/GalleryDisplay";
 import { ShopSection } from "@/components/ShopSection";
 
-import heroArt from "@/assets/duality-hero.jpg";
-
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "DUALITY · AQUA OPEN AIR" },
-      { name: "description", content: "Una noche. Dos energías. Un mismo destino. Vive DUALITY." },
-      { property: "og:title", content: "DUALITY · AQUA OPEN AIR" },
-      { property: "og:description", content: "Una noche. Dos energías. Un mismo destino." },
-    ],
-  }),
+  head: ({ loaderData }) => {
+    const s: any = (loaderData as any)?.settings;
+    const heroImg = s?.hero_image_desktop_url || s?.hero_image_mobile_url;
+    const flyer = s?.hero_flyer_enabled ? s?.hero_flyer_url : null;
+    const links: any[] = [];
+    if (heroImg) links.push({ rel: "preload", as: "image", href: heroImg, fetchpriority: "high" });
+    if (flyer) links.push({ rel: "preload", as: "image", href: flyer, fetchpriority: "high" });
+    return {
+      meta: [
+        { title: "DUALITY · AQUA OPEN AIR" },
+        { name: "description", content: "Una noche. Dos energías. Un mismo destino. Vive DUALITY." },
+        { property: "og:title", content: "DUALITY · AQUA OPEN AIR" },
+        { property: "og:description", content: "Una noche. Dos energías. Un mismo destino." },
+      ],
+      links,
+    };
+  },
   loader: () => getLandingData(),
   component: Landing,
 });
+
 
 type Section = { section_key: string; is_enabled: boolean; display_mode: string };
 
