@@ -145,6 +145,13 @@ function AdminPage() {
                 <SettingsEditor data={data.settings} onSaved={refresh} />
               </div>
             )}
+            {tab === "tickets" && (
+              <TicketsAdminPanel
+                settings={data.settings}
+                tiers={(data as any).ticketTiers ?? []}
+                onSaved={refresh}
+              />
+            )}
             {tab === "sections" && <SectionsReorder rows={data.sections as any} onSaved={refresh} />}
             {tab === "stages" && <StagesManager rows={(data as any).stages ?? []} onSaved={refresh} />}
             {tab === "artists" && (
