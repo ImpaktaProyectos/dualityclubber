@@ -133,6 +133,15 @@ function slugify(s: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+function normalizeName(s: string) {
+  return s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "")
+    .trim();
+}
+
 // Bulk import schedule items. Items shape:
 //   { start_time, end_time?, artist_name, stage_name, sort_order }
 // Options:
