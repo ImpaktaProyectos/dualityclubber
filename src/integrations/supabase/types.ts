@@ -445,6 +445,7 @@ export type Database = {
           footer_whatsapp_url: string | null
           footer_x_url: string | null
           footer_youtube_url: string | null
+          gallery_layout: string
           glow_color: string | null
           header_logo_height: number | null
           header_logo_url: string | null
@@ -545,6 +546,7 @@ export type Database = {
           footer_whatsapp_url?: string | null
           footer_x_url?: string | null
           footer_youtube_url?: string | null
+          gallery_layout?: string
           glow_color?: string | null
           header_logo_height?: number | null
           header_logo_url?: string | null
@@ -645,6 +647,7 @@ export type Database = {
           footer_whatsapp_url?: string | null
           footer_x_url?: string | null
           footer_youtube_url?: string | null
+          gallery_layout?: string
           glow_color?: string | null
           header_logo_height?: number | null
           header_logo_url?: string | null
