@@ -276,25 +276,8 @@ const SETTING_GROUPS: { title: string; description?: string; fields: SettingFiel
       { key: "countdown_cta_url", label: "Botón · enlace" },
     ],
   },
-  {
-    title: "🎫 Entradas · Tiquetera visual + enlace externo",
-    description: "Fourvenues bloquea el embed (ERR_BLOCKED_BY_RESPONSE). Usamos tiquetera visual propia; los botones abren la venta oficial en una pestaña nueva.",
-    fields: [
-      { key: "ticket_mode", label: "Modo de venta", type: "select", hint: "Configura los tramos en la pestaña Entradas.", options: [
-        { value: "visual_tiers", label: "🎟️ Tiquetera visual + enlace externo (recomendado)" },
-        { value: "external", label: "Solo botón externo (sin tramos)" },
-      ]},
-      { key: "ticket_fallback_url", label: "URL de venta oficial (botón de respaldo)", placeholder: "https://www.fourvenues.com/..." },
-      { key: "ticket_status", label: "Estado de las entradas", type: "select", options: [
-        { value: "available", label: "Disponibles" },
-        { value: "coming_soon", label: "Próximamente" },
-        { value: "sold_out", label: "Agotadas" },
-      ]},
-      { key: "ticket_title", label: "Título de la sección" },
-      { key: "ticket_text", label: "Subtítulo / descripción", rows: 2 },
-      { key: "ticket_trust_text", label: "Mensaje de confianza" },
-    ],
-  },
+  // Nota: la configuración de Entradas vive en su propia pestaña "Entradas" para evitar duplicidad.
+
   {
     title: "📍 Ubicación",
     fields: [
