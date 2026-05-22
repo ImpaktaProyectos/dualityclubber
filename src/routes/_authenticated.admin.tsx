@@ -85,7 +85,7 @@ function AdminPage() {
           <div className="text-display text-xl font-black tracking-widest flex items-center gap-2">
             {(data?.settings?.brand_logo_light_url || data?.settings?.brand_logo_main_url) ? (
               <img
-                src={data.settings.brand_logo_light_url || data.settings.brand_logo_main_url}
+                src={(data.settings.brand_logo_light_url || data.settings.brand_logo_main_url) as string}
                 alt={data?.settings?.event_name ?? "DUALITY"}
                 className="object-contain"
                 style={{ height: "32px" }}
