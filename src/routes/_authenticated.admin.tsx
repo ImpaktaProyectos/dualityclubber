@@ -351,6 +351,7 @@ const SETTING_GROUPS: { title: string; description?: string; fields: SettingFiel
 
 function SettingsEditor({ data, onSaved }: { data: any; onSaved: () => void }) {
   const [values, setValues] = useState<Record<string, any>>(data ?? {});
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
   const save = useServerFn(upsertRow);
   const mut = useMutation({
     mutationFn: () => save({ data: { table: "site_settings", values } }),
@@ -359,20 +360,35 @@ function SettingsEditor({ data, onSaved }: { data: any; onSaved: () => void }) {
   });
 
   return (
-    <div className="space-y-6">
-      {SETTING_GROUPS.map((g) => (
-        <section key={g.title} className="rounded-2xl border border-white/10 bg-[var(--dark-panel)] p-5 md:p-6">
-          <header className="mb-4">
-            <h2 className="text-base font-bold">{g.title}</h2>
-            {g.description && <p className="text-xs text-white/50 mt-1">{g.description}</p>}
-          </header>
-          <div className="grid md:grid-cols-2 gap-4">
-            {g.fields.map((f) => (
-              <FieldInput key={f.key} field={f} value={values[f.key]} onChange={(v) => setValues({ ...values, [f.key]: v })} />
-            ))}
-          </div>
+    <div className="space-y-3">
+      {SETTING_GROUPS.map((g) => {
+        const isOpen = openGroup === g.title;
+        return (
+        <section key={g.title} className="rounded-2xl border border-white/10 bg-[var(--dark-panel)] overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setOpenGroup(isOpen ? null : g.title)}
+            className="w-full flex items-center justify-between gap-4 p-5 md:p-6 text-left hover:bg-white/[0.02] transition-colors"
+          >
+            <div className="min-w-0">
+              <h2 className="text-lg md:text-xl font-bold truncate">{g.title}</h2>
+              {g.description && <p className="text-xs text-white/50 mt-1">{g.description}</p>}
+            </div>
+            <span className={`shrink-0 inline-flex items-center justify-center h-8 w-8 rounded-full border border-white/15 text-white/70 transition-transform ${isOpen ? "rotate-180" : ""}`}>
+              ▾
+            </span>
+          </button>
+          {isOpen && (
+            <div className="px-5 md:px-6 pb-6 grid md:grid-cols-2 gap-4 border-t border-white/5 pt-5">
+              {g.fields.map((f) => (
+                <FieldInput key={f.key} field={f} value={values[f.key]} onChange={(v) => setValues({ ...values, [f.key]: v })} />
+              ))}
+            </div>
+          )}
         </section>
-      ))}
+        );
+      })}
+
       <div className="sticky bottom-4 flex justify-end">
         <button
           onClick={() => mut.mutate()}
