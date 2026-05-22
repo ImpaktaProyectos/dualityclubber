@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Heart, Instagram, MapPin, Music, ShoppingBag, ChevronDown, Youtube, Facebook, Twitter, MessageCircle, Send, Headphones } from "lucide-react";
 import { getLandingData } from "@/lib/site.functions";
