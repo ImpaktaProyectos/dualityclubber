@@ -34,6 +34,7 @@ const TABS = [
   { key: "quickInfo",  label: "Info rápida",    icon: Info,        hint: "Tarjetas con fecha, edad mínima, ubicación, etc." },
   { key: "buses",      label: "Autobuses",      icon: Bus,         hint: "Rutas de bus, horarios y precios." },
   { key: "gallery",    label: "Galería",        icon: ImageIcon,   hint: "Fotos y vídeos de ediciones anteriores." },
+  { key: "shop",       label: "Tienda",          icon: ShoppingBag, hint: "Productos de merchandising con CTA por WhatsApp." },
   { key: "faqs",       label: "FAQ",            icon: HelpCircle,  hint: "Preguntas frecuentes para tus asistentes." },
   { key: "atmosphere", label: "Atmósfera",      icon: Sparkles,    hint: "Fondos, colores y texturas de la web." },
 ] as const;
