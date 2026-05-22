@@ -559,6 +559,7 @@ function getMediaConfig(key: string): { bucket: string; kind: "image" | "video" 
   if (key === "authorization_pdf_url") return { bucket: "authorization-pdfs", kind: "pdf", prefix: "auth" };
   if (key === "image_url") return { bucket: "artist-images", kind: "image", prefix: "artist" };
   if (key === "media_url" || key === "thumbnail_url") return { bucket: "gallery", kind: "image", prefix: "item" };
+  if (key === "product_image_url") return { bucket: "shop-products", kind: "image", prefix: "product" };
   return null;
 }
 
