@@ -681,7 +681,7 @@ const FAQ_FIELDS: ListField[] = [
   { key: "sort_order", label: "Orden", type: "number" },
 ];
 
-function ListEditor({ table, rows, fields, onSaved }: { table: string; rows: any[]; fields: ListField[]; onSaved: () => void }) {
+function ListEditor({ table, rows, fields, onSaved, customSave }: { table: string; rows: any[]; fields: ListField[]; onSaved: () => void; customSave?: (row: Record<string, any>) => Promise<any> }) {
   const save = useServerFn(upsertRow);
   const del = useServerFn(deleteRow);
   const [editing, setEditing] = useState<Record<string, any> | null>(null);
@@ -694,7 +694,8 @@ function ListEditor({ table, rows, fields, onSaved }: { table: string; rows: any
 
   const onSave = async (row: Record<string, any>) => {
     try {
-      await save({ data: { table, values: row } });
+      if (customSave) await customSave(row);
+      else await save({ data: { table, values: row } });
       toast.success("Guardado");
       setEditing(null);
       onSaved();
