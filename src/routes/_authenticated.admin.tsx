@@ -268,17 +268,13 @@ const SETTING_GROUPS: { title: string; description?: string; fields: SettingFiel
     ],
   },
   {
-    title: "🎫 Entradas · Fourvenues / Tiquetera visual",
-    description: "Elige el modo de venta. La 'Tiquetera visual' se configura desde la pestaña Entradas.",
+    title: "🎫 Entradas · Tiquetera visual + enlace externo",
+    description: "Fourvenues bloquea el embed (ERR_BLOCKED_BY_RESPONSE). Usamos tiquetera visual propia; los botones abren la venta oficial en una pestaña nueva.",
     fields: [
-      { key: "ticket_mode", label: "Modo de venta", type: "select", hint: "Recomendado: 'Tiquetera visual' (configurable en la pestaña Entradas).", options: [
-        { value: "visual_tiers", label: "🎟️ Tiquetera visual (tramos editables)" },
-        { value: "fourvenues_script", label: "Script de Fourvenues" },
-        { value: "iframe", label: "Iframe de Fourvenues" },
-        { value: "external", label: "Solo botón externo (nueva pestaña)" },
-        { value: "both", label: "Iframe + botón externo" },
+      { key: "ticket_mode", label: "Modo de venta", type: "select", hint: "Configura los tramos en la pestaña Entradas.", options: [
+        { value: "visual_tiers", label: "🎟️ Tiquetera visual + enlace externo (recomendado)" },
+        { value: "external", label: "Solo botón externo (sin tramos)" },
       ]},
-      { key: "ticket_embed_script", label: "Script de Fourvenues — pega aquí <script src=\"...\"></script>", type: "textarea", rows: 4, hint: "Solo si usas modo 'Script de Fourvenues'." },
       { key: "ticket_fallback_url", label: "URL de venta oficial (botón de respaldo)", placeholder: "https://www.fourvenues.com/..." },
       { key: "ticket_status", label: "Estado de las entradas", type: "select", options: [
         { value: "available", label: "Disponibles" },
@@ -286,9 +282,7 @@ const SETTING_GROUPS: { title: string; description?: string; fields: SettingFiel
         { value: "sold_out", label: "Agotadas" },
       ]},
       { key: "ticket_title", label: "Título de la sección" },
-      { key: "ticket_text", label: "Descripción", rows: 2 },
-      { key: "ticket_iframe_url", label: "URL de iframe (solo si usas modo iframe)", placeholder: "https://..." },
-      { key: "ticket_show_fallback", label: "Mostrar siempre enlace alternativo", type: "checkbox" },
+      { key: "ticket_text", label: "Subtítulo / descripción", rows: 2 },
       { key: "ticket_trust_text", label: "Mensaje de confianza" },
     ],
   },
@@ -776,11 +770,8 @@ function TicketsAdminPanel({ settings, tiers, onSaved }: { settings: any; tiers:
         </div>
         <div className="grid md:grid-cols-2 gap-3">
           {[
-            { value: "visual_tiers", label: "Tiquetera visual", desc: "Tramos editables que redirigen al enlace oficial." },
-            { value: "fourvenues_script", label: "Script Fourvenues", desc: "Pega el <script> de Fourvenues." },
-            { value: "iframe", label: "Iframe Fourvenues", desc: "Embed clásico por URL." },
-            { value: "external", label: "Solo botón externo", desc: "Botón a la venta oficial." },
-            { value: "both", label: "Iframe + botón externo", desc: "Embed con botón de respaldo." },
+            { value: "visual_tiers", label: "Tiquetera visual + enlace externo", desc: "Tramos editables. Cada botón abre el enlace oficial en una pestaña nueva." },
+            { value: "external", label: "Solo botón externo", desc: "Botón único a la venta oficial (sin tramos)." },
           ].map((opt) => {
             const active = mode === opt.value;
             return (
@@ -798,6 +789,9 @@ function TicketsAdminPanel({ settings, tiers, onSaved }: { settings: any; tiers:
               </button>
             );
           })}
+        </div>
+        <div className="rounded-lg border border-amber-400/30 bg-amber-400/5 p-3 text-xs text-amber-200/80">
+          ⚠️ Fourvenues bloquea la carga embebida (ERR_BLOCKED_BY_RESPONSE). Por eso ya no ofrecemos modos iframe/script.
         </div>
         <div className="grid md:grid-cols-2 gap-4">
           <FieldInput field={{ key: "ticket_title", label: "Título de la sección" }} value={values.ticket_title} onChange={(v) => setValues({ ...values, ticket_title: v })} />

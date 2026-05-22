@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Heart, Instagram, MapPin, Music, ShoppingBag, ChevronDown, Youtube, Facebook, Twitter, MessageCircle, Send, Headphones } from "lucide-react";
 import { getLandingData } from "@/lib/site.functions";
@@ -569,57 +569,12 @@ function MiniCountdown({ targetIso }: { targetIso: string }) {
 }
 
 // ============== TICKETS ==============
-function sanitizeTicketUrl(raw?: string): { url?: string; error?: string } {
-  if (!raw) return {};
-  const trimmed = raw.trim();
-  if (!/^https:\/\//i.test(trimmed)) return { error: "La URL debe ser HTTPS." };
-  try {
-    const u = new URL(trimmed);
-    if (typeof window !== "undefined" && u.hostname === window.location.hostname) {
-      return { error: "La URL apunta a la propia web (provoca redirección infinita). Usa la URL oficial de Fourvenues." };
-    }
-    return { url: u.toString() };
-  } catch {
-    return { error: "URL inválida." };
-  }
-}
 
-// Extrae el src de un fragmento "<script src='...'></script>" o devuelve la URL tal cual si ya lo es.
-function extractScriptSrc(raw?: string): string | undefined {
-  if (!raw) return undefined;
-  const trimmed = raw.trim();
-  if (!trimmed) return undefined;
-  const m = trimmed.match(/<script[^>]*\ssrc\s*=\s*["']([^"']+)["']/i);
-  if (m?.[1]) return m[1].trim();
-  if (/^https?:\/\//i.test(trimmed)) return trimmed;
-  return undefined;
-}
-
-function FourvenuesEmbed({ scriptUrl }: { scriptUrl: string }) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!scriptUrl || !el) return;
-    el.innerHTML = "";
-    const script = document.createElement("script");
-    script.src = scriptUrl;
-    script.async = true;
-    el.appendChild(script);
-    return () => { if (el) el.innerHTML = ""; };
-  }, [scriptUrl]);
-  return <div ref={containerRef} className="fourvenues-container w-full min-h-[600px]" />;
-}
 
 function TicketsSection({ s, bg, tiers }: { s: any; bg?: any; tiers?: any[] }) {
   const mode: string = s?.ticket_mode ?? "visual_tiers";
-  const scriptSrc = extractScriptSrc(s?.ticket_embed_script as string | undefined);
-  const { url, error: urlError } = sanitizeTicketUrl(s?.ticket_iframe_url as string | undefined);
   const fallback = s?.ticket_fallback_url as string | undefined;
-
-  const isVisual = mode === "visual_tiers";
-  const showScript = !isVisual && !!scriptSrc && (mode === "fourvenues_script" || mode === "iframe" || mode === "both");
-  const showIframe = !isVisual && !showScript && (mode === "iframe" || mode === "both") && !!url;
-  const alwaysShowFallbackBtn = !isVisual && (mode === "external" || mode === "both" || s?.ticket_show_fallback || (!showScript && !!urlError));
+  const isVisual = mode !== "external";
 
   return (
     <section id="entradas" className="relative py-20 md:py-28 px-4 md:px-8 overflow-hidden">
@@ -629,12 +584,10 @@ function TicketsSection({ s, bg, tiers }: { s: any; bg?: any; tiers?: any[] }) {
         <h2 className="text-display text-4xl md:text-6xl font-black mb-3">{s?.ticket_title ?? "Compra tus entradas"}</h2>
         <p className="text-white/70 mb-6">{s?.ticket_text ?? "Elige tu tramo y accede a la venta oficial."}</p>
 
-        {/* Ticket alert bar */}
         {s?.ticket_alert_enabled && s?.ticket_alert_text && (
           <TicketAlert text={s.ticket_alert_text} type={s.ticket_alert_type} url={s.ticket_alert_url} />
         )}
 
-        {/* Mini tier countdown */}
         {s?.tier_countdown_enabled && s?.tier_countdown_datetime && (
           <TierCountdown datetime={s.tier_countdown_datetime} text={s.tier_countdown_text} />
         )}
@@ -647,37 +600,11 @@ function TicketsSection({ s, bg, tiers }: { s: any; bg?: any; tiers?: any[] }) {
           />
         )}
 
-        {showScript && (
-          <div className="rounded-2xl overflow-hidden border border-[var(--brand-blue)]/30 bg-[var(--dark-panel)] glow-blue mx-auto p-2 md:p-4" style={{ maxWidth: 1120 }}>
-            <FourvenuesEmbed scriptUrl={scriptSrc!} />
-          </div>
-        )}
-
-        {showIframe && (
-          <div className="rounded-2xl overflow-hidden border border-[var(--brand-blue)]/30 bg-[var(--dark-panel)] glow-blue mx-auto" style={{ maxWidth: 1120 }}>
-            <iframe
-              src={url}
-              title="Compra de entradas DUALITY"
-              allow="payment *; fullscreen; clipboard-write; encrypted-media"
-              loading="lazy"
-              referrerPolicy="strict-origin-when-cross-origin"
-              className="w-full block border-0 min-h-[860px] md:min-h-[780px]"
-              style={{ border: 0 }}
-            />
-          </div>
-        )}
-
-        {!isVisual && urlError && mode !== "external" && (
-          <div className="rounded-2xl border border-[var(--brand-red)]/40 bg-[var(--dark-panel)] p-6 text-center text-white/80 mb-4">
-            {urlError}
-          </div>
-        )}
-
         {mode === "external" && fallback && (
           <div className="rounded-2xl border border-[var(--brand-blue)]/30 bg-[var(--dark-panel)] p-8 md:p-12 text-center space-y-5 glow-blue">
             <div className="text-xs uppercase tracking-[0.3em] text-[var(--brand-blue)]">Venta oficial</div>
             <p className="text-white/80 max-w-md mx-auto">
-              La venta se realiza en la plataforma oficial. Pulsa el botón para abrirla en una nueva pestaña.
+              La compra se completará en la plataforma oficial de venta. Pulsa el botón para abrirla en una pestaña nueva.
             </p>
             <a
               href={fallback}
@@ -685,18 +612,18 @@ function TicketsSection({ s, bg, tiers }: { s: any; bg?: any; tiers?: any[] }) {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-[var(--brand-blue)] text-black font-black uppercase tracking-widest glow-blue hover:scale-105 transition-transform"
             >
-              Comprar entradas
+              Comprar entrada
             </a>
           </div>
         )}
 
-        {alwaysShowFallbackBtn && mode !== "external" && fallback && (
-          <div className="mt-6 text-center space-y-2">
+        {isVisual && fallback && (
+          <div className="mt-6 text-center">
             <a
               href={fallback}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 hover:border-[var(--brand-blue)] font-bold uppercase tracking-wider"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 hover:border-[var(--brand-blue)] font-bold uppercase tracking-wider text-sm"
             >
               Abrir venta oficial en nueva pestaña
             </a>
@@ -704,12 +631,18 @@ function TicketsSection({ s, bg, tiers }: { s: any; bg?: any; tiers?: any[] }) {
         )}
 
         {s?.ticket_trust_text && (
-          <p className="text-center mt-8 text-xs uppercase tracking-widest text-white/50">{s.ticket_trust_text}</p>
+          <p className="text-center mt-8 text-xs uppercase tracking-widest text-white/50">
+            {s.ticket_trust_text}
+          </p>
         )}
+        <p className="text-center mt-2 text-[11px] text-white/40">
+          La compra se completará en la plataforma oficial de venta.
+        </p>
       </div>
     </section>
   );
 }
+
 
 function TicketAlert({ text, type, url }: { text: string; type?: string; url?: string }) {
   const color =
