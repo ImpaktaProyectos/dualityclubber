@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Clock, Plus, Trash2, Check, Sparkles } from "lucide-react";
 import { upsertRow, deleteRow } from "@/lib/admin.functions";
 
-type Stage = { id: string; name: string; slug: string; sort_order?: number };
+type Stage = { id: string; name: string; slug: string; sort_order?: number; color?: string | null };
 type Artist = {
   id: string;
   name: string;
