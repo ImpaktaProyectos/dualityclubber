@@ -106,6 +106,13 @@ export function SectionsReorder({ rows, onSaved }: { rows: Section[]; onSaved: (
   const reorder = useServerFn(reorderSections);
   const upsert = useServerFn(upsertRow);
 
+  // Re-sync local items when parent rows refresh (after toggle/visibility changes)
+  useEffect(() => {
+    if (!dirty) {
+      setItems([...rows].sort((a, b) => a.sort_order - b.sort_order));
+    }
+  }, [rows, dirty]);
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
