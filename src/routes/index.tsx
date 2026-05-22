@@ -462,10 +462,8 @@ function ArtistsSection({ artists, isFavorite, toggle, bg }: { artists: any[]; i
     return Array.from(set);
   }, [artists]);
   const [stage, setStage] = useState<string>("all");
-  const [expanded, setExpanded] = useState(false);
   const filtered = stage === "all" ? artists : artists.filter((a) => a.stage === stage);
   const withImage = filtered.filter((a) => a.image_url);
-  const withoutImage = filtered.filter((a) => !a.image_url);
 
   const grouped = useMemo(() => {
     const map = new Map<string, any[]>();
