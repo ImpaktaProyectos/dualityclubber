@@ -68,6 +68,7 @@ export const getAdminData = createServerFn({ method: "GET" })
       sectionBackgrounds: sectionBgs.data ?? [],
       stages: stages.data ?? [],
       ticketTiers: ticketTiers.data ?? [],
+      shopProducts: shopProducts.data ?? [],
     };
   });
 
