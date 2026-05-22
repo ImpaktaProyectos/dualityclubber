@@ -473,8 +473,13 @@ export type Database = {
           opening_time: string | null
           primary_color: string | null
           secondary_color: string | null
+          ticket_alert_enabled: boolean | null
+          ticket_alert_text: string | null
+          ticket_alert_type: string | null
+          ticket_alert_url: string | null
           ticket_embed_script: string | null
           ticket_fallback_url: string | null
+          ticket_global_url: string | null
           ticket_iframe_url: string | null
           ticket_mode: string
           ticket_show_fallback: boolean | null
@@ -482,7 +487,11 @@ export type Database = {
           ticket_text: string | null
           ticket_title: string | null
           ticket_trust_text: string | null
+          tier_countdown_datetime: string | null
+          tier_countdown_enabled: boolean | null
+          tier_countdown_text: string | null
           updated_at: string
+          use_global_ticket_url: boolean | null
           venue_location: string | null
           venue_name: string | null
         }
@@ -564,8 +573,13 @@ export type Database = {
           opening_time?: string | null
           primary_color?: string | null
           secondary_color?: string | null
+          ticket_alert_enabled?: boolean | null
+          ticket_alert_text?: string | null
+          ticket_alert_type?: string | null
+          ticket_alert_url?: string | null
           ticket_embed_script?: string | null
           ticket_fallback_url?: string | null
+          ticket_global_url?: string | null
           ticket_iframe_url?: string | null
           ticket_mode?: string
           ticket_show_fallback?: boolean | null
@@ -573,7 +587,11 @@ export type Database = {
           ticket_text?: string | null
           ticket_title?: string | null
           ticket_trust_text?: string | null
+          tier_countdown_datetime?: string | null
+          tier_countdown_enabled?: boolean | null
+          tier_countdown_text?: string | null
           updated_at?: string
+          use_global_ticket_url?: boolean | null
           venue_location?: string | null
           venue_name?: string | null
         }
@@ -655,8 +673,13 @@ export type Database = {
           opening_time?: string | null
           primary_color?: string | null
           secondary_color?: string | null
+          ticket_alert_enabled?: boolean | null
+          ticket_alert_text?: string | null
+          ticket_alert_type?: string | null
+          ticket_alert_url?: string | null
           ticket_embed_script?: string | null
           ticket_fallback_url?: string | null
+          ticket_global_url?: string | null
           ticket_iframe_url?: string | null
           ticket_mode?: string
           ticket_show_fallback?: boolean | null
@@ -664,7 +687,11 @@ export type Database = {
           ticket_text?: string | null
           ticket_title?: string | null
           ticket_trust_text?: string | null
+          tier_countdown_datetime?: string | null
+          tier_countdown_enabled?: boolean | null
+          tier_countdown_text?: string | null
           updated_at?: string
+          use_global_ticket_url?: boolean | null
           venue_location?: string | null
           venue_name?: string | null
         }
@@ -699,6 +726,63 @@ export type Database = {
           name?: string
           slug?: string
           sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ticket_tiers: {
+        Row: {
+          badge_text: string | null
+          button_text: string | null
+          created_at: string
+          currency: string | null
+          description: string | null
+          id: string
+          is_featured: boolean
+          is_visible: boolean
+          name: string
+          open_in_new_tab: boolean
+          previous_price: string | null
+          price: string | null
+          purchase_url: string | null
+          sort_order: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          badge_text?: string | null
+          button_text?: string | null
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          id?: string
+          is_featured?: boolean
+          is_visible?: boolean
+          name: string
+          open_in_new_tab?: boolean
+          previous_price?: string | null
+          price?: string | null
+          purchase_url?: string | null
+          sort_order?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          badge_text?: string | null
+          button_text?: string | null
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          id?: string
+          is_featured?: boolean
+          is_visible?: boolean
+          name?: string
+          open_in_new_tab?: boolean
+          previous_price?: string | null
+          price?: string | null
+          purchase_url?: string | null
+          sort_order?: number
+          status?: string
           updated_at?: string
         }
         Relationships: []
