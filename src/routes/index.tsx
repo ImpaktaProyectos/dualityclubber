@@ -425,7 +425,7 @@ function Hero({ s, bg, extraTopPadding }: { s: any; bg?: any; extraTopPadding?: 
             <div className="md:hidden mt-10 flex justify-center">
               <img
                 src={s.hero_flyer_url}
-                alt={`Flyer ${s?.event_name ?? "DUALITY"}`}
+                alt={`Flyer ${s?.event_name ?? "DUALITY"}`} loading="eager" fetchPriority="high" decoding="async"
                 className="rounded-xl border border-white/15 shadow-2xl max-w-[280px] w-full h-auto"
               />
             </div>
@@ -442,7 +442,7 @@ function Hero({ s, bg, extraTopPadding }: { s: any; bg?: any; extraTopPadding?: 
               <div className="absolute -inset-3 rounded-2xl bg-gradient-to-br from-[var(--brand-blue)]/40 via-transparent to-[var(--brand-red)]/40 blur-2xl opacity-70" />
               <img
                 src={s.hero_flyer_url}
-                alt={`Flyer ${s?.event_name ?? "DUALITY"}`}
+                alt={`Flyer ${s?.event_name ?? "DUALITY"}`} loading="eager" fetchPriority="high" decoding="async"
                 className="relative rounded-2xl border border-white/15 shadow-2xl w-full h-auto object-cover"
               />
             </div>
