@@ -5,6 +5,8 @@ import { Heart, Instagram, MapPin, Music, ShoppingBag, ChevronDown, Youtube, Fac
 import { getLandingData } from "@/lib/site.functions";
 import { useFavorites } from "@/hooks/useFavorites";
 import { SectionBackground, resolveSectionBg } from "@/components/SectionBackground";
+import { GalleryDisplay } from "@/components/GalleryDisplay";
+
 import heroArt from "@/assets/duality-hero.jpg";
 
 export const Route = createFileRoute("/")({
