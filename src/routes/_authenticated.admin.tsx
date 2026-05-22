@@ -109,7 +109,7 @@ function AdminPage() {
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-4 md:px-8 pb-3">
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+          <div className="flex flex-wrap gap-2">
             {TABS.map((t) => {
               const Icon = t.icon;
               const active = tab === t.key;
