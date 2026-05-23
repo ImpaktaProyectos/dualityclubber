@@ -235,7 +235,7 @@ function AdminPage() {
 type SettingField = {
   key: string;
   label: string;
-  type?: "text" | "textarea" | "checkbox" | "number" | "select" | "font";
+  type?: "text" | "textarea" | "checkbox" | "number" | "select" | "font" | "datetime";
   rows?: number;
   hint?: string;
   options?: { value: string; label: string }[];
@@ -305,7 +305,7 @@ const SETTING_GROUPS: { title: string; description?: string; fields: SettingFiel
     title: "⏱️ Cuenta atrás",
     fields: [
       { key: "countdown_enabled", label: "Activada", type: "checkbox" },
-      { key: "countdown_datetime", label: "Fecha y hora (formato ISO)", hint: "Ej: 2025-07-12T22:00:00+02:00" },
+      { key: "countdown_datetime", label: "Fecha y hora del evento", type: "datetime", hint: "Selecciona el día y la hora exacta del inicio." },
       { key: "countdown_title", label: "Título" },
       { key: "countdown_subtitle", label: "Subtítulo premium (línea técnica)", hint: "Ej: Cada segundo te acerca a la noche." },
       { key: "countdown_subtext", label: "Subtexto" },
@@ -520,6 +520,50 @@ function FieldInput({ field, value, onChange }: { field: SettingField; value: an
             DUALITY · Aa Bb 123 — vista previa
           </div>
         )}
+        {field.hint && <p className="text-xs text-white/40 mt-1">{field.hint}</p>}
+      </div>
+    );
+  }
+  if (field.type === "datetime") {
+    // Convert stored ISO (with TZ or UTC) to local "YYYY-MM-DDTHH:mm" for the picker
+    const toLocal = (iso: string | null | undefined) => {
+      if (!iso) return "";
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return "";
+      const pad = (n: number) => String(n).padStart(2, "0");
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    };
+    const localValue = toLocal(value);
+    const preview = value && !isNaN(new Date(value).getTime())
+      ? new Date(value).toLocaleString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })
+      : null;
+    return (
+      <div className="md:col-span-2">
+        <label className="text-xs uppercase tracking-widest text-white/50">{field.label}</label>
+        <div className="mt-1 flex gap-2 items-center">
+          <input
+            type="datetime-local"
+            value={localValue}
+            onChange={(e) => {
+              const v = e.target.value;
+              if (!v) { onChange(null); return; }
+              // Interpret as local time, store as ISO (UTC) — countdown uses Date.getTime() so it's equivalent
+              const d = new Date(v);
+              onChange(isNaN(d.getTime()) ? null : d.toISOString());
+            }}
+            className="flex-1 rounded-lg bg-black/40 border border-white/10 px-3 py-2 text-sm focus:border-[var(--brand-blue)] outline-none"
+          />
+          {value && (
+            <button
+              type="button"
+              onClick={() => onChange(null)}
+              className="text-xs uppercase tracking-widest text-white/60 hover:text-white border border-white/10 rounded-full px-3 py-2"
+            >
+              Limpiar
+            </button>
+          )}
+        </div>
+        {preview && <p className="text-xs text-[var(--brand-blue)] mt-2 capitalize">📅 {preview}</p>}
         {field.hint && <p className="text-xs text-white/40 mt-1">{field.hint}</p>}
       </div>
     );
@@ -909,7 +953,7 @@ function TicketsAdminPanel({ settings, tiers, onSaved }: { settings: any; tiers:
         </div>
         <div className="grid md:grid-cols-2 gap-4">
           <FieldInput field={{ key: "tier_countdown_enabled", label: "Activar mini cuenta atrás", type: "checkbox" }} value={values.tier_countdown_enabled} onChange={(v) => setValues({ ...values, tier_countdown_enabled: v })} />
-          <FieldInput field={{ key: "tier_countdown_datetime", label: "Fecha/hora del cambio (ISO)", placeholder: "2026-07-01T22:00:00+02:00" }} value={values.tier_countdown_datetime} onChange={(v) => setValues({ ...values, tier_countdown_datetime: v })} />
+          <FieldInput field={{ key: "tier_countdown_datetime", label: "Fecha y hora del cambio de tramo", type: "datetime", hint: "Selecciona el día y la hora del cambio de precio." }} value={values.tier_countdown_datetime} onChange={(v) => setValues({ ...values, tier_countdown_datetime: v })} />
           <FieldInput field={{ key: "tier_countdown_text", label: "Texto", placeholder: "Cambio de precio en…" }} value={values.tier_countdown_text} onChange={(v) => setValues({ ...values, tier_countdown_text: v })} />
         </div>
       </section>
