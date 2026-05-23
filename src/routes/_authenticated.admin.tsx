@@ -83,34 +83,56 @@ function AdminPage() {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 glass border-b border-white/10">
-        <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-8 h-16">
-          <div className="text-display text-xl font-black tracking-widest flex items-center gap-2">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 px-3 md:px-8 h-12 md:h-16">
+          <div className="text-display text-base md:text-xl font-black tracking-widest flex items-center gap-2 min-w-0">
             {(data?.settings?.brand_logo_light_url || data?.settings?.brand_logo_main_url) ? (
               <img
                 src={(data.settings.brand_logo_light_url || data.settings.brand_logo_main_url) as string}
                 alt={data?.settings?.event_name ?? "DUALITY"}
-                className="object-contain"
-                style={{ height: "32px" }}
+                className="object-contain shrink-0"
+                style={{ height: "24px" }}
               />
             ) : (
-              <>DUA<span style={{ color: "var(--brand-red)" }}>L</span><span style={{ color: "var(--brand-blue)" }}>I</span>TY</>
+              <span className="shrink-0">DUA<span style={{ color: "var(--brand-red)" }}>L</span><span style={{ color: "var(--brand-blue)" }}>I</span>TY</span>
             )}
-            <span className="text-white/40 text-xs ml-2 font-normal tracking-normal">Panel del organizador</span>
+            <span className="hidden md:inline text-white/40 text-xs ml-2 font-normal tracking-normal truncate">Panel del organizador</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 shrink-0">
             <a
               href="/"
               target="_blank"
-              className="hidden sm:inline-flex items-center gap-1 text-xs uppercase tracking-widest text-white/70 hover:text-white border border-white/10 rounded-full px-3 py-1.5"
+              aria-label="Ver la web"
+              className="inline-flex items-center gap-1 text-[11px] md:text-xs uppercase tracking-widest text-white/70 hover:text-white border border-white/10 rounded-full p-1.5 md:px-3 md:py-1.5"
             >
-              <ExternalLink className="h-3.5 w-3.5" /> Ver la web
+              <ExternalLink className="h-3.5 w-3.5" /> <span className="hidden md:inline">Ver la web</span>
             </a>
-            <button onClick={logout} className="inline-flex items-center gap-1 text-xs uppercase tracking-widest text-white/60 hover:text-white">
-              <LogOut className="h-4 w-4" /> Salir
+            <button onClick={logout} aria-label="Salir" className="inline-flex items-center gap-1 text-[11px] md:text-xs uppercase tracking-widest text-white/60 hover:text-white p-1.5">
+              <LogOut className="h-4 w-4" /> <span className="hidden md:inline">Salir</span>
             </button>
           </div>
         </div>
-        <div className="max-w-7xl mx-auto px-4 md:px-8 pb-3">
+
+        {/* Mobile: compact select navigator */}
+        <div className="md:hidden px-3 pb-2">
+          <div className="relative">
+            <activeTab.icon className="h-4 w-4 text-black absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <select
+              value={tab}
+              onChange={(e) => setTab(e.target.value as TabKey)}
+              className="w-full appearance-none rounded-full bg-[var(--brand-blue)] text-black font-bold text-xs uppercase tracking-widest pl-9 pr-8 py-2 border-none focus:outline-none shadow-[0_0_24px_var(--blue-glow)]"
+            >
+              {TABS.map((t) => (
+                <option key={t.key} value={t.key} className="bg-[var(--dark-panel)] text-white normal-case tracking-normal">
+                  {t.label}
+                </option>
+              ))}
+            </select>
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-black pointer-events-none">▾</span>
+          </div>
+        </div>
+
+        {/* Desktop / tablet: pill tabs */}
+        <div className="hidden md:block max-w-7xl mx-auto px-4 md:px-8 pb-3">
           <div className="flex flex-wrap gap-2">
             {TABS.map((t) => {
               const Icon = t.icon;
