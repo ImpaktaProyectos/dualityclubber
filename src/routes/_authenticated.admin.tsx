@@ -909,7 +909,7 @@ function TicketsAdminPanel({ settings, tiers, onSaved }: { settings: any; tiers:
         </div>
         <div className="grid md:grid-cols-2 gap-4">
           <FieldInput field={{ key: "tier_countdown_enabled", label: "Activar mini cuenta atrás", type: "checkbox" }} value={values.tier_countdown_enabled} onChange={(v) => setValues({ ...values, tier_countdown_enabled: v })} />
-          <FieldInput field={{ key: "tier_countdown_datetime", label: "Fecha/hora del cambio (ISO)", placeholder: "2026-07-01T22:00:00+02:00" }} value={values.tier_countdown_datetime} onChange={(v) => setValues({ ...values, tier_countdown_datetime: v })} />
+          <FieldInput field={{ key: "tier_countdown_datetime", label: "Fecha y hora del cambio de tramo", type: "datetime", hint: "Selecciona el día y la hora del cambio de precio." }} value={values.tier_countdown_datetime} onChange={(v) => setValues({ ...values, tier_countdown_datetime: v })} />
           <FieldInput field={{ key: "tier_countdown_text", label: "Texto", placeholder: "Cambio de precio en…" }} value={values.tier_countdown_text} onChange={(v) => setValues({ ...values, tier_countdown_text: v })} />
         </div>
       </section>
