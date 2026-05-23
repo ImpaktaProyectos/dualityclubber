@@ -305,7 +305,7 @@ const SETTING_GROUPS: { title: string; description?: string; fields: SettingFiel
     title: "⏱️ Cuenta atrás",
     fields: [
       { key: "countdown_enabled", label: "Activada", type: "checkbox" },
-      { key: "countdown_datetime", label: "Fecha y hora (formato ISO)", hint: "Ej: 2025-07-12T22:00:00+02:00" },
+      { key: "countdown_datetime", label: "Fecha y hora del evento", type: "datetime", hint: "Selecciona el día y la hora exacta del inicio." },
       { key: "countdown_title", label: "Título" },
       { key: "countdown_subtitle", label: "Subtítulo premium (línea técnica)", hint: "Ej: Cada segundo te acerca a la noche." },
       { key: "countdown_subtext", label: "Subtexto" },
