@@ -235,7 +235,7 @@ function AdminPage() {
 type SettingField = {
   key: string;
   label: string;
-  type?: "text" | "textarea" | "checkbox" | "number" | "select" | "font";
+  type?: "text" | "textarea" | "checkbox" | "number" | "select" | "font" | "datetime";
   rows?: number;
   hint?: string;
   options?: { value: string; label: string }[];
