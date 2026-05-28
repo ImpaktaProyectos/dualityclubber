@@ -4,4 +4,15 @@
   "compatibility_date": "2025-09-24",
   "compatibility_flags": ["nodejs_compat"],
   "main": "src/server.ts",
+  "observability": {
+    "enabled": true
+  }
+  // Secrets (set via `wrangler secret put <NAME>`, NOT here):
+  //   SUPABASE_URL
+  //   SUPABASE_PUBLISHABLE_KEY
+  //   SUPABASE_SERVICE_ROLE_KEY
+  //   LOVABLE_API_KEY  (only if you use Lovable AI Gateway from server fns)
+  //
+  // Public Vite vars (VITE_*) must be present in `.env` at BUILD time
+  // because Vite inlines them into the client bundle.
 }
