@@ -7,6 +7,7 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { SectionBackground, resolveSectionBg } from "@/components/SectionBackground";
 import { GalleryDisplay } from "@/components/GalleryDisplay";
 import { ShopSection } from "@/components/ShopSection";
+import { MaintenanceScreen } from "@/components/MaintenanceScreen";
 
 export const Route = createFileRoute("/")({
   head: ({ loaderData }) => {
@@ -22,16 +23,27 @@ export const Route = createFileRoute("/")({
         { name: "description", content: "Una noche. Dos energías. Un mismo destino. Vive DUALITY." },
         { property: "og:title", content: "DUALITY · AQUA OPEN AIR" },
         { property: "og:description", content: "Una noche. Dos energías. Un mismo destino." },
+        { property: "og:type", content: "website" },
+        { name: "twitter:card", content: "summary_large_image" },
       ],
-      links,
+      links: s?.maintenance_enabled ? [] : links,
     };
   },
   loader: () => getLandingData(),
-  component: Landing,
+  component: LandingGate,
 });
 
 
 type Section = { section_key: string; is_enabled: boolean; display_mode: string };
+
+function LandingGate() {
+  const data = Route.useLoaderData();
+  const s: any = (data as any)?.settings;
+  if (s?.maintenance_enabled) {
+    return <MaintenanceScreen title={s.maintenance_title} message={s.maintenance_message} />;
+  }
+  return <Landing />;
+}
 
 function Landing() {
   const rawData = Route.useLoaderData();
@@ -45,7 +57,7 @@ function Landing() {
     artists: (rawData.artists ?? []).map((a: any) => ({ ...a, stage: a.stage || (a.stage_id ? stageNameById[a.stage_id] : null) })),
     schedule: (rawData.schedule ?? []).map((it: any) => ({ ...it, stage: it.stage || (it.stage_id ? stageNameById[it.stage_id] : null) })),
   }), [rawData, stageNameById]);
-  const s = data.settings;
+  const s: any = data.settings;
   const isOn = (key: string) => {
     const sec = (data.sections as Section[]).find((x) => x.section_key === key);
     return sec?.is_enabled && sec?.display_mode === "visible";
