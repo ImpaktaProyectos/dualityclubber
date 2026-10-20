@@ -516,6 +516,9 @@ export type Database = {
           location_maps_url: string | null
           location_name: string | null
           location_parking_text: string | null
+          maintenance_enabled: boolean
+          maintenance_message: string | null
+          maintenance_title: string | null
           opening_time: string | null
           primary_color: string | null
           secondary_color: string | null
@@ -623,6 +626,9 @@ export type Database = {
           location_maps_url?: string | null
           location_name?: string | null
           location_parking_text?: string | null
+          maintenance_enabled?: boolean
+          maintenance_message?: string | null
+          maintenance_title?: string | null
           opening_time?: string | null
           primary_color?: string | null
           secondary_color?: string | null
@@ -730,6 +736,9 @@ export type Database = {
           location_maps_url?: string | null
           location_name?: string | null
           location_parking_text?: string | null
+          maintenance_enabled?: boolean
+          maintenance_message?: string | null
+          maintenance_title?: string | null
           opening_time?: string | null
           primary_color?: string | null
           secondary_color?: string | null
