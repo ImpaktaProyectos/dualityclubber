@@ -57,7 +57,7 @@ function Landing() {
     artists: (rawData.artists ?? []).map((a: any) => ({ ...a, stage: a.stage || (a.stage_id ? stageNameById[a.stage_id] : null) })),
     schedule: (rawData.schedule ?? []).map((it: any) => ({ ...it, stage: it.stage || (it.stage_id ? stageNameById[it.stage_id] : null) })),
   }), [rawData, stageNameById]);
-  const s = data.settings;
+  const s: any = data.settings;
   const isOn = (key: string) => {
     const sec = (data.sections as Section[]).find((x) => x.section_key === key);
     return sec?.is_enabled && sec?.display_mode === "visible";
