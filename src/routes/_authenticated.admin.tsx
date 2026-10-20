@@ -254,6 +254,15 @@ const FONT_OPTIONS = [
 
 const SETTING_GROUPS: { title: string; description?: string; fields: SettingField[] }[] = [
   {
+    title: "🚧 Modo error 404 / mantenimiento",
+    description: "Al activarlo, la web solo mostrará una pantalla de error 404 con barra de carga. Desactívalo para volver a la web normal.",
+    fields: [
+      { key: "maintenance_enabled", label: "Activar pantalla 404 (oculta toda la web)", type: "checkbox" },
+      { key: "maintenance_title", label: "Título", hint: "Ej: Estamos ajustando el sonido" },
+      { key: "maintenance_message", label: "Mensaje", hint: "Ej: Volvemos en unos minutos." },
+    ],
+  },
+  {
     title: "🎉 Datos del evento",
     description: "Información básica que aparece en toda la web.",
     fields: [
